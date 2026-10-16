@@ -15,7 +15,7 @@ It stops at the first step that fails.
 ## Windows 10 and 11
 
 Run these in **Command Prompt** (`cmd.exe`).
-`curl.exe` and `tar.exe` ship with Windows 10 1803 and later.
+`curl.exe` and `tar.exe` are included in Windows 10 1803 and later.
 
 ### Release binary
 

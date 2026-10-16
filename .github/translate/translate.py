@@ -89,7 +89,18 @@ def install_models():
 
 
 TOKEN = "ZQX{}QXZ"
-PROTECT = re.compile(r"`[^`]*`|\[[^\]\s]*\.[A-Za-z0-9]+\]\([^)]*\)|\]\([^)]*\)|https?://\S+|\*\*|\[|\]|<[^>]+>")
+# Names that must never be translated: program names, literal file and
+# folder names, spreadsheet headers and form labels.
+GLOSSARY = sorted([
+    "numb-form", "numb-commit", "NUMB-FORM", "Appendix A - Risk Assesment", "Appendix A",
+    "3. Übersichten", "Company Name", "Report created", "Customer ID", "Downloads",
+    "Information About the Contracting Party", "Name / Company Name of the Contracting Party",
+    "Date of the evaluation", "Person Processing the Form", "Español", "Deutsch", "Commercial Registry Number",
+    "Authorized Representatives", "Legal form", "Headquarters / Address",
+    "Impressum", "Aviso legal", "GLEIF", "Wikidata", "Companies House", "Argos Translate",
+    "Sigstore", "cosign", "Docker", "Podman", "Kubernetes", "Command Prompt", "PowerShell",
+], key=len, reverse=True)
+PROTECT = re.compile("|".join(re.escape(g) for g in GLOSSARY) + r"|`[^`]*`|\[[^\]\s]*\.[A-Za-z0-9]+\]\([^)]*\)|\]\([^)]*\)|https?://\S+|\*\*|\[|\]|<[^>]+>")
 MARKER = re.compile(r"^(\s*(?:#{1,6}\s+|[-*+]\s+|\d+\.\s+|>\s*|:\s+)?)(.*)$")
 
 
@@ -131,33 +142,63 @@ def rewrite_links(line, src, dst, translated):
     return re.sub(r"\]\(([^)\s]+)\)", fix, line)
 
 
+STRUCT = re.compile(r"^\s*(?:#{1,6}\s|[-*+]\s|\d+\.\s|>|:\s|\|)")
+
+
 def translate_file(src, dst, lang, tr, translated):
     lines = (ROOT / src).read_text(encoding="utf-8").splitlines()
     out = []
+    block = []  # lines of the current paragraph or list item
     fence = False
     note_done = False
+
+    def flush():
+        nonlocal note_done
+        if not block:
+            return
+        first = block[0]
+        m = MARKER.match(first)
+        prefix = m.group(1)
+        text = " ".join([m.group(2)] + [b.strip() for b in block[1:]])
+        line = prefix + translate_text(text, tr)
+        out.append(rewrite_links(line, src, dst, translated))
+        block.clear()
+        if not note_done and out[-1].startswith("# "):
+            rel = os.path.relpath(ROOT / src, (ROOT / dst).parent).replace(os.sep, "/")
+            out.extend(["", NOTE[lang].format(src=rel)])
+            note_done = True
+
     for line in lines:
         if line.lstrip().startswith("```"):
+            flush()
             fence = not fence
             out.append(line)
             continue
-        if fence or not line.strip():
+        if fence:
+            out.append(line)
+            continue
+        if not line.strip():
+            flush()
             out.append(line)
             continue
         if line.lstrip().startswith("|"):
+            flush()
             cells = re.split(r"(?<!\\)\|", line)
             if all(re.fullmatch(r"\s*:?-+:?\s*", c) or not c.strip() for c in cells):
                 out.append(line)
                 continue
             line = "|".join(c if not c.strip() else " " + translate_text(c.strip(), tr) + " " for c in cells)
-        else:
-            m = MARKER.match(line)
-            line = m.group(1) + translate_text(m.group(2), tr)
-        out.append(rewrite_links(line, src, dst, translated))
-        if not note_done and out[-1].startswith("# "):
-            rel = os.path.relpath(ROOT / src, (ROOT / dst).parent).replace(os.sep, "/")
-            out += ["", NOTE[lang].format(src=rel)]
-            note_done = True
+            out.append(rewrite_links(line, src, dst, translated))
+            continue
+        heading = re.match(r"^\s*#{1,6}\s", line)
+        if STRUCT.match(line) or heading:
+            flush()
+            block.append(line)
+            if heading:
+                flush()
+            continue
+        block.append(line)  # continuation of a paragraph or list item
+    flush()
     text = "\n".join(out) + "\n"
     (ROOT / dst).parent.mkdir(parents=True, exist_ok=True)
     (ROOT / dst).write_text(text, encoding="utf-8")

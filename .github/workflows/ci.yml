@@ -84,9 +84,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: freebsd, version: "15.1", install: "sudo pkg install -y go" }
-          - { os: openbsd, version: "7.9", install: "sudo pkg_add -I go" }
-          - { os: netbsd, version: "10.1", install: "sudo pkgin -y install go" }
+          - { os: freebsd, version: "15.1" }
+          - { os: openbsd, version: "7.9" }
+          - { os: netbsd, version: "10.1" }
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -100,18 +100,33 @@ jobs:
           operating_system: ${{ matrix.os }}
           version: ${{ matrix.version }}
           shell: sh
-      - name: Install Go
+      - name: Install Go from the system's own packages
         shell: cpa.sh {0}
-        env:
-          INSTALL: ${{ matrix.install }}
-        run: sh -c "$INSTALL"
+        run: |
+          set -e
+          case "$(uname -s)" in
+          FreeBSD) sudo pkg install -y go ;;
+          OpenBSD) sudo pkg_add -I go ;;
+          NetBSD)
+            if ! command -v pkgin >/dev/null 2>&1; then
+              PKG_PATH="https://cdn.NetBSD.org/pub/pkgsrc/packages/NetBSD/$(uname -m)/$(uname -r | cut -d_ -f1)/All"
+              export PKG_PATH
+              sudo -E pkg_add pkgin
+            fi
+            sudo pkgin -y install go ;;
+          esac
       - name: Test
         shell: cpa.sh {0}
         run: |
           PATH=/usr/local/bin:/usr/pkg/bin:/usr/local/go/bin:$PATH
           export PATH GOFLAGS=-mod=readonly CGO_ENABLED=0
           go version
-          go test -count=1 ./...
+          if ! go test -count=1 ./... > test.log 2>&1; then
+            cat test.log
+            grep -E -- '--- FAIL|panic:|\.go:[0-9]+:' test.log | head -20 | while IFS= read -r l; do echo "::error title=go test ($(uname -s))::$l"; done
+            exit 1
+          fi
+          cat test.log
 
   container:
     runs-on: ubuntu-latest
