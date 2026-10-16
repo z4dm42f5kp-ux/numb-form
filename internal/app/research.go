@@ -33,6 +33,9 @@ func (r *run) gather(name string) (gathered, error) {
 		return g, nil
 	}
 	enabled := union(r.cfg.AddressSources, r.cfg.RepsSources)
+	if len(enabled) == 0 {
+		return g, nil // every source disabled in the configuration
+	}
 	lc := r.opt.Lookup
 	lc.Sources = enabled
 	r.ui.Println("  Looking up official sources…")
