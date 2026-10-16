@@ -1,0 +1,17 @@
+# Build output
+/numb-form
+/numb-commit
+*.exe
+/dist/
+
+# Never commit customer data to this public repository.
+*.docx
+*.xlsx
+*.xlsm
+*.numbers
+*.pages
+numb-form-runs/
+*.log
+
+# Go fuzzing corpora created locally
+testdata/fuzz/

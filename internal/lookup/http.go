@@ -1,0 +1,162 @@
+// Package lookup gathers candidate values for the form from official
+// and public sources. Nothing found here is used without the user
+// confirming it.
+package lookup
+
+import (
+	"context"
+	"crypto/tls"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"net"
+	"net/http"
+	"net/url"
+	"os"
+	"strings"
+	"syscall"
+	"time"
+)
+
+// maxBody caps every response body held in memory. Nothing is written
+// to disk, so lookups never create cache files.
+const maxBody = 2 << 20
+
+// UserAgent identifies the tool, as Wikimedia and GLEIF ask clients to do.
+const UserAgent = "numb-form/1.0 (+https://github.com/z4dm42f5kp-ux/numb-form)"
+
+// Client is a hardened HTTPS client.
+type Client struct {
+	hc *http.Client
+}
+
+func proxyConfigured() bool {
+	for _, k := range []string{"HTTPS_PROXY", "https_proxy", "ALL_PROXY", "all_proxy"} {
+		if os.Getenv(k) != "" {
+			return true
+		}
+	}
+	return false
+}
+
+func publicOnly(_, address string, _ syscall.RawConn) error {
+	host, _, err := net.SplitHostPort(address)
+	if err != nil {
+		return err
+	}
+	ip := net.ParseIP(host)
+	if ip == nil {
+		return fmt.Errorf("refusing to dial non-IP %q", host)
+	}
+	if ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() ||
+		ip.IsUnspecified() || ip.IsMulticast() || ip.IsInterfaceLocalMulticast() {
+		return fmt.Errorf("refusing to connect to non-public address %s", ip)
+	}
+	return nil
+}
+
+// NewClient returns a client that only speaks HTTPS (TLS 1.2+), honours
+// the system proxy settings, follows at most five HTTPS redirects and,
+// when no proxy is configured, refuses to connect to private addresses.
+func NewClient() *Client {
+	d := &net.Dialer{Timeout: 10 * time.Second, KeepAlive: 30 * time.Second}
+	if !proxyConfigured() {
+		d.Control = publicOnly
+	}
+	tr := &http.Transport{
+		Proxy:                 http.ProxyFromEnvironment,
+		DialContext:           d.DialContext,
+		TLSClientConfig:       &tls.Config{MinVersion: tls.VersionTLS12},
+		TLSHandshakeTimeout:   10 * time.Second,
+		ResponseHeaderTimeout: 15 * time.Second,
+		MaxIdleConns:          8,
+		IdleConnTimeout:       30 * time.Second,
+		ForceAttemptHTTP2:     true,
+	}
+	return &Client{hc: &http.Client{
+		Transport: tr,
+		Timeout:   25 * time.Second,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			if len(via) >= 5 {
+				return errors.New("too many redirects")
+			}
+			if req.URL.Scheme != "https" {
+				return errors.New("refusing non-HTTPS redirect")
+			}
+			return nil
+		},
+	}}
+}
+
+func (c *Client) get(ctx context.Context, u string, hdr map[string]string) ([]byte, *url.URL, string, error) {
+	pu, err := url.Parse(u)
+	if err != nil {
+		return nil, nil, "", err
+	}
+	if pu.Scheme != "https" {
+		return nil, nil, "", fmt.Errorf("refusing non-HTTPS URL %s", u)
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
+	if err != nil {
+		return nil, nil, "", err
+	}
+	req.Header.Set("User-Agent", UserAgent)
+	for k, v := range hdr {
+		req.Header.Set(k, v)
+	}
+	resp, err := c.hc.Do(req) // #nosec G107 -- URL is validated above.
+	if err != nil {
+		return nil, nil, "", err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(io.LimitReader(resp.Body, maxBody+1))
+	if err != nil {
+		return nil, nil, "", err
+	}
+	if len(body) > maxBody {
+		body = body[:maxBody]
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, resp.Request.URL, "", fmt.Errorf("%s: HTTP %d", pu.Host, resp.StatusCode)
+	}
+	return body, resp.Request.URL, resp.Header.Get("Content-Type"), nil
+}
+
+func (c *Client) getJSON(ctx context.Context, u string, hdr map[string]string, v any) error {
+	h := map[string]string{"Accept": "application/json"}
+	for k, x := range hdr {
+		h[k] = x
+	}
+	b, _, _, err := c.get(ctx, u, h)
+	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal(b, v); err != nil {
+		return fmt.Errorf("decode %s: %w", hostOf(u), err)
+	}
+	return nil
+}
+
+func hostOf(u string) string {
+	if p, err := url.Parse(u); err == nil {
+		return p.Host
+	}
+	return "?"
+}
+
+// sanitizeErr removes credentials and query strings from errors.
+func sanitizeErr(err error) string {
+	if err == nil {
+		return ""
+	}
+	var ue *url.Error
+	if errors.As(err, &ue) {
+		if p, perr := url.Parse(ue.URL); perr == nil {
+			p.User = nil
+			p.RawQuery = ""
+			return fmt.Sprintf("%s %s: %v", ue.Op, p.String(), ue.Err)
+		}
+	}
+	return strings.ReplaceAll(err.Error(), "\n", " ")
+}
