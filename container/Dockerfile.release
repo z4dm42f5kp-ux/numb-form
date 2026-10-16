@@ -1,0 +1,12 @@
+# Release image, built by .github/workflows/release.yml from the release
+# binaries in dist/bin. No base image is pulled.
+FROM scratch
+ARG TARGETARCH
+COPY ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY bin/linux_${TARGETARCH}/numb-form bin/linux_${TARGETARCH}/numb-commit /
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
+    NUMBFORM_DOWNLOADS=/downloads \
+    HOME=/downloads
+WORKDIR /data
+USER 65532:65532
+ENTRYPOINT ["/numb-form"]

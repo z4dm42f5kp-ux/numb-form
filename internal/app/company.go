@@ -60,7 +60,7 @@ func (r *run) company(row xlsx.Row) (runlog.Company, error) {
 		return c, err
 	}
 
-	if err := os.Mkdir(folder, 0o750); err != nil {
+	if err := os.Mkdir(folder, 0o755); err != nil { // #nosec G301 -- company folders live on a team share.
 		c.Status, c.Reason = "error", err.Error()
 		return c, nil
 	}

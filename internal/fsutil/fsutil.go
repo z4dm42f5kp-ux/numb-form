@@ -126,7 +126,8 @@ func CopyTree(ctx context.Context, src, dst string, logf func(string, ...any)) (
 		switch {
 		case d.IsDir():
 			st.Dirs++
-			return os.MkdirAll(target, 0o750)
+			// Keep the source permissions so shared folders stay shared.
+			return os.MkdirAll(target, info.Mode().Perm()|0o700)
 		case d.Type().IsRegular():
 			if skipFile(d.Name()) {
 				st.Skipped = append(st.Skipped, rel)
@@ -169,7 +170,8 @@ func copyFile(src, dst string, info fs.FileInfo, buf []byte) (int64, error) {
 		return 0, err
 	}
 	defer in.Close()
-	out, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o640) // #nosec G304
+	// Keep the source permissions (the copy must match the original).
+	out, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE|os.O_EXCL, info.Mode().Perm()|0o600) // #nosec G302 G304 -- mirrors the source file.
 	if err != nil {
 		return 0, err
 	}
@@ -194,7 +196,9 @@ func WriteNew(path string, data []byte) error {
 	}
 	dir := filepath.Dir(path)
 	tmp := filepath.Join(dir, ".numb-form-tmp-"+randHex(6))
-	f, err := os.OpenFile(tmp, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o640) // #nosec G304
+	// Business documents on a team share must stay readable by the team;
+	// the process umask still applies.
+	f, err := os.OpenFile(tmp, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644) // #nosec G302 G304
 	if err != nil {
 		return err
 	}

@@ -1,0 +1,52 @@
+# Interactive pod: every document must be confirmed by a person.
+# kubectl apply -f k8s/numb-form-pod.yaml && kubectl wait --for=condition=Ready pod/numb-form --timeout=120s && kubectl attach -it numb-form && kubectl delete pod numb-form
+apiVersion: v1
+kind: Pod
+metadata:
+  name: numb-form
+  labels:
+    app.kubernetes.io/name: numb-form
+spec:
+  restartPolicy: Never
+  automountServiceAccountToken: false
+  activeDeadlineSeconds: 1800
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    runAsGroup: 65532
+    fsGroup: 65532
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: numb-form
+      image: ghcr.io/z4dm42f5kp-ux/numb-form:latest
+      command: ["/numb-form"]
+      stdin: true
+      stdinOnce: true
+      tty: true
+      env:
+        - name: TZ
+          value: Europe/Berlin
+        # - name: NUMBFORM_COMPANIES_HOUSE_KEY
+        #   valueFrom: {secretKeyRef: {name: numb-form, key: companies-house}}
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: ["ALL"]
+      resources:
+        requests: {cpu: 100m, memory: 64Mi}
+        limits: {cpu: "1", memory: 512Mi, ephemeral-storage: 100Mi}
+      volumeMounts:
+        - name: data
+          mountPath: /data
+          readOnly: true
+        - name: downloads
+          mountPath: /downloads
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: numb-form-data
+    - name: downloads
+      persistentVolumeClaim:
+        claimName: numb-form-downloads

@@ -1,0 +1,17 @@
+# Keeps the commit-SHA pins of actions and the hash-locked Python tools
+# up to date. Every update arrives as a pull request and runs the full
+# security pipeline before it can be merged.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 14
+  - package-ecosystem: pip
+    directory: /.github/translate
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 14

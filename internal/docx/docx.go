@@ -155,7 +155,7 @@ func scan(data []byte) ([]*para, error) {
 		return names[len(names)-2]
 	}
 	for {
-		off0 := int(dec.InputOffset())
+		off0 := int(dec.InputOffset()) // #nosec G115 -- bounded by len(data).
 		tok, err := dec.Token()
 		if err == io.EOF {
 			break
@@ -163,7 +163,7 @@ func scan(data []byte) ([]*para, error) {
 		if err != nil {
 			return nil, fmt.Errorf("document xml: %w", err)
 		}
-		off1 := int(dec.InputOffset())
+		off1 := int(dec.InputOffset()) // #nosec G115 -- bounded by len(data).
 		switch t := tok.(type) {
 		case xml.StartElement:
 			names = append(names, t.Name)

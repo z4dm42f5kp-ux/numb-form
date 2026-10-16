@@ -1,0 +1,55 @@
+name: translate
+
+# Regenerates docs/es and docs/de from the English documentation with
+# Argos Translate. Runs on macOS arm64 because PyTorch (needed by
+# argostranslate) has no multi-gigabyte CUDA dependencies there.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - README.md
+      - SECURITY.md
+      - docs/*.md
+      - .github/translate/**
+      - .github/workflows/translate.yml
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: translate
+  cancel-in-progress: true
+
+jobs:
+  translate:
+    runs-on: macos-latest
+    permissions:
+      contents: write # commit the translations
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Install Argos Translate (hash-pinned wheels only)
+        run: |
+          python -m pip install --require-hashes --no-deps --only-binary :all: -r .github/translate/requirements.txt
+      - name: Translate
+        run: python -I .github/translate/translate.py
+      - name: Commit translations
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git add docs/es docs/de .github/translate/models.sha256
+          if git diff --cached --quiet; then
+            echo "Translations are up to date."
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -m "docs: update Spanish and German translations (Argos Translate)"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main
+      - name: Remove downloaded models
+        if: always()
+        run: rm -rf "$HOME/.local/share/argos-translate" "$HOME/.local/cache/argos-translate" "$HOME/Library/Caches/pip"

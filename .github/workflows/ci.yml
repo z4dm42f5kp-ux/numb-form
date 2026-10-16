@@ -1,0 +1,131 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+          check-latest: true
+          cache: false
+      - name: Zero third-party dependencies
+        run: sh scripts/check-deps.sh
+      - name: gofmt
+        run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+      - name: go vet (all platforms)
+        run: |
+          for os in linux windows darwin freebsd openbsd netbsd; do
+            GOOS=$os go vet ./...
+          done
+      - name: go mod verify
+        run: go mod verify
+      - name: staticcheck
+        # go install verifies the module against the Go checksum database.
+        run: go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./...
+      - name: Cross-compile every release target
+        run: sh scripts/build-release.sh "ci-${GITHUB_SHA}" > /dev/null && rm -rf dist
+
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        go: [stable, "1.21.x"]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: ${{ matrix.go }}
+          check-latest: true
+          cache: false
+      - name: Test
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = Windows ]; then
+            go test -count=1 ./...
+          else
+            go test -count=1 -race ./...
+          fi
+
+  bsd:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: freebsd, version: "15.1", install: "sudo pkg install -y go" }
+          - { os: openbsd, version: "7.9", install: "sudo pkg_add -I go" }
+          - { os: netbsd, version: "10.1", install: "sudo pkgin -y install go" }
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Start ${{ matrix.os }} VM
+        uses: cross-platform-actions/action@e0b9770014ba65d5e0815f15b74031c3a635f641 # v1.6.0
+        with:
+          operating_system: ${{ matrix.os }}
+          version: ${{ matrix.version }}
+          shell: sh
+      - name: Install Go
+        shell: cpa.sh {0}
+        env:
+          INSTALL: ${{ matrix.install }}
+        run: sh -c "$INSTALL"
+      - name: Test
+        shell: cpa.sh {0}
+        run: |
+          PATH=$PATH:/usr/local/go/bin:/usr/pkg/bin
+          export PATH GOFLAGS=-mod=readonly CGO_ENABLED=0
+          go version
+          go test -count=1 ./...
+
+  container:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+          check-latest: true
+          cache: false
+      - name: Build image (FROM scratch)
+        run: ENGINE=docker container/build.sh numb-form:ci
+      - name: Smoke test
+        run: |
+          docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges numb-form:ci -version
+          docker run --rm --read-only --cap-drop ALL --entrypoint /numb-commit numb-form:ci -version
+          # Must refuse to run without a terminal.
+          if docker run --rm numb-form:ci; then echo "ran without a TTY" >&2; exit 1; fi
+      - name: Podman smoke test
+        run: |
+          docker save numb-form:ci | podman load
+          podman run --rm --read-only --cap-drop ALL numb-form:ci -version

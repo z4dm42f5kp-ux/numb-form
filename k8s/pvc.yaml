@@ -1,0 +1,22 @@
+# Example volumes. "numb-form-data" must hold the folder ABOVE the working
+# folder (for example a share containing "Kunden 2026/"). Adjust storage
+# classes and sizes, or replace them with your existing claims.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: numb-form-data
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: numb-form-downloads
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 5Gi
