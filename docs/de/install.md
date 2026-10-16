@@ -123,13 +123,15 @@ Installieren Sie Go 1.21 oder höher und git mit dem Systempaketmanager, dann f�
 | macOS | `brew install go git` |
 | FreeBSD | `su -m root -c 'pkg install -y go git'` |
 | OpenBSD | `doas pkg_add go git` |
-| NetBSD | `su -m root -c 'pkgin -y install go git'` |
+| NetBSD | `su -m root -c 'pkgin -y install go git' && PATH=$(ls -d /usr/pkg/go1*/bin \| tail -n 1):$PATH && export PATH` |
 
 Dann bauen, testen und installieren, mit einem temporären Go Build Cache, der danach gelöscht wird:
 
 ```
 cd "$(mktemp -d)" && git clone --depth 1 https://github.com/z4dm42f5kp-ux/numb-form.git && cd numb-form && export GOCACHE="$(mktemp -d)" GOFLAGS='-trimpath -mod=readonly' CGO_ENABLED=0 && go test ./... && go build -o numb-form ./cmd/numb-form && go build -o numb-commit ./cmd/numb-commit && mkdir -p "$HOME/.local/bin" && install -m 0755 numb-form numb-commit "$HOME/.local/bin/" && go clean -cache && rm -rf "$GOCACHE" && cd / && rm -rf "$OLDPWD/.." && echo OK
 ```
+
+Auf NetBSD installiert pkgsrc Go in einem versionierten Verzeichnis wie `/usr/pkg/go126/bin`; der Tabelleneintrag oben fügt das neueste zu `PATH` für die aktuelle Shell hinzu.
 
 Wenn das installierte Go älter als 1,21 ist, stoppt der Build mit einem Fehler; Installieren Sie ein neueres Go aus der Backports- oder Port-Sammlung, anstatt es eine Toolchain herunterladen zu lassen.
 

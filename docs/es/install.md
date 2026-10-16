@@ -123,13 +123,15 @@ Instala Go 1.21 o posterior y git con el administrador del paquete del sistema, 
 | macOS | `brew install go git` |
 | FreeBSD | `su -m root -c 'pkg install -y go git'` |
 | OpenBSD | `doas pkg_add go git` |
-| NetBSD | `su -m root -c 'pkgin -y install go git'` |
+| NetBSD | `su -m root -c 'pkgin -y install go git' && PATH=$(ls -d /usr/pkg/go1*/bin \| tail -n 1):$PATH && export PATH` |
 
 Luego construir, probar e instalar, utilizando un temporal Go build cache que se elimina después:
 
 ```
 cd "$(mktemp -d)" && git clone --depth 1 https://github.com/z4dm42f5kp-ux/numb-form.git && cd numb-form && export GOCACHE="$(mktemp -d)" GOFLAGS='-trimpath -mod=readonly' CGO_ENABLED=0 && go test ./... && go build -o numb-form ./cmd/numb-form && go build -o numb-commit ./cmd/numb-commit && mkdir -p "$HOME/.local/bin" && install -m 0755 numb-form numb-commit "$HOME/.local/bin/" && go clean -cache && rm -rf "$GOCACHE" && cd / && rm -rf "$OLDPWD/.." && echo OK
 ```
+
+En NetBSD, pkgsrc instala Go in a versioned directory such as `/usr/pkg/go126/bin`; la entrada de la tabla anterior añade el más nuevo a `PATH` para el shell actual.
 
 Si el Go instalado es mayor de 1.21, el edificio se detiene con un error; instalar un nuevo Ir de la colección de backports o puertos en lugar de dejar descargar una cadena de herramientas.
 
