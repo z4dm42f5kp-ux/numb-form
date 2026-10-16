@@ -29,7 +29,7 @@ func TestMatchKeys(t *testing.T) {
 }
 
 func TestSafeTerminal(t *testing.T) {
-	if got := SafeTerminal("ok\x1b[2J‮gone\x07"); got != "ok[2Jgone" {
+	if got := SafeTerminal("ok\x1b[2J\u202egone\x07"); got != "ok[2Jgone" {
 		t.Errorf("SafeTerminal = %q", got)
 	}
 }

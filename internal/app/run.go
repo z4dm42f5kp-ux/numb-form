@@ -349,7 +349,7 @@ func (r *run) copyToDownloads(root string) error {
 		}
 	}
 	if st, err := os.Stat(dl); err != nil || !st.IsDir() {
-		return fmt.Errorf("Downloads folder %s not found (set NUMBFORM_DOWNLOADS or use -downloads)", dl)
+		return fmt.Errorf("the Downloads folder %s was not found (set NUMBFORM_DOWNLOADS or use -downloads)", dl)
 	}
 	if rr, err := filepath.Rel(root, dl); err == nil && !strings.HasPrefix(rr, "..") {
 		return errors.New("the Downloads folder is inside the working folder")

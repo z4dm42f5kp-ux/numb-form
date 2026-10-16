@@ -83,7 +83,7 @@ func TestMissingSection(t *testing.T) {
 
 func FuzzFill(f *testing.F) {
 	f.Add("GmbH", "Street 1", "A B (CEO)")
-	f.Add("<&>\x00\x1b[31m", "]]>", "‮")
+	f.Add("<&>\x00\x1b[31m", "]]>", "\u202e")
 	tpl := testfix.Template(f)
 	f.Fuzz(func(t *testing.T, a, b, c string) {
 		out, _, err := Fill(tpl, Values{FieldLegalForm: a, FieldAddress: b, FieldReps: c})

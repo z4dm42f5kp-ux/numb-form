@@ -49,6 +49,10 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         go: [stable, "1.21.x"]
+        exclude:
+          # Go 1.21 binaries lack LC_UUID and do not load on current macOS.
+          - os: macos-latest
+            go: "1.21.x"
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
@@ -64,11 +68,16 @@ jobs:
       - name: Test
         shell: bash
         run: |
-          if [ "$RUNNER_OS" = Windows ]; then
-            go test -count=1 ./...
-          else
-            go test -count=1 -race ./...
+          race=-race
+          [ "$RUNNER_OS" = Windows ] && race=
+          set +e
+          go test -count=1 $race ./... > test.log 2>&1
+          status=$?
+          cat test.log
+          if [ $status -ne 0 ]; then
+            grep -E -- '--- FAIL|panic:|FAIL\s|\.go:[0-9]+:' test.log | head -20 | while IFS= read -r l; do echo "::error title=go test::$l"; done
           fi
+          exit $status
 
   bsd:
     strategy:
@@ -99,7 +108,7 @@ jobs:
       - name: Test
         shell: cpa.sh {0}
         run: |
-          PATH=$PATH:/usr/local/go/bin:/usr/pkg/bin
+          PATH=/usr/local/bin:/usr/pkg/bin:/usr/local/go/bin:$PATH
           export PATH GOFLAGS=-mod=readonly CGO_ENABLED=0
           go version
           go test -count=1 ./...
