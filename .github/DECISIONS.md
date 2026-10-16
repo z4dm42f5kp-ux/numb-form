@@ -1,6 +1,8 @@
 # Decisions for open issues
 
-Recorded 2026-10-16 from the maintainer's answers. Implement in this order.
+Recorded 2026-10-16 from the maintainer's answers.
+Status: implemented on branch `claude/issue-decisions`; the two GitHub
+settings under #6 remain for the maintainer.
 
 ## #6 Tests on Dependabot pull requests
 

@@ -13,10 +13,15 @@ Only the latest release is supported.
 
 numb-form handles customer documents, so the design rules are strict.
 
-* The real working folder is never written by **numb-form**.
-  The whole tree is copied to Downloads first and every change is made in
+* **numb-form** only ever adds: a new folder per new company, with one
+  filled form in it.
+  It never changes or deletes an existing file or folder, and it removes
+  only folders it created itself in the same run (on rejection or
+  error).
+* With `mode = review`, the real working folder is not written at all:
+  the whole tree is copied to Downloads first and every change is made in
   the copy.
-* **numb-commit** only adds new folders.
+* **numb-commit** (review mode) only adds new folders.
   It never overwrites or deletes, refuses folders that appeared in the
   meantime, copies to a temporary name, verifies every file with SHA-256
   and then renames.
@@ -34,13 +39,36 @@ numb-form handles customer documents, so the design rules are strict.
 * No formatting is ever added.
   Values join the label's own text run, or a copy of that run's existing
   properties when the label is followed by a tab.
-* Every document is shown to a person, read back from disk, and must be
-  accepted.
-  The programs refuse to run without an interactive terminal.
+* Every document is read back from disk after writing.
+  With `confirm = each` (default) a person sees and accepts it, and the
+  programs refuse to run without an interactive terminal.
+  With `confirm = none` the read-back must equal the intended values
+  exactly, near folder-name matches are never decided automatically, and
+  only the sources and trust level in the configuration are used.
 * A run stops safely after at most 25 minutes.
   It writes at most 100 MB of documents besides the copy, and leaves no
-  cache or temporary files: network data stays in memory, and temporary
-  files are renamed or removed.
+  cache or temporary files: network data stays in memory, temporary
+  files are renamed or removed, and converters run in a private
+  temporary folder with a throwaway office profile, deleted afterwards.
+
+## Configuration and formats
+
+* The configuration parser rejects unknown keys and invalid values.
+* Keys that widen what numb-form accepts (`legacy_formats`) are honoured
+  only in the system file.
+  On Unix that file is ignored unless it belongs to root and is not
+  writable by group or others; on Windows it lives under Program Files.
+* Legacy binary formats (.doc, .xls) are off by default, and runs that
+  use them are always fully offline.
+  The .xls reader (compound file and BIFF8) is numb-form's own,
+  bounds-checks every offset and chain, and is fuzzed continuously.
+* .doc, .pages and .numbers are converted by office software already on
+  the computer (LibreOffice, Apache OpenOffice, Apple Pages or Numbers),
+  with fixed arguments; file names are passed as arguments, never as
+  script text.
+  Writing .pages is experimental and off by default.
+* Templates with macros are refused; macro-enabled spreadsheets (.xlsm)
+  are read for cell values only.
 
 ## Network
 
@@ -104,7 +132,11 @@ Each release has:
 
 ## Security testing pipeline
 
-Every push and pull request runs:
+Pull requests run a fast gate (formatting, vet, staticcheck, tests on
+Linux, macOS and Windows, govulncheck, gosec, zizmor, the history scan
+and dependency review).
+Pushes to `main` and agent branches, and a nightly schedule, run
+everything:
 
 | Check | Tool |
 | --- | --- |
@@ -113,7 +145,8 @@ Every push and pull request runs:
 | Known vulnerabilities in code and in built binaries, for every target OS | govulncheck |
 | Security linting, reported to code scanning | gosec |
 | Semantic analysis of Go and of the workflows | CodeQL (`security-extended`, `security-and-quality`) |
-| Fuzzing of the document filler, spreadsheet reader and name matcher | Go native fuzzing, 2 minutes per target |
+| Fuzzing of every template filler and scanner (docx, odt, rtf), every spreadsheet reader (xlsx, ods, csv, legacy xls), the configuration parser and the name matcher | Go native fuzzing, 2 minutes per target on main, 10 nightly |
+| Templates and spreadsheets written by real LibreOffice (odt, fodt, rtf, docx, doc, xls, ods, fods) | formats workflow |
 | Workflow security (injection, credentials, permissions, pins) | zizmor, pedantic |
 | Customer files or credentials committed by mistake | history scan |
 | Tests with the race detector on Linux, macOS and Windows, with the oldest and newest Go | `go test -race` |
@@ -121,8 +154,9 @@ Every push and pull request runs:
 | Container image builds and refuses to run without a terminal | docker, podman |
 | New dependencies in pull requests | dependency review |
 
-The vulnerability and analysis jobs also run weekly, and OpenSSF
-Scorecard checks the repository's practices.
+OpenSSF Scorecard checks the repository's practices.
+Pull requests, including Dependabot's, never need write permissions:
+results that require them are uploaded only from `main`.
 
 Workflows start with no permissions and grant each job only what it
 needs; checkouts do not keep credentials.

@@ -5,10 +5,13 @@ Instructions for AI agents that run or change numb-form.
 ## What this project does
 
 numb-form fills section A ("Information About the Contracting Party") of
-`Appendix A - Risk Assesment.docx` for each company in the overview
-spreadsheet that has no folder yet.
-numb-commit copies the reviewed result back.
-Read [docs/usage.md](docs/usage.md) first.
+the *Appendix A - Risk Assesment* template for each company in the
+overview spreadsheet that has no folder yet.
+By default (`mode = direct`) it writes into the working folder after
+each confirmation; with `mode = review` it works on a copy in Downloads
+and numb-commit copies the reviewed result back.
+Read [docs/usage.md](docs/usage.md) and
+[docs/configuration.md](docs/configuration.md) first.
 
 ## Running it for a person
 
@@ -26,20 +29,25 @@ Your job is to operate the terminal, not to make their decisions.
 4. Never type representatives, addresses or legal forms yourself.
    If the person asks you to look something up, show them what you
    found with its source, and let them type or choose it.
-5. Run numb-commit only after the person says the review copy in
-   Downloads is correct.
+5. In review mode, run numb-commit only after the person says the
+   review copy in Downloads is correct.
    Use the same environment (host or container) as the run.
-6. Report the paths of the review copy and the log at the end.
+6. Report the paths of the log (and the review copy) at the end.
+7. Set `confirm = none` only when the person asks for unattended runs,
+   and show them the `numb-form config` output first.
 
 Typical session:
 
 ```
-cd "/path/to/folder-above" && numb-form && numb-commit
+cd "/path/to/folder-above" && numb-form
 ```
 
 ## Rules that must never be broken
 
-* Never write to the real working folder except through numb-commit.
+* In review mode, never write to the real working folder except through
+  numb-commit.
+* Never enable `legacy_formats` or `pages_write` yourself; the first
+  needs an administrator, the second is experimental.
 * Never modify the spreadsheet in `3. Übersichten`, not even to save it
   unchanged.
 * Never add formatting to documents.
@@ -69,14 +77,28 @@ cd "/path/to/folder-above" && numb-form && numb-commit
   Do not add modules; `scripts/check-deps.sh` fails if you do.
   If a dependency seems necessary, stop and ask the maintainer, and never
   add a package name you have not verified exists.
-* Before proposing a change, run the whole check in one command:
+* Test on GitHub, never locally.
+  Push to a branch named `claude/<topic>`; the ci, security and formats
+  workflows run on it (Linux, macOS, Windows, FreeBSD, OpenBSD, NetBSD,
+  LibreOffice formats, fuzzing).
+  Read the results, including failure annotations, through the API:
 
   ```
-  sh scripts/check-deps.sh && test -z "$(gofmt -l .)" && go vet ./... && GOOS=windows go vet ./... && go test -race ./... && go test ./internal/docx -run '^$' -fuzz FuzzFill -fuzztime 30s && rm -rf internal/*/testdata/fuzz
+  sha=$(git rev-parse HEAD) && curl -s "https://api.github.com/repos/z4dm42f5kp-ux/numb-form/actions/runs?head_sha=$sha" | grep -E '"(name|status|conclusion)"'
   ```
 
-* Keep Windows behaviour first-class: paths with umlauts, trailing dots
-  on folder names, reserved names, long paths, double-click start.
+  Compile checks before pushing are fine and fast:
+
+  ```
+  sh scripts/check-deps.sh && test -z "$(gofmt -l .)" && for os in linux windows darwin freebsd openbsd netbsd; do GOOS=$os go vet ./... || exit 1; done
+  ```
+
+* Every operating system is equal: paths with umlauts, trailing dots on
+  folder names, reserved names and long paths must work everywhere.
+* Every template format implements `form.Filler`, splices bytes instead
+  of re-serialising, and passes `form.Verify`; add it to
+  `internal/form/formats_test.go` and to the fuzz targets.
+* Keep files short (about 300 lines at most).
 * Pin new GitHub Actions to a full commit SHA that you looked up, with
   the version as a comment.
 * Pin new Python tools with `uv pip compile --generate-hashes
@@ -92,9 +114,13 @@ cd "/path/to/folder-above" && numb-form && numb-commit
 | Path | Purpose |
 | --- | --- |
 | `cmd/numb-form`, `cmd/numb-commit` | entry points and flags |
-| `internal/app` | the run, the per-company dialogue, commit, template check |
-| `internal/docx` | byte-preserving filler and read-back of section A |
-| `internal/xlsx` | read-only spreadsheet reader |
+| `internal/app` | the run, modes, the per-company dialogue, automatic choices, commit |
+| `internal/config` | numb-form.conf: locations, parsing, defaults |
+| `internal/form` | fields, locating section A, splicing and the self-check |
+| `internal/docx`, `internal/odt`, `internal/rtf` | template fillers |
+| `internal/formats` | choosing a filler or converter by extension |
+| `internal/convert` | LibreOffice/OpenOffice and Apple Pages/Numbers conversion |
+| `internal/sheet` | read-only spreadsheet readers (xlsx, ods, csv, xls) |
 | `internal/match` | legal-form extraction and folder matching |
 | `internal/lookup` | GLEIF, Companies House, Wikidata, website legal notices |
 | `internal/fsutil` | Downloads folder, tree copy, safe names |

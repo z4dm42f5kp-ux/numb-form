@@ -2,15 +2,16 @@
 
 ## NAME
 
-**numb-form**, **numb-commit** — fill risk assessment forms and commit them
+**numb-form**, **numb-commit** — fill risk assessment forms
 
 ## SYNOPSIS
 
 ```
-numb-form [-offline] [-root dir] [-downloads dir] [-timeout duration]
-numb-form check-template template.docx [sample.docx]
+numb-form [-f conf] [-offline] [-root dir] [-downloads dir] [-timeout duration]
+numb-form [-f conf] check-template template [sample]
+numb-form [-f conf] config [init]
 numb-form keys
-numb-commit [-run dir] [-downloads dir]
+numb-commit [-f conf] [-run dir] [-downloads dir]
 ```
 
 ## DESCRIPTION
@@ -22,54 +23,62 @@ otherwise the user is asked.
 
 The working folder must contain:
 
-* an overview folder whose name resembles `3. Übersichten`,
-  holding exactly one `.xlsx` file, the spreadsheet;
-* the template `Appendix A - Risk Assesment.docx` at its top level.
+* an overview folder whose name contains `overview_dir` (default
+  `Übersicht`, matching `3. Übersichten`), holding exactly one
+  spreadsheet;
+* the template, named `template_name` (default
+  `Appendix A - Risk Assesment`), at its top level.
+
+Supported formats are listed in [formats.md](formats.md).
+Settings are described in [configuration.md](configuration.md).
 
 A run proceeds as follows:
 
 1. The template is checked.
    The run stops if section A or one of its labels cannot be found.
-2. The user types the name of the person processing the form, once.
-3. The whole working folder is copied to
-   `Downloads/numb-form-runs/<date>_<time>_<id>/`.
-   Everything after this step happens in the copy.
-4. Company names are read from the spreadsheet column headed
-   `Company Name`, from top to bottom.
+2. The name of the person processing the form is taken from the
+   configuration, or typed once.
+3. With `mode = review`, the whole working folder is copied to
+   `Downloads/numb-form-runs/<date>_<time>_<id>/` and everything after
+   this step happens in the copy.
+   With `mode = direct` (the default), the working folder itself is used
+   and the log goes to the per-user state folder.
+4. Company names are read from the column headed `Company Name`, from
+   top to bottom.
    All other columns are ignored, including `Report created`.
-   The spreadsheet is never written to.
-   Its SHA-256 checksum is checked before and after the run.
+   The spreadsheet is never written to; its SHA-256 checksum is checked
+   before and after the run.
 5. For each company, the folders in the working folder and all of its
    subfolders are searched.
    Names are compared ignoring case, accents and umlauts (ü = u = ue),
    punctuation and spaces.
    A match means the form already exists, and the company is skipped.
-   A near match is shown to the user to confirm.
+   A near match is shown to the user to confirm (or, with
+   `confirm = none`, reported as *needs review* and skipped).
    Folders with a different legal form never match:
    `Foo GmbH` and `Foo S.A.` are different companies.
 6. For a new company, a folder named after the company is created.
    The template is copied into it as
-   `Appendix A - Risk Assesment - <Company Name>.docx`, and section A is filled.
+   `<template name> - <Company Name>.<ext>`, and section A is filled.
 7. The document is read back from disk and shown.
-   The user accepts it, edits a field or rejects it.
-   A rejected folder is deleted from the copy.
+   The user accepts it, edits a field or rejects it; a rejected folder is
+   deleted.
+   With `confirm = none` the read-back must equal the values exactly.
 
 Only the lines of section A, *Information About the Contracting Party*,
 are filled.
 Section B and everything outside section A are left byte for byte
-unchanged.
-Values are appended to the label's own text run, so they take the
-label's formatting; no new formatting is added.
+unchanged, and no formatting is added.
 
 | Field | Value |
 | --- | --- |
 | Name / Company Name of the Contracting Party | the literal spreadsheet cell |
 | Legal form | the suffix of the name, as written (`GmbH`, `S.A.`, `C.A. de C.V.`) |
-| Headquarters / Address | chosen by the user from the candidates found |
+| Headquarters / Address | chosen from the candidates found |
 | Commercial Registry Number | always blank |
 | Authorized Representatives | `Full Name (Role 1, Role 2), Full Name (Role)`, roles in English |
-| Date of the evaluation | today, `DD/MM/YYYY` |
-| Person Processing the Form | the name typed at the start |
+| Date of the evaluation | today, `date_format` (default `DD/MM/YYYY`) |
+| Person Processing the Form | from the configuration or typed at the start |
 
 Candidates are gathered from, in order of authority:
 
@@ -78,45 +87,63 @@ Candidates are gathered from, in order of authority:
 3. the company's own legal notice (Impressum, Aviso legal, Legal notice);
 4. Wikidata (community-edited; used mainly to find the website).
 
+Which sources feed which field, the least trusted source accepted for
+representatives and the fallbacks are set in the configuration.
 People and addresses are never taken from a parent, subsidiary or
 similarly named entity.
-People found only on the website or only on Wikidata are marked
-*unverified*, and by default this exact text is appended:
+Unverified values get this exact text when `caution` says so:
 
 > Caution: This field might differ from internal sources or be innacurate due to insufficient information online
 
-When no representative can be found, the field reads:
+When no representative is found, the field reads:
 
 > No representatives were found online, please consult other internal sources for more accurate information
 
-**numb-commit** copies the accepted folders of a run back into the real
-working folder.
-It only adds new folders.
-It never overwrites or deletes anything.
-It refuses folders that appeared in the real tree in the meantime.
+**numb-commit** applies to review runs only.
+It copies the accepted folders of a run back into the real working
+folder.
+It only adds new folders, never overwrites or deletes anything, and
+refuses folders that appeared in the real tree in the meantime.
 Each folder is copied to a temporary name, verified with SHA-256 and then
 renamed.
 Documents edited during review are listed before the user confirms.
 Afterwards it offers to delete the review copy; the logs are kept.
 
+## COMMANDS
+
+`check-template template [sample]`
+: Check that a template can be filled, and optionally write a filled
+  sample to *sample*. The template is only read.
+
+`config`
+: Show the configuration files and effective settings.
+
+`config init`
+: Write a commented per-user configuration file with every default.
+
+`keys`
+: Explain the optional free API keys.
+
 ## OPTIONS
 
+`-f file`
+: Read *file* after the system and per-user configuration files.
+
 `-offline`
-: Contact no online source. Every value is typed by the user.
+: Contact no online source.
 
 `-root dir`
 : Use *dir* as the working folder instead of detecting it.
 
 `-downloads dir`
-: Put the review copy in *dir* instead of the Downloads folder.
+: Review mode: put the copy in *dir*.
 
 `-timeout duration`
-: Stop safely after *duration* (for example `15m`). The maximum and
-  default is `25m`.
+: Stop safely after *duration*; at most `25m`.
 
 `-run dir`
-: (numb-commit) Commit this run folder instead of the newest
-  uncommitted one.
+: (numb-commit) Commit this run folder instead of the newest uncommitted
+  one.
 
 `-allow-non-tty`
 : Read answers from a pipe. For automated tests only.
@@ -135,52 +162,64 @@ Afterwards it offers to delete the review copy; the logs are kept.
 `HTTPS_PROXY`, `NO_PROXY`
 : Proxy settings for online lookups.
 
+`TZ`
+: Time zone of the evaluation date.
+
 ## FILES
 
-`Downloads/numb-form-runs/<run>/<working folder>/`
-: The review copy.
-
-`Downloads/numb-form-runs/<run>/numb-form.log`
+`<log folder>/<run>/numb-form.log`
 : Log of everything the run did.
 
-`Downloads/numb-form-runs/<run>/manifest.json`
-: Machine-readable record used by numb-commit.
+`<log folder>/<run>/manifest.json`
+: Machine-readable record of the run.
+
+`Downloads/numb-form-runs/<run>/<working folder>/`
+: Review mode: the copy.
 
 `Downloads/numb-form-runs/<run>/numb-commit.log`
-: Log of the commit.
+: Review mode: log of the commit.
 
 No cache or temporary files are left behind.
-Network responses are held in memory only, and documents are written
-through a temporary file that is renamed or removed.
-A run writes at most 100 MB of documents besides the copy.
+Network responses are held in memory only, documents are written through
+a temporary file that is renamed or removed, and converters work in a
+private temporary folder that is deleted.
 
 ## EXIT STATUS
 
-0 on success, 1 on error, 2 on a usage error, and 3 when stopped by the
-time limit, by Ctrl+C or by the user.
+0 on success, 1 on error, 2 on a usage or configuration error, and 3
+when stopped by the time limit, by Ctrl+C or by the user.
 
 ## EXAMPLES
 
-Check the real template and write a sample to look at, without touching
-the template:
+Check the real template and write a sample, without touching the
+template:
 
 ```
-numb-form check-template "Appendix A - Risk Assesment.docx" "%USERPROFILE%\Downloads\sample.docx"
+numb-form check-template "Appendix A - Risk Assesment.docx" sample.docx
 ```
 
-Run, review, then commit (numb-commit waits for confirmation):
+Fill the forms directly in the working folder:
 
 ```
-cd /d "S:\Kunden" && numb-form && numb-commit
+cd /path/to/folder-above && numb-form
 ```
+
+Review first, then commit (numb-commit waits for confirmation):
+
+```
+cd /path/to/folder-above && numb-form -f review.conf && numb-commit
+```
+
+where `review.conf` contains `mode = review`.
 
 Run without any network access:
 
 ```
-cd /d "S:\Kunden" && numb-form -offline && numb-commit
+cd /path/to/folder-above && numb-form -offline
 ```
 
 ## SEE ALSO
 
+[configuration.md](configuration.md), [formats.md](formats.md),
 [install.md](install.md), [containers.md](containers.md),
 [../SECURITY.md](../SECURITY.md), [../AGENTS.md](../AGENTS.md)
