@@ -7,7 +7,8 @@ name: formats
 
 on:
   push:
-    branches: [main]
+    # main, and agent branches (tested on GitHub, never locally: #8)
+    branches: [main, "claude/**"]
     paths:
       - "internal/**"
       - go.mod

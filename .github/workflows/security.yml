@@ -2,7 +2,8 @@ name: security
 
 on:
   push:
-    branches: [main]
+    # main, and agent branches (tested on GitHub, never locally: #8)
+    branches: [main, "claude/**"]
   pull_request:
   schedule:
     - cron: "17 4 * * *" # nightly: new vulnerabilities, longer fuzzing
