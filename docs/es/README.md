@@ -2,15 +2,11 @@
 
 > Traducción automática (Argos Translate) del [original en inglés](../../README.md). La versión en inglés es la que vale.
 
-Rellena la sección A de la forma *Apéndice A - Evaluación de Riesgo* para cada
-empresa en la hoja de cálculo `3. Übersichten` que todavía no tiene carpeta.
+Rellena la sección A del formulario *Appendix A - Risk Assesment* para cada empresa en la hoja de cálculo `3. Übersichten` que aún no tiene carpeta.
 
-Funciona en una copia en la carpeta Descargas.
-Usted confirma cada documento.
-`numb-commit` copia las carpetas revisadas.
+Funciona en una copia en su carpeta Downloads. Usted confirma cada documento. `numb-commit` copia las carpetas revisadas.
 
-Español: [docs/es/README.md](README.md) ·
-Deutsch: [docs/de/README.md](../de/README.md)
+Español: [docs/es/README.md](README.md) · Deutsch: [docs/de/README.md](../de/README.md)
 
 * Instala: [docs/install.md](install.md)
 * Uso: [docs/usage.md](usage.md)
@@ -22,5 +18,4 @@ Deutsch: [docs/de/README.md](../de/README.md)
 cd "C:\path\to\folder-above-the-working-folder" && numb-form && numb-commit
 ```
 
-`numb-commit` pregunta antes de escribir cualquier cosa.
-Revise la copia en Descargas antes de responder.
+`numb-commit` pregunta antes de escribir cualquier cosa. Revise la copia en Downloads antes de responder.

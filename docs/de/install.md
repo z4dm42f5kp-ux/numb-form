@@ -1,36 +1,29 @@
-# Installieren von numb-form
+# Installation von numb-form
 
 > Maschinelle Übersetzung (Argos Translate) des [englischen Originals](../install.md). Maßgeblich ist die englische Fassung.
 
-numb-form ist zwei Programme, `numb-form` und `numb-commit`.
-Sie sind statische Binärdateien ohne Abhängigkeiten.
+numb-form besteht aus zwei Programmen, `numb-form` und `numb-commit`. Sie sind statische Binärdateien ohne Abhängigkeiten.
 
 Es gibt zwei Möglichkeiten, sie zu installieren:
 
 * Laden Sie eine signierte Version Binary herunter.
 * Bauen Sie aus der Quelle mit Go 1.21 oder höher.
 
-Jeder Befehl unten ist eine einzelne Zeile.
-Kopieren Sie es ganz.
-Es stoppt beim ersten Schritt, der fehlschlägt.
+Jeder Befehl unten ist eine einzelne Zeile. Kopieren Sie es ganz. Es stoppt beim ersten Schritt, der fehlschlägt.
 
 ## Windows 10 und 11
 
-Führen Sie diese in **Command Prompt** (`cmd.exe`) aus.
-`curl.exe` und `tar.exe` werden mit Windows 10 1803 und höher ausgeliefert.
+Führen Sie diese in **Command Prompt** (`cmd.exe`) aus. `curl.exe` und `tar.exe` sind in Windows 10 1803 und höher enthalten.
 
 ### Release Binär
 
-Verwenden Sie `amd64` für die meisten PCs und `arm64` für ARM-Geräte (z. B. Surface Pro X).
-Dieser lädt das Release herunter, überprüft seine SHA-256 Prüfsumme gegen
-`SHA256SUMS` und entpackt es in `%USERPROFILE%\numb-form`:
+Verwenden Sie `amd64` für die meisten PCs und `arm64` für ARM-Geräte (z. B. Surface Pro X). Dieser lädt das Release herunter, überprüft seine SHA-256 Prüfsumme gegen `SHA256SUMS` und entpackt sie in `%USERPROFILE%\numb-form`:
 
 ```
 (if not exist "%USERPROFILE%\numb-form" mkdir "%USERPROFILE%\numb-form") && cd /d "%USERPROFILE%\numb-form" && curl.exe -fLO https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/numb-form_windows_amd64.zip && curl.exe -fLO https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/SHA256SUMS && powershell -NoProfile -Command "$h=(Get-FileHash numb-form_windows_amd64.zip -Algorithm SHA256).Hash.ToLower(); if (-not (Select-String -Path SHA256SUMS -SimpleMatch ($h+'  numb-form_windows_amd64.zip') -Quiet)) { Write-Error 'CHECKSUM MISMATCH'; exit 1 }" && tar -xf numb-form_windows_amd64.zip && del numb-form_windows_amd64.zip && echo OK
 ```
 
-Um auch zu überprüfen, wer das Release erstellt hat, installieren Sie die GitHub CLI und überprüfen Sie die
-Bauprovenienzbescheinigung:
+Um auch zu überprüfen, wer das Release erstellt hat, installieren Sie die GitHub CLI und überprüfen Sie die Build-Provenienzbescheinigung:
 
 ```
 winget install --id GitHub.cli -e && cd /d "%USERPROFILE%\numb-form" && gh attestation verify numb-form.exe --repo z4dm42f5kp-ux/numb-form && gh attestation verify numb-commit.exe --repo z4dm42f5kp-ux/numb-form
@@ -44,39 +37,29 @@ powershell -NoProfile -Command "[Environment]::SetEnvironmentVariable('Path', [E
 
 ### aus der Quelle
 
-Installieren Gehen Sie mit winget, dann öffnen Sie eine **new** Befehlsaufforderung, so dass `go` auf der
-`PATH`:
+Installieren Sie Go mit Winget und öffnen Sie dann ein **new** Command Prompt, damit sich `go` auf dem `PATH` befindet:
 
 ```
 winget install --id GoLang.Go -e
 ```
 
-Bauen Sie in einem temporären Cache gehen, der danach gelöscht wird, also kein Build-Cache
-links auf der Festplatte:
+Bauen Sie in einem temporären Cache gehen, der danach gelöscht wird, so dass kein Build-Cache auf der Festplatte verbleibt:
 
 ```
 cd /d "%USERPROFILE%" && curl.exe -fL -o numb-form-src.zip https://github.com/z4dm42f5kp-ux/numb-form/archive/refs/heads/main.zip && tar -xf numb-form-src.zip && del numb-form-src.zip && cd numb-form-main && set "GOCACHE=%TEMP%\numb-form-gocache" && set "GOFLAGS=-trimpath -mod=readonly" && set "CGO_ENABLED=0" && go test ./... && go build -o "%USERPROFILE%\numb-form\numb-form.exe" ./cmd/numb-form && go build -o "%USERPROFILE%\numb-form\numb-commit.exe" ./cmd/numb-commit && go clean -cache && cd /d "%USERPROFILE%" && rmdir /s /q numb-form-main && echo OK
 ```
 
-Das Projekt hat keine Go-Module von Drittanbietern, so dass nichts heruntergeladen wird
-den Build. Siehe [SECURITY.md](SECURITY.md).
+Das Projekt hat keine Go-Module von Drittanbietern, so dass während des Builds nichts heruntergeladen wird. Siehe [SECURITY.md](SECURITY.md).
 
 ## Binärdateien auf anderen Systemen freigeben
 
-Archive heißen `numb-form_<os>_<arch>.tar.gz`, wobei *os*
-`linux`, `darwin` (macOS), `freebsd`, `openbsd` oder `netbsd` und *arch* ist
-`amd64` oder `arm64` (Linux hat auch `386` und `armv7`).
-Jedes Archiv enthält `numb-form`, `numb-commit`, `README.md` und `LICENSE`.
-Die Beispiele verwenden `amd64`; ersetzen Sie es, um die Maschine zu passen.
+Archive heißen `numb-form_<os>_<arch>.tar.gz`, wobei *os* `linux`, `darwin` (macOS), `freebsd`, `openbsd` oder `netbsd` und *arch* `amd64` oder `arm64` ist (Linux hat auch `386` und `armv7`). Jedes Archiv enthält `numb-form`, `numb-commit`, `README.md` und `LICENSE`. Die Beispiele verwenden `amd64`; ersetzen Sie es, um die Maschine zu passen.
 
-Jeder Befehl, der in ein temporäres Verzeichnis heruntergeladen wird, überprüft den SHA-256
-Prüfsumme, installiert in `~/.local/bin` und entfernt das temporäre Verzeichnis.
-Stellen Sie sicher, dass `~/.local/bin` in `PATH` ist.
+Jeder Befehl wird in ein temporäres Verzeichnis heruntergeladen, überprüft die SHA-256 Prüfsumme, installiert in `~/.local/bin` und entfernt das temporäre Verzeichnis. Stellen Sie sicher, dass `~/.local/bin` in `PATH` ist.
 
 ### Linux (Debian, Ubuntu, Arch, Fedora, Gentoo, Void, Alpine)
 
-Benötigt `curl`, `tar` und `sha256sum`, die jede gelistete Distribution
-bietet (Alpine durch BusyBox).
+Benötigt `curl`, `tar` und `sha256sum`, die jede gelistete Distribution bereitstellt (Alpin durch BusyBox).
 
 ```
 cd "$(mktemp -d)" && curl -fLO https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/numb-form_linux_amd64.tar.gz && curl -fLO https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/SHA256SUMS && grep ' numb-form_linux_amd64.tar.gz$' SHA256SUMS | sha256sum -c - && tar -xzf numb-form_linux_amd64.tar.gz && mkdir -p "$HOME/.local/bin" && install -m 0755 numb-form numb-commit "$HOME/.local/bin/" && cd / && rm -rf "$OLDPWD" && echo OK
@@ -88,10 +71,7 @@ cd "$(mktemp -d)" && curl -fLO https://github.com/z4dm42f5kp-ux/numb-form/releas
 cd "$(mktemp -d)" && curl -fLO https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/numb-form_darwin_arm64.tar.gz && curl -fLO https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/SHA256SUMS && grep ' numb-form_darwin_arm64.tar.gz$' SHA256SUMS | shasum -a 256 -c - && tar -xzf numb-form_darwin_arm64.tar.gz && { xattr -d com.apple.quarantine numb-form numb-commit 2>/dev/null || true; } && mkdir -p "$HOME/.local/bin" && install -m 0755 numb-form numb-commit "$HOME/.local/bin/" && cd / && rm -rf "$OLDPWD" && echo OK
 ```
 
-Verwenden Sie `darwin_amd64` auf Intel Macs.
-Die Binärdateien werden nicht von Apple beglaubigt;
-Der `xattr`-Schritt entfernt das Download-Quarantäne-Flag nach der Prüfsumme
-geprüft wurde.
+Verwenden Sie `darwin_amd64` auf Intel Macs. Die Binärdateien werden nicht von Apple beglaubigt; der `xattr`-Schritt entfernt das Download-Quarantäne-Flag, nachdem die Prüfsumme verifiziert wurde.
 
 ### FreeBSD
 
@@ -115,15 +95,13 @@ cd "$(mktemp -d)" && ftp https://github.com/z4dm42f5kp-ux/numb-form/releases/lat
 
 ### Überprüfen, wer ein Release erstellt hat
 
-Checksums beweisen, dass der Download intakt ist.
-Um zu beweisen, dass es vom Release-Workflow dieses Repositorys erstellt wurde, überprüfen Sie die
-GitHub bauen Provenienzbescheinigung mit dem GitHub CLI:
+Checksums beweisen, dass der Download intakt ist. Um zu beweisen, dass es durch den Release-Workflow dieses Repositorys erstellt wurde, überprüfen Sie die GitHub Build Provenienzbescheinigung mit dem GitHub CLI:
 
 ```
 gh attestation verify numb-form_linux_amd64.tar.gz --repo z4dm42f5kp-ux/numb-form
 ```
 
-oder die Sigstore-Signatur der Prüfsummendatei mit Cosign:
+oder die Sigstore-Signatur der Prüfsummendatei mit cosign:
 
 ```
 cosign verify-blob --bundle SHA256SUMS.sigstore.json --certificate-identity-regexp '^https://github.com/z4dm42f5kp-ux/numb-form/\.github/workflows/release\.yml@refs/tags/v' --certificate-oidc-issuer https://token.actions.githubusercontent.com SHA256SUMS
@@ -131,8 +109,7 @@ cosign verify-blob --bundle SHA256SUMS.sigstore.json --certificate-identity-rege
 
 ## Bauen von der Quelle auf anderen Systemen
 
-Installieren Sie Go 1.21 oder höher und git mit dem Systempaketmanager, dann
-Führen Sie den Build-Befehl unten aus.
+Installieren Sie Go 1.21 oder höher und git mit dem Systempaketmanager, dann führen Sie den Build-Befehl unten aus.
 
 | System | Installieren Sie Go und Git |
 | --- | --- |
@@ -148,19 +125,15 @@ Führen Sie den Build-Befehl unten aus.
 | OpenBSD | `doas pkg_add go git` |
 | NetBSD | `su -m root -c 'pkgin -y install go git'` |
 
-Dann bauen, testen und installieren, mit einem temporären Bauen Sie den Cache auf, der
-später gestrichen:
+Dann bauen, testen und installieren, mit einem temporären Go Build Cache, der danach gelöscht wird:
 
 ```
 cd "$(mktemp -d)" && git clone --depth 1 https://github.com/z4dm42f5kp-ux/numb-form.git && cd numb-form && export GOCACHE="$(mktemp -d)" GOFLAGS='-trimpath -mod=readonly' CGO_ENABLED=0 && go test ./... && go build -o numb-form ./cmd/numb-form && go build -o numb-commit ./cmd/numb-commit && mkdir -p "$HOME/.local/bin" && install -m 0755 numb-form numb-commit "$HOME/.local/bin/" && go clean -cache && rm -rf "$GOCACHE" && cd / && rm -rf "$OLDPWD/.." && echo OK
 ```
 
-Wenn das installierte Go älter als 1,21 ist, stoppt der Build mit einem Fehler;
-Installieren Sie ein neueres Go aus der Backports- oder Ports-Sammlung, anstatt
-Lassen Sie es eine Toolchain herunterladen.
+Wenn das installierte Go älter als 1,21 ist, stoppt der Build mit einem Fehler; Installieren Sie ein neueres Go aus der Backports- oder Port-Sammlung, anstatt es eine Toolchain herunterladen zu lassen.
 
-Das Projekt hat keine Module von Drittanbietern: `go.mod` hat keine `require`-Linien
-Und der Build lädt nichts herunter.
+Das Projekt hat keine Module von Drittanbietern: `go.mod` hat keine `require`-Linien und der Build lädt nichts herunter.
 
 ## Container
 
@@ -168,6 +141,4 @@ Siehe [containers.md](containers.md) für Docker, Podman und Kubernetes.
 
 ### Optional kostenloser API Key
 
-Das UK Companies House Register benötigt einen kostenlosen Schlüssel.
-Alle anderen Quellen brauchen keine.
-Führen Sie `numb-form keys` für Anweisungen aus.
+Das UK Companies House Register benötigt einen freien Schlüssel. Alle anderen Quellen brauchen keine. Führen Sie `numb-form keys` für Anweisungen aus.
