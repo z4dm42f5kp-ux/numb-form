@@ -80,7 +80,7 @@ func TestAllFormats(t *testing.T) {
 
 func FuzzAllFormats(f *testing.F) {
 	f.Add("GmbH", "Street 1", "A B (CEO)")
-	f.Add("<&>\x00\x1b[31m", "]]>{\\}", "‮\U0001F600")
+	f.Add("<&>\x00\x1b[31m", "]]>{\\}", "\u202e\U0001F600")
 	cs := cases(f)
 	f.Fuzz(func(t *testing.T, a, b, c string) {
 		for _, x := range cs {
