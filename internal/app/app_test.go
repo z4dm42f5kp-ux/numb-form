@@ -9,7 +9,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/z4dm42f5kp-ux/numb-form/internal/config"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/docx"
+	"github.com/z4dm42f5kp-ux/numb-form/internal/form"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/fsutil"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/runlog"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/testfix"
@@ -68,6 +70,12 @@ func setup(t *testing.T) (parent, root, dl string) {
 	return parent, root, dl
 }
 
+func review() *config.Config {
+	c := config.Defaults()
+	c.Mode = "review"
+	return &c
+}
+
 // newCompany answers the offline dialogue for one company.
 func newCompany(addr string, final ...string) []string {
 	a := []string{"", "", addr, "", ""}
@@ -94,7 +102,7 @@ func TestRunAndCommit(t *testing.T) {
 	var out bytes.Buffer
 	now := func() time.Time { return time.Date(2026, 10, 16, 9, 30, 0, 0, time.Local) }
 	code := Run(Options{
-		Parent: parent, Downloads: dl, Offline: true, AllowNonTTY: true,
+		Parent: parent, Downloads: dl, Offline: true, AllowNonTTY: true, Config: review(),
 		In: strings.NewReader(strings.Join(in, "\n") + "\n"), Out: &out, Now: now,
 	})
 	if code != ExitOK {
@@ -146,21 +154,21 @@ func TestRunAndCommit(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	got, err := docx.ReadBack(b)
+	got, err := (docx.Format{}).ReadBack(b)
 	if err != nil {
 		t.Fatal(err)
 	}
-	check := docx.Values{
-		docx.FieldName: "Foo S.A.", docx.FieldLegalForm: "S.A.", docx.FieldAddress: "Asunción 5",
-		docx.FieldRegistry: "", docx.FieldReps: NoRepsText, docx.FieldDate: "16/10/2026", docx.FieldPerson: "Max Muster",
+	check := form.Values{
+		form.FieldName: "Foo S.A.", form.FieldLegalForm: "S.A.", form.FieldAddress: "Asunción 5",
+		form.FieldRegistry: "", form.FieldReps: NoRepsText, form.FieldDate: "16/10/2026", form.FieldPerson: "Max Muster",
 	}
 	for f, v := range check {
 		if got[f] != v {
 			t.Errorf("%s = %q, want %q", f.Title(), got[f], v)
 		}
 	}
-	if lf, _ := docx.ReadBack(mustRead(t, filepath.Join(m.CopyRoot, "Foo C.A. de C.V", "Appendix A - Risk Assesment - Foo C.A. de C.V..docx"))); lf[docx.FieldLegalForm] != "C.A. de C.V." {
-		t.Errorf("legal form = %q", lf[docx.FieldLegalForm])
+	if lf, _ := (docx.Format{}).ReadBack(mustRead(t, filepath.Join(m.CopyRoot, "Foo C.A. de C.V", "Appendix A - Risk Assesment - Foo C.A. de C.V..docx"))); lf[form.FieldLegalForm] != "C.A. de C.V." {
+		t.Errorf("legal form = %q", lf[form.FieldLegalForm])
 	}
 
 	// Commit: confirm, then delete the review copy.
@@ -198,7 +206,7 @@ func TestRunAndCommit(t *testing.T) {
 	}
 	out.Reset()
 	in2 := "Max Muster\n\n" + newCompanyLine("Caracas 4") // only the rejected Foo C.A. is new again
-	code = Run(Options{Parent: parent, Downloads: dl, Offline: true, AllowNonTTY: true, In: strings.NewReader(in2), Out: &out, Now: now})
+	code = Run(Options{Parent: parent, Downloads: dl, Offline: true, AllowNonTTY: true, Config: review(), In: strings.NewReader(in2), Out: &out, Now: now})
 	if code != ExitOK {
 		t.Fatalf("second run exit %d\n%s", code, out.String())
 	}
@@ -227,7 +235,7 @@ func TestTimeoutStopsSafely(t *testing.T) {
 	defer pr.Close()
 	defer pw.Close()
 	var out bytes.Buffer
-	code := Run(Options{Parent: parent, Downloads: dl, Offline: true, AllowNonTTY: true, In: pr, Out: &out, Timeout: 300 * time.Millisecond})
+	code := Run(Options{Parent: parent, Downloads: dl, Offline: true, AllowNonTTY: true, Config: review(), In: pr, Out: &out, Timeout: 300 * time.Millisecond})
 	if code != ExitInterrupted {
 		t.Fatalf("exit %d\n%s", code, out.String())
 	}

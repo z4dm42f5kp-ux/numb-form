@@ -265,3 +265,14 @@ func SafeName(name string, file bool) (string, bool) {
 	}
 	return s, s != name
 }
+
+// IsUnder reports whether path p is parent itself or inside it.
+func IsUnder(p, parent string) bool {
+	ap, err1 := filepath.Abs(p)
+	aq, err2 := filepath.Abs(parent)
+	if err1 != nil || err2 != nil {
+		return false
+	}
+	r, err := filepath.Rel(aq, ap)
+	return err == nil && r != ".." && !strings.HasPrefix(r, ".."+string(filepath.Separator)) && !filepath.IsAbs(r)
+}

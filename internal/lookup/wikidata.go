@@ -148,7 +148,7 @@ func wikidata(ctx context.Context, c *Client, q Query) (Result, error) {
 		if !ok {
 			continue
 		}
-		src := Source{Name: "Wikidata " + id + " (" + e.label() + ")", URL: "https://www.wikidata.org/wiki/" + id, Kind: KindCommunity}
+		src := Source{ID: "wikidata", Name: "Wikidata " + id + " (" + e.label() + ")", URL: "https://www.wikidata.org/wiki/" + id, Kind: KindCommunity}
 		res.Sources = append(res.Sources, src)
 		for _, cl := range e.Claims["P856"] {
 			if w := cl.str(); w != "" && cl.current() {
@@ -161,7 +161,7 @@ func wikidata(ctx context.Context, c *Client, q Query) (Result, error) {
 		}
 		for _, cl := range e.Claims["P159"] {
 			if l := labels[cl.itemID()]; l != "" && cl.current() {
-				res.Addresses = append(res.Addresses, Address{Text: l, Source: Source{Name: src.Name + " headquarters city only", URL: src.URL, Kind: KindCommunity}})
+				res.Addresses = append(res.Addresses, Address{Text: l, Source: Source{ID: "wikidata", Name: src.Name + " headquarters city only", URL: src.URL, Kind: KindCommunity}})
 			}
 		}
 		for _, r := range wdRoles {

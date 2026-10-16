@@ -62,7 +62,7 @@ type File struct {
 type Company struct {
 	Name      string            `json:"name"`
 	Cell      string            `json:"cell"`
-	Status    string            `json:"status"` // accepted, rejected, exists, skipped, error
+	Status    string            `json:"status"` // accepted, rejected, exists, skipped, needs-review, error
 	Folder    string            `json:"folder,omitempty"`
 	Reason    string            `json:"reason,omitempty"`
 	Files     []File            `json:"files,omitempty"`
@@ -75,6 +75,7 @@ type Company struct {
 type Manifest struct {
 	Version     int       `json:"version"`
 	Tool        string    `json:"tool"`
+	Mode        string    `json:"mode,omitempty"` // review or direct; empty means review
 	Started     time.Time `json:"started"`
 	Finished    time.Time `json:"finished,omitempty"`
 	SourceRoot  string    `json:"source_root"`

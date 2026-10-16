@@ -29,6 +29,9 @@ type Candidate struct {
 // Index holds every directory found below the working root.
 type Index struct {
 	folders []Folder
+	// Threshold is the similarity (0.5-1) above which a folder is offered
+	// as a possible match. Zero means 0.85.
+	Threshold float64
 }
 
 // Add registers a directory.
@@ -70,6 +73,10 @@ func anyEqual(a, b []string) bool {
 // candidates: "Foo GmbH" and "Foo S.A." are different entities.
 func (ix *Index) Find(company string) (exact []Folder, fuzzy []Candidate) {
 	ckeys := textutil.MatchKeys(company)
+	th := ix.Threshold
+	if th == 0 {
+		th = 0.85
+	}
 	cform, cbase := LegalForm(company)
 	cformKey := formKey(cform)
 	cbaseKeys := textutil.MatchKeys(cbase)
@@ -95,7 +102,7 @@ func (ix *Index) Find(company string) (exact []Folder, fuzzy []Candidate) {
 				if len([]rune(a)) < 4 || len([]rune(b)) < 4 {
 					continue
 				}
-				if s := textutil.Similarity(a, b); s >= 0.85 && s > best {
+				if s := textutil.Similarity(a, b); s >= th && s > best {
 					best, reason = s, "spelling is very close"
 				}
 				if len(b) >= 5 && len(a) >= 5 && (strings.Contains(a, b) || strings.Contains(b, a)) && best < 0.9 {

@@ -1,7 +1,6 @@
 package app
 
 import (
-	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -9,6 +8,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/z4dm42f5kp-ux/numb-form/internal/formats"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/match"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/textutil"
 )
@@ -39,11 +39,19 @@ func subdirs(dir string) ([]string, error) {
 	return out, nil
 }
 
-// isOverviewName matches "3. Übersichten", "Uebersicht", "3_Ubersichten"...
-func isOverviewName(name string) bool {
+// isOverviewName reports whether a folder name contains the configured
+// pattern, ignoring case, accents and punctuation, with both umlaut
+// spellings: "Übersicht" matches "3. Übersichten", "Uebersicht" and
+// "3_Ubersichten".
+func isOverviewName(name, pattern string) bool {
+	if pattern == "" {
+		pattern = "Übersicht"
+	}
 	for _, k := range textutil.MatchKeys(name) {
-		if strings.Contains(k, "bersicht") {
-			return true
+		for _, p := range textutil.MatchKeys(pattern) {
+			if p != "" && strings.Contains(k, p) {
+				return true
+			}
 		}
 	}
 	return false
@@ -51,7 +59,7 @@ func isOverviewName(name string) bool {
 
 // findOverview returns the single overview directory below root (searched
 // up to three levels deep).
-func findOverview(root string) (string, error) {
+func findOverview(root, pattern string) (string, error) {
 	var found []string
 	rootDepth := strings.Count(filepath.Clean(root), string(filepath.Separator))
 	err := filepath.WalkDir(root, func(p string, d fs.DirEntry, err error) error {
@@ -67,7 +75,7 @@ func findOverview(root string) (string, error) {
 		if strings.Count(p, string(filepath.Separator))-rootDepth > 3 {
 			return filepath.SkipDir
 		}
-		if isOverviewName(d.Name()) {
+		if isOverviewName(d.Name(), pattern) {
 			found = append(found, p)
 			return filepath.SkipDir
 		}
@@ -78,15 +86,15 @@ func findOverview(root string) (string, error) {
 	}
 	switch len(found) {
 	case 0:
-		return "", errors.New(`no folder like "3. Übersichten" found`)
+		return "", fmt.Errorf("no folder whose name contains %q found (overview_dir in numb-form.conf)", pattern)
 	case 1:
 		return found[0], nil
 	}
 	return "", fmt.Errorf("several overview folders found: %s", strings.Join(found, ", "))
 }
 
-// findSpreadsheet returns the single .xlsx in the overview directory and
-// any other files that are present (reported, never touched).
+// findSpreadsheet returns the single spreadsheet in the overview directory
+// and any other files that are present (reported, never touched).
 func findSpreadsheet(dir string) (string, []string, error) {
 	ents, err := os.ReadDir(dir)
 	if err != nil {
@@ -98,7 +106,7 @@ func findSpreadsheet(dir string) (string, []string, error) {
 		if e.IsDir() || strings.HasPrefix(n, "~$") || strings.HasPrefix(n, ".") {
 			continue
 		}
-		if strings.EqualFold(filepath.Ext(n), ".xlsx") {
+		if formats.IsSheet(filepath.Ext(n)) {
 			xl = append(xl, filepath.Join(dir, n))
 		} else {
 			other = append(other, n)
@@ -106,17 +114,24 @@ func findSpreadsheet(dir string) (string, []string, error) {
 	}
 	switch len(xl) {
 	case 0:
-		return "", other, fmt.Errorf("no .xlsx file in %s", dir)
+		return "", other, fmt.Errorf("no spreadsheet (%s) in %s", strings.Join(formats.SheetExts, " "), dir)
 	case 1:
 		return xl[0], other, nil
 	}
-	return "", other, fmt.Errorf("%d .xlsx files in %s; expected exactly one", len(xl), dir)
+	return "", other, fmt.Errorf("%d spreadsheets in %s; expected exactly one", len(xl), dir)
 }
 
-var templateKeys = map[string]bool{"appendixariskassesment": true, "appendixariskassessment": true}
-
-// findTemplate returns "Appendix A - Risk Assesment.docx" at the top of root.
-func findTemplate(root string) (string, error) {
+// findTemplate returns the template at the top of root: a file named
+// like the configured template name (case, punctuation and the
+// Assesment/Assessment spelling ignored) with a supported extension. When
+// several formats exist, the most direct one wins (.docx first).
+func findTemplate(root, name string) (string, error) {
+	want := map[string]bool{}
+	for _, k := range textutil.MatchKeys(name) {
+		want[k] = true
+		want[strings.ReplaceAll(k, "assesment", "assessment")] = true
+		want[strings.ReplaceAll(k, "assessment", "assesment")] = true
+	}
 	ents, err := os.ReadDir(root)
 	if err != nil {
 		return "", err
@@ -124,20 +139,34 @@ func findTemplate(root string) (string, error) {
 	var found []string
 	for _, e := range ents {
 		n := e.Name()
-		if e.IsDir() || strings.HasPrefix(n, "~$") || !strings.EqualFold(filepath.Ext(n), ".docx") {
+		ext := filepath.Ext(n)
+		if e.IsDir() || strings.HasPrefix(n, "~$") || !formats.IsTemplate(ext) {
 			continue
 		}
-		if templateKeys[textutil.MatchKeys(strings.TrimSuffix(n, filepath.Ext(n)))[0]] {
+		if want[textutil.MatchKeys(strings.TrimSuffix(n, ext))[0]] {
 			found = append(found, filepath.Join(root, n))
 		}
 	}
-	switch len(found) {
-	case 0:
-		return "", fmt.Errorf(`template "Appendix A - Risk Assesment.docx" not found in %s`, root)
-	case 1:
-		return found[0], nil
+	if len(found) == 0 {
+		return "", fmt.Errorf("template %q (%s) not found in %s", name, strings.Join(formats.TemplateExts, " "), root)
 	}
-	return "", fmt.Errorf("several templates found: %s", strings.Join(found, ", "))
+	best := found[0]
+	for _, ext := range formats.TemplateExts {
+		var same []string
+		for _, f := range found {
+			if strings.EqualFold(filepath.Ext(f), ext) {
+				same = append(same, f)
+			}
+		}
+		if len(same) > 1 {
+			return "", fmt.Errorf("several templates found: %s", strings.Join(same, ", "))
+		}
+		if len(same) == 1 {
+			best = same[0]
+			break
+		}
+	}
+	return best, nil
 }
 
 // indexFolders registers every directory below root except the overview

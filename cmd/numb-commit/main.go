@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/z4dm42f5kp-ux/numb-form/internal/app"
+	"github.com/z4dm42f5kp-ux/numb-form/internal/config"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/ui"
 )
 
@@ -20,12 +21,13 @@ func main() {
 
 func realMain() int {
 	fs := flag.NewFlagSet("numb-commit", flag.ContinueOnError)
+	conf := fs.String("f", "", "configuration file read after the system and per-user files")
 	run := fs.String("run", "", "run folder to commit (default: the newest uncommitted run)")
 	downloads := fs.String("downloads", "", "Downloads folder (default: the user's Downloads, or $NUMBFORM_DOWNLOADS)")
 	allowPipe := fs.Bool("allow-non-tty", false, "accept answers from a pipe (testing only)")
 	version := fs.Bool("version", false, "print the version and exit")
 	fs.Usage = func() {
-		fmt.Fprintf(fs.Output(), "usage: numb-commit [-run dir] [-downloads dir]\n\n")
+		fmt.Fprintf(fs.Output(), "usage: numb-commit [-f conf] [-run dir] [-downloads dir]\n\n")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(os.Args[1:]); err != nil {
@@ -42,6 +44,14 @@ func realMain() int {
 	if !*allowPipe && !ui.IsTerminal(os.Stdin) {
 		fmt.Fprintln(os.Stderr, "numb-commit: the commit must be confirmed by a person; run it in an interactive terminal")
 		return app.ExitUsage
+	}
+	cfg, _, err := config.Load(*conf)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "numb-commit:", err)
+		return app.ExitUsage
+	}
+	if *downloads == "" {
+		*downloads = cfg.Downloads
 	}
 	code := app.Commit(app.CommitOptions{
 		Downloads: *downloads,

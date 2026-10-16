@@ -1,9 +1,17 @@
 name: ci
 
+# Pull requests get a fast gate (lint and tests on Linux, macOS and
+# Windows). The slow jobs (BSD virtual machines, containers, every
+# cross-compile target) run on main and nightly. A "changes" job skips Go
+# work for documentation-only changes; skipped jobs count as passed, so
+# required checks never hang.
+
 on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    - cron: "41 2 * * *"
   workflow_dispatch:
 
 permissions: {}
@@ -13,7 +21,41 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      go: ${{ steps.c.outputs.go }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - id: c
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+        run: |
+          base=""
+          case "$EVENT" in
+          pull_request) base=$PR_BASE ;;
+          push) base=$PUSH_BEFORE ;;
+          esac
+          if [ -z "$base" ] || ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+            echo "go=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if git diff --name-only "$base" "$GITHUB_SHA" | grep -qvE '(\.md$|^docs/|^LICENSE$)'; then
+            echo "go=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Documentation-only change: Go jobs skipped."
+            echo "go=false" >> "$GITHUB_OUTPUT"
+          fi
+
   lint:
+    needs: changes
+    if: needs.changes.outputs.go == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -41,18 +83,20 @@ jobs:
         # go install verifies the module against the Go checksum database.
         run: go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./...
       - name: Cross-compile every release target
+        if: github.event_name != 'pull_request'
         run: sh scripts/build-release.sh "ci-${GITHUB_SHA}" > /dev/null && rm -rf dist
 
   test:
+    needs: changes
+    if: needs.changes.outputs.go == 'true'
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        go: [stable, "1.21.x"]
-        exclude:
-          # Go 1.21 binaries lack LC_UUID and do not load on current macOS.
-          - os: macos-latest
-            go: "1.21.x"
+        go: [stable]
+        include:
+          # Oldest supported Go (macOS refuses Go 1.21 binaries, so Linux).
+          - { os: ubuntu-latest, go: "1.21.x" }
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
@@ -67,9 +111,12 @@ jobs:
           cache: false
       - name: Test
         shell: bash
+        env:
+          GO_VERSION: ${{ matrix.go }}
         run: |
-          race=-race
-          [ "$RUNNER_OS" = Windows ] && race=
+          # The race detector runs where it is cheap: Linux, newest Go.
+          race=
+          [ "$RUNNER_OS" = Linux ] && [ "$GO_VERSION" = stable ] && race=-race
           set +e
           go test -count=1 $race ./... > test.log 2>&1
           status=$?
@@ -80,6 +127,8 @@ jobs:
           exit $status
 
   bsd:
+    needs: changes
+    if: needs.changes.outputs.go == 'true' && github.event_name != 'pull_request'
     strategy:
       fail-fast: false
       matrix:
@@ -131,6 +180,8 @@ jobs:
           cat test.log
 
   container:
+    needs: changes
+    if: needs.changes.outputs.go == 'true' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read

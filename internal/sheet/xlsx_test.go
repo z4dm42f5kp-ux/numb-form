@@ -1,4 +1,4 @@
-package xlsx
+package sheet
 
 import (
 	"os"
@@ -16,7 +16,7 @@ func TestReadCompanies(t *testing.T) {
 		t.Fatal(err)
 	}
 	before, _ := os.ReadFile(p)
-	rows, _, err := ReadCompanies(p)
+	rows, _, err := ReadFile(p, Options{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,7 +56,7 @@ func itoa(n int) string {
 	return s
 }
 
-func FuzzReadCompanies(f *testing.F) {
+func FuzzReadXLSX(f *testing.F) {
 	f.Add(testfix.XLSX(f, []string{"D1"}, []string{"Foo"}))
 	f.Add([]byte("PK\x03\x04garbage"))
 	f.Fuzz(func(t *testing.T, b []byte) {
@@ -64,6 +64,6 @@ func FuzzReadCompanies(f *testing.F) {
 		if err := os.WriteFile(p, b, 0o600); err != nil {
 			t.Fatal(err)
 		}
-		_, _, _ = ReadCompanies(p) // must not panic
+		_, _, _ = ReadFile(p, Options{Legacy: true}) // must not panic
 	})
 }
