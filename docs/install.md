@@ -144,7 +144,7 @@ run the build command below.
 | macOS | `brew install go git` |
 | FreeBSD | `su -m root -c 'pkg install -y go git'` |
 | OpenBSD | `doas pkg_add go git` |
-| NetBSD | `su -m root -c 'pkgin -y install go git'` |
+| NetBSD | `su -m root -c 'pkgin -y install go git' && PATH=$(ls -d /usr/pkg/go1*/bin \| tail -n 1):$PATH && export PATH` |
 
 Then build, test and install, using a temporary Go build cache that is
 deleted afterwards:
@@ -152,6 +152,10 @@ deleted afterwards:
 ```
 cd "$(mktemp -d)" && git clone --depth 1 https://github.com/z4dm42f5kp-ux/numb-form.git && cd numb-form && export GOCACHE="$(mktemp -d)" GOFLAGS='-trimpath -mod=readonly' CGO_ENABLED=0 && go test ./... && go build -o numb-form ./cmd/numb-form && go build -o numb-commit ./cmd/numb-commit && mkdir -p "$HOME/.local/bin" && install -m 0755 numb-form numb-commit "$HOME/.local/bin/" && go clean -cache && rm -rf "$GOCACHE" && cd / && rm -rf "$OLDPWD/.." && echo OK
 ```
+
+On NetBSD, pkgsrc installs Go in a versioned directory such as
+`/usr/pkg/go126/bin`; the table entry above adds the newest one to `PATH`
+for the current shell.
 
 If the installed Go is older than 1.21, the build stops with an error;
 install a newer Go from the backports or ports collection rather than

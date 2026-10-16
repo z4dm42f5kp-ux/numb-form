@@ -118,7 +118,9 @@ jobs:
       - name: Test
         shell: cpa.sh {0}
         run: |
-          PATH=/usr/local/bin:/usr/pkg/bin:/usr/local/go/bin:$PATH
+          PATH=/usr/local/bin:/usr/pkg/bin:$PATH
+          # pkgsrc (NetBSD) installs Go in versioned directories such as /usr/pkg/go126.
+          for d in /usr/pkg/go1*/bin; do [ -x "$d/go" ] && PATH=$d:$PATH; done
           export PATH GOFLAGS=-mod=readonly CGO_ENABLED=0
           go version
           if ! go test -count=1 ./... > test.log 2>&1; then
