@@ -17,7 +17,7 @@ GWG
 └── Bar S.A.                               that already has a form)
 ```
 
-numb-form pasa por la lista de Excel de arriba a abajo. Para cada empresa que tiene la carpeta **no yet**, que:
+numb-form pasa por la lista de Excel de arriba a abajo. Para cada empresa que aún no tiene una carpeta, es:
 
 1. crea una carpeta con el nombre de la empresa,
 2. pone una copia del formulario en él, llamado `Appendix A - Risk Assesment - <company>.docx`,

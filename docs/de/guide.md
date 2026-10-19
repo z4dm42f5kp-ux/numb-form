@@ -17,7 +17,7 @@ GWG
 └── Bar S.A.                               that already has a form)
 ```
 
-numb-form geht durch die Excel-Liste von oben nach unten. Für jedes Unternehmen, das **no Ordner yet** hat, ist es:
+numb-form geht durch die Excel-Liste von oben nach unten. Für jedes Unternehmen, das noch keinen Ordner hat, ist es:
 
 1. erstellt einen Ordner mit dem Firmennamen,
 2. eine Kopie des Formulars mit dem Namen `Appendix A - Risk Assesment - <company>.docx` einreicht,
