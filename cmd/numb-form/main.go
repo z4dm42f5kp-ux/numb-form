@@ -53,19 +53,21 @@ func realMain() int {
 		fmt.Fprintln(os.Stderr, "numb-form:", err)
 		return app.ExitUsage
 	}
+	cmd, rest := "", []string(nil)
 	if len(args) > 0 {
-		switch {
-		case args[0] == "config" && len(args) == 1:
-			return app.ShowConfig(os.Stdout, cfg, notes)
-		case args[0] == "config" && len(args) == 2 && args[1] == "init":
-			return app.InitConfig(os.Stdout)
-		case args[0] == "check-template" && (len(args) == 2 || len(args) == 3):
-			sample := ""
-			if len(args) == 3 {
-				sample = args[2]
-			}
-			return app.CheckTemplate(os.Stdout, cfg, args[1], sample)
-		}
+		cmd, rest = args[0], args[1:]
+	}
+	switch {
+	case cmd == "":
+	case cmd == "config" && len(rest) == 0:
+		return app.ShowConfig(os.Stdout, cfg, notes)
+	case cmd == "config" && len(rest) == 1 && rest[0] == "init":
+		return app.InitConfig(os.Stdout)
+	case cmd == "check-template" && len(rest) == 1:
+		return app.CheckTemplate(os.Stdout, cfg, rest[0], "")
+	case cmd == "check-template" && len(rest) == 2:
+		return app.CheckTemplate(os.Stdout, cfg, rest[0], rest[1])
+	default:
 		fs.Usage()
 		return app.ExitUsage
 	}

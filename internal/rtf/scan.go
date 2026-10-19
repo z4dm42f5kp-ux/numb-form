@@ -99,6 +99,10 @@ func scan(data []byte) ([]*para, error) {
 			case word == "uc" && hasParam:
 				st.uc = max(0, min(param, 8))
 			case word == "u" && hasParam:
+				// \uN is a signed 16-bit value; anything else is ignored.
+				if param < -32768 || param > 65535 {
+					break
+				}
 				if param < 0 {
 					param += 65536
 				}
