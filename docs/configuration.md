@@ -38,6 +38,12 @@ Values may be quoted with `"`.
 Unknown keys and invalid values are errors, so typing mistakes are found
 at once.
 
+Save a single setting without editing the file:
+
+```
+numb-form config set person "Erika Mustermann"
+```
+
 Create a commented per-user file with every default, and show the
 effective settings:
 

@@ -1,5 +1,9 @@
 # Installing numb-form
 
+Not a programmer?
+The [step-by-step guide](guide.md) has the install line for Windows and
+explains what to do after installing.
+
 numb-form is two static programs, `numb-form` and `numb-commit`, with no
 dependencies.
 Every system gets the same programs and the same behaviour.
@@ -207,3 +211,13 @@ Run `numb-form keys` for instructions.
 
 See [containers.md](containers.md) for Docker, Podman (rootless, no
 administrator rights) and Kubernetes.
+
+## After installing
+
+Save your name once, then start numb-form inside the working folder:
+
+```
+numb-form config set person "Your Name" && cd /path/to/GWG && numb-form
+```
+
+The [step-by-step guide](guide.md) explains every question it asks.

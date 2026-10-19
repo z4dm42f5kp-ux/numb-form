@@ -28,7 +28,7 @@ const usage = `usage: numb-form [-f conf] [-offline] [-root dir] [-downloads dir
 func realMain() int {
 	fs := flag.NewFlagSet("numb-form", flag.ContinueOnError)
 	conf := fs.String("f", "", "configuration file read after the system and per-user files")
-	root := fs.String("root", "", "working folder (default: the single folder inside the current directory)")
+	root := fs.String("root", "", "working folder (default: the current folder if it is one, else the single folder inside it)")
 	downloads := fs.String("downloads", "", "review mode: folder for the copy (default: the user's Downloads)")
 	offline := fs.Bool("offline", false, "do not contact any online source")
 	timeout := fs.Duration("timeout", 0, "stop safely after this long (at most 25m)")

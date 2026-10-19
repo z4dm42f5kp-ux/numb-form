@@ -9,6 +9,9 @@ The spreadsheet is never changed.
 Español: [docs/es/README.md](docs/es/README.md) ·
 Deutsch: [docs/de/README.md](docs/de/README.md)
 
+**New here? Read the [step-by-step guide](docs/guide.md).**
+It needs no technical knowledge.
+
 * Install: [docs/install.md](docs/install.md)
 * Use: [docs/usage.md](docs/usage.md)
 * Configure: [docs/configuration.md](docs/configuration.md)
@@ -17,20 +20,12 @@ Deutsch: [docs/de/README.md](docs/de/README.md)
 * Security: [SECURITY.md](SECURITY.md)
 * AI agents: [AGENTS.md](AGENTS.md)
 
-Start it in the folder above the working folder:
+Start it inside the working folder (the one that contains
+`3. Übersichten` and the template):
 
 ```
-cd /path/to/folder-above && numb-form
+cd /path/to/GWG && numb-form
 ```
 
-On Windows, in Command Prompt:
-
-```
-cd /d "S:\path\to\folder-above" && numb-form
-```
-
-In Windows PowerShell:
-
-```
-Set-Location 'S:\path\to\folder-above'; if ($?) { numb-form }
-```
+On Windows, open the folder in File Explorer, type `powershell` in the
+address bar, press Enter, then type `numb-form`.
