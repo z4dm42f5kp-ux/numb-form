@@ -76,9 +76,11 @@ func review() *config.Config {
 	return &c
 }
 
-// newCompany answers the offline dialogue for one company.
+// newCompany answers the offline dialogue for one company whose name has
+// a legal form (so it is not asked): address "m", the address, no
+// caution, no representatives found.
 func newCompany(addr string, final ...string) []string {
-	a := []string{"", "", addr, "", ""}
+	a := []string{"", addr, "", ""}
 	return append(a, final...)
 }
 
@@ -93,7 +95,7 @@ func TestRunAndCommit(t *testing.T) {
 	// Foo GmbH, Foo S.A.S., Foo Corp. exist.
 	in = append(in, newCompany("Cairo 3", "a")...)                                // Foo S.A.E
 	in = append(in, newCompany("Caracas 4", "e", "3", "Edited Street 9", "r")...) // Foo C.A. rejected
-	in = append(in, newCompany("Asunción 5", "e", "4", "", "a")...)               // Foo S.A. (registry edit refused, then back)
+	in = append(in, newCompany("Asunción 5", "e", "4", "Registro 123", "a")...)   // Foo S.A. (registry number typed)
 	in = append(in, "n")                                                          // "Fooo Inc" is not Foo Inc
 	in = append(in, newCompany("NY 6", "a")...)                                   // Foo Inc
 	in = append(in, newCompany("London 7", "a")...)                               // Foo Ltd
@@ -160,7 +162,7 @@ func TestRunAndCommit(t *testing.T) {
 	}
 	check := form.Values{
 		form.FieldName: "Foo S.A.", form.FieldLegalForm: "S.A.", form.FieldAddress: "Asunción 5",
-		form.FieldRegistry: RegistryText, form.FieldReps: NoRepsText, form.FieldDate: "16/10/2026", form.FieldPerson: "Max Muster",
+		form.FieldRegistry: "Registro 123", form.FieldReps: NoRepsText, form.FieldDate: "16/10/2026", form.FieldPerson: "Max Muster",
 	}
 	for f, v := range check {
 		if got[f] != v {

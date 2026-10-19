@@ -114,18 +114,20 @@ numb-form config init && numb-form config
 
 ### Sources
 
-Sources are `companies-house`, `gleif`, `website` and `wikidata`.
+Sources are `companies-house`, `vies`, `brasil-cnpj`, `official`
+(government gazettes and registers found by search), `gleif`, `website`,
+`search` (web search, also used to find the website) and `wikidata`.
 Lists are separated by spaces or commas; their order is the order of
 preference.
 
-`address_sources = companies-house gleif website wikidata`
+`address_sources = companies-house vies brasil-cnpj official gleif website search wikidata`
 : Sources for *Headquarters / Address*.
 
 `address_fallback = ask` | `blank`
 : When no address is found. With `confirm = none`, `ask` acts as
   `blank`.
 
-`reps_sources = companies-house gleif website wikidata`
+`reps_sources = companies-house vies brasil-cnpj official gleif website search wikidata`
 : Sources for *Authorized Representatives*.
 
 `reps_min_trust = any` | `website` | `register`
@@ -140,10 +142,27 @@ preference.
   **auto**: suggested for values not confirmed by a register (asked when
   `confirm = each`).
 
-`website = ask` | `wikidata` | `never`
-: The company website read for its legal notice: ask for it, use only
-  Wikidata's suggestion, or never.
-  With `confirm = none`, `ask` acts as `wikidata`.
+`website = auto` | `ask` | `never`
+: The company website read for its legal notice.
+  **auto** (default): found automatically and used only if it names the
+  company.
+  **ask**: you type the address for every company (Enter finds it
+  automatically).
+  **never**: no website is read.
+  With `confirm = none`, `ask` acts as `auto`.
+  The older value `wikidata` means `auto`.
+
+`search = duckduckgo` | `none`
+: Web search used to find websites, government gazette entries and, as a
+  last resort, representatives in result snippets.
+  Only the company name is sent, with words such as `impressum` or
+  `site:boe.es`.
+  **none** turns searching off; registers and guessed addresses are still
+  used.
+
+`guess_domains = yes` | `no`
+: Also try addresses built from the name, such as `foobar.de` or
+  `foobar.com.br`, chosen by the countries of the legal form.
 
 ### Formats
 

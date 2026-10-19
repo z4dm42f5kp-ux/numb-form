@@ -35,7 +35,7 @@ func TestApply(t *testing.T) {
 	if _, err := c.Apply([]byte("legacy_formats = yes\n"), "sys", true); err != nil || !c.LegacyFormats {
 		t.Fatal("system file could not enable legacy formats")
 	}
-	if err := c.Validate(); err != nil || c.Website != "wikidata" || c.AddressFallback != "blank" {
+	if err := c.Validate(); err != nil || c.Website != "auto" || c.AddressFallback != "blank" {
 		t.Fatalf("validate %v %+v", err, c)
 	}
 }

@@ -79,19 +79,59 @@ unchanged, and no formatting is added.
 | Field | Value |
 | --- | --- |
 | Name / Company Name of the Contracting Party | the literal spreadsheet cell |
-| Legal form | the suffix of the name, as written (`GmbH`, `S.A.`, `C.A. de C.V.`) |
+| Legal form | found in the name, also before a branch or country note (`Foo GmbH (Wien)`), written as in the name with conventional capitals (`GMBH` gives `GmbH`); asked only when the name has none |
 | Headquarters / Address | chosen from the candidates found |
 | Commercial Registry Number | always `No commercial registry number was found online consult internal sources for further information`; it can be replaced with the number with *edit* |
 | Authorized Representatives | `Full Name (Role 1, Role 2), Full Name (Role)`, roles in English |
 | Date of the evaluation | today, `date_format` (default `DD/MM/YYYY`) |
 | Person Processing the Form | from the configuration or typed at the start |
 
-Candidates are gathered from, in order of authority:
+Everything is looked up in one pass per company, without questions.
+Candidates come from, in order of authority:
 
-1. UK Companies House (government register; only with a free key);
-2. the GLEIF LEI register (regulatory register; no key);
-3. the company's own legal notice (Impressum, Aviso legal, Legal notice);
-4. Wikidata (community-edited; used mainly to find the website).
+1. government registers:
+   UK Companies House (only with a free key);
+   EU VIES, for an EU VAT number printed on the company's website
+   (name and address; Germany confirms only that the number is valid);
+   Receita Federal, for a Brazilian CNPJ printed on the website (address,
+   administrators and directors), read through the free BrasilAPI mirror;
+   government gazettes and registers found by searching their websites
+   for the company: BORME (Spain), Portal da Justiça (Portugal),
+   Boletín Oficial (Argentina), Sunbiz (Florida), Companies House pages
+   (United Kingdom); which one depends on the countries the legal form
+   points to;
+2. the GLEIF LEI register (regulatory register);
+3. the company's own website: its legal notice (Impressum, Aviso legal,
+   Mentions légales, Legal notice) first, then about, contact and privacy
+   pages;
+4. Wikidata, and the snippets of web search results (community data, not
+   verified; snippets are read only when nothing else named anyone).
+
+The website is found automatically: from Wikidata, from a DuckDuckGo
+search for the exact name, and from addresses such as `foobar.de` or
+`foobar.com.mx` built from the name and the countries of its legal form.
+A site is used only if one of its pages names the company with its legal
+form.
+On a group's legal notice that names several companies, only the part
+about the company is read.
+
+Representative labels are recognised in German, English, Spanish,
+Portuguese, French, Italian, Dutch, Polish, Czech, Slovak and the Nordic
+languages, anywhere in a line, in tables and in footers, and translated
+to English roles.
+Labels that name other people (supervisory board, data protection
+officer, person responsible for content, contact, registered agent) and
+people who left (*Ceses/Dimisiones*, *ehemalig*, *former*) are skipped.
+
+Official numbers and register entries printed on the website (for
+example `HRB 12345` or `FN 123456 a`) are shown before the form is
+written; the number can be typed into *Commercial Registry Number* with
+*edit*.
+
+DuckDuckGo is asked at most a few times per company, a few seconds
+apart.
+If it asks for a human check, searching pauses for a minute and the
+other sources are used meanwhile.
 
 Which sources feed which field, the least trusted source accepted for
 representatives and the fallbacks are set in the configuration.
@@ -134,6 +174,20 @@ Afterwards it offers to delete the review copy; the logs are kept.
 
 `keys`
 : Explain the optional free API keys.
+
+`man` [*topic*] [`en` | `es` | `de`]
+: Show this manual in the terminal, one screen at a time (Enter: next
+  screen; q and Enter: quit).
+  Without a topic the whole manual is shown, starting with the guide.
+  Topics: `guide`, `usage`, `configuration`, `install`, `formats`,
+  `containers`, `security`; `numb-form man topics` lists them.
+  The language follows `LANG`, or is given.
+  `numb-form man -install` makes `man numb-form` work: on Linux, macOS
+  and the BSDs it writes the manual page to `~/.local/share/man/man1`
+  (refreshed by `numb-form update`); on Windows it writes `man.cmd` next
+  to `numb-form.exe`, for Command Prompt.
+  Windows PowerShell keeps `man` for its own help: there, type
+  `numb-form man`.
 
 `update` [`stable` | `edge`]
 : Replace the installed `numb-form` and `numb-commit` with the newest

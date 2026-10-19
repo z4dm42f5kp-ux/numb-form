@@ -23,6 +23,7 @@ const usage = `usage: numb-form [-f conf] [-offline] [-root dir] [-downloads dir
        numb-form [-f conf] config [init | set key value]
        numb-form keys
        numb-form [-f conf] update [stable | edge]
+       numb-form man [topic] [en | es | de]       (numb-form man topics; numb-form man -install)
 
 `
 
@@ -50,6 +51,9 @@ func realMain() int {
 	args := fs.Args()
 	if len(args) > 0 && args[0] == "keys" {
 		return app.Keys(os.Stdout)
+	}
+	if len(args) > 0 && (args[0] == "man" || args[0] == "help") {
+		return app.Man(os.Stdout, args[1:])
 	}
 	cfg, notes, err := config.Load(*conf)
 	if err != nil {

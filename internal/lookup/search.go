@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"html"
+	"math/rand"
 	"net/url"
 	"regexp"
 	"strings"
@@ -27,8 +28,12 @@ type Hit struct {
 // ErrSearchBlocked means the search engine asked for a human check.
 var ErrSearchBlocked = errors.New("DuckDuckGo asked for a human check (too many searches); search skipped")
 
-// searchGap spaces out searches, as a person typing would.
-var searchGap = 1500 * time.Millisecond
+// searchGap spaces out searches, as a person typing would; up to
+// searchJitter is added at random.
+var (
+	searchGap    = 3 * time.Second
+	searchJitter = 2 * time.Second
+)
 
 var (
 	searchMu   sync.Mutex
@@ -38,7 +43,11 @@ var (
 func waitTurn(ctx context.Context) error {
 	searchMu.Lock()
 	defer searchMu.Unlock()
-	if d := searchGap - time.Since(lastSearch); d > 0 {
+	gap := searchGap
+	if searchJitter > 0 {
+		gap += time.Duration(rand.Int63n(int64(searchJitter))) // #nosec G404 -- pacing, not security.
+	}
+	if d := gap - time.Since(lastSearch); d > 0 {
 		t := time.NewTimer(d)
 		defer t.Stop()
 		select {

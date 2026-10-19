@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"os/signal"
 	"path/filepath"
 	"runtime"
 
 	"github.com/z4dm42f5kp-ux/numb-form/internal/config"
+	"github.com/z4dm42f5kp-ux/numb-form/internal/manual"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/update"
 )
 
@@ -50,6 +52,13 @@ func Update(out io.Writer, cfg config.Config, offline bool, channel string) int 
 		return ExitOK
 	}
 	fmt.Fprintf(out, "Updated to numb-form %s (%s). Your settings are kept.\n", v, channel)
+	if manual.Installed() {
+		// Refresh "man numb-form" with the new program's manual.
+		cmd := exec.Command(filepath.Join(filepath.Dir(exe), "numb-form"), "man", "-install") // #nosec G204 -- the program just installed.
+		if err := cmd.Run(); err != nil {
+			fmt.Fprintln(out, "note: could not refresh the manual page:", err)
+		}
+	}
 	return ExitOK
 }
 

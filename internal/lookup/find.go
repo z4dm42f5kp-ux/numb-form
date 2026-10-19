@@ -112,7 +112,7 @@ func search(ctx context.Context, c *Client, q, region string, notes *[]string) [
 	hits, err := Search(ctx, c, q, region)
 	if errors.Is(err, ErrSearchBlocked) {
 		searchStateMu.Lock()
-		searchPaused = time.Now().Add(3 * time.Minute)
+		searchPaused = time.Now().Add(time.Minute)
 		searchStateMu.Unlock()
 	}
 	if err != nil {
@@ -154,7 +154,10 @@ func Find(ctx context.Context, c *Client, cfg Config, name, site string) Result 
 			defer wg.Done()
 			var n []string
 			h1 := search(ctx, c, `"`+q.Name+`"`, region, &n)
-			h2 := search(ctx, c, q.Name+" "+legalWords(country), region, &n)
+			var h2 []Hit
+			if !hasCompanySite(h1) {
+				h2 = search(ctx, c, q.Name+" "+legalWords(country), region, &n)
+			}
 			mu.Lock()
 			hits1, hits2, searchNotes = h1, h2, append(searchNotes, n...)
 			mu.Unlock()
@@ -227,8 +230,8 @@ func Find(ctx context.Context, c *Client, cfg Config, name, site string) Result 
 	if useSearch && cfg.enabled("official") {
 		done := map[string]bool{}
 		for i, cc := range q.Countries {
-			if i >= 3 {
-				break
+			if i >= 1 {
+				break // one gazette search per company, for the likeliest country
 			}
 			for _, d := range official[cc] {
 				if done[d] {
@@ -274,6 +277,17 @@ func Find(ctx context.Context, c *Client, cfg Config, name, site string) Result 
 	}
 	all.sortResult()
 	return all
+}
+
+// hasCompanySite reports whether search results include a site that may
+// be the company's own.
+func hasCompanySite(hits []Hit) bool {
+	for _, h := range hits {
+		if u, err := url.Parse(h.URL); err == nil && !notCompanySite(u.Hostname()) {
+			return true
+		}
+	}
+	return false
 }
 
 // snippetLines splits a search snippet at sentence ends so that labels

@@ -72,11 +72,23 @@ numb-form handles customer documents, so the design rules are strict.
 
 ## Network
 
-Online lookups send only company names and the company website the user
-confirms.
-They go to the GLEIF API, Wikidata, the company's own website and,
-only when a free key is set, UK Companies House.
-Use `-offline` to send nothing.
+Online lookups send only company names and official numbers printed on
+the company's own website:
+
+* company names to the GLEIF API, Wikidata and DuckDuckGo (with words
+  such as `impressum` or `site:boe.es`), and to UK Companies House only
+  when a free key is set;
+* EU VAT numbers to EU VIES, and Brazilian CNPJ numbers to BrasilAPI;
+* ordinary page requests to the company's website (found automatically,
+  or typed by the user) and to government gazette pages (BORME, Portal da
+  Justiça, Boletín Oficial, Sunbiz, Companies House) found by search.
+
+Nothing from the spreadsheet other than the company name is sent, and
+nothing about the person processing the form.
+`search = none` stops searching; `-offline` or `online = no` sends
+nothing at all.
+Searches are spaced a few seconds apart and pause for a minute when
+DuckDuckGo asks for a human check.
 
 * HTTPS only, TLS 1.2 or later, at most five HTTPS redirects.
 * Without a proxy, connections to loopback, private, link-local and

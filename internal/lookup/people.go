@@ -61,9 +61,9 @@ var roleLabels = map[string]string{
 	"sole director": "Sole Director", "chief executive officer": "Chief Executive Officer", "ceo": "Chief Executive Officer",
 	"chief financial officer": "Chief Financial Officer", "cfo": "Chief Financial Officer", "chief operating officer": "Chief Operating Officer",
 	"coo": "Chief Operating Officer", "president": "President", "vice president": "Vice President", "chairman": "Chairman",
-	"chairwoman": "Chairwoman", "chairperson": "Chairperson", "chair": "Chairperson", "chairman of the board": "Chairman of the Board",
+	"chairwoman": "Chairwoman", "chairperson": "Chairperson", "chairman of the board": "Chairman of the Board",
 	"company secretary": "Company Secretary", "secretary": "Secretary", "treasurer": "Treasurer", "general manager": "General Manager",
-	"managing partner": "Managing Partner", "managing partners": "Managing Partner", "partner": "Partner", "partners": "Partner",
+	"managing partner": "Managing Partner", "managing partners": "Managing Partner", "general partner": "General Partner",
 	"owner": "Owner", "owners": "Owner", "proprietor": "Owner", "sole proprietor": "Owner", "legal representative": "Legal Representative",
 	"legal representatives": "Legal Representative", "authorized representative": "Authorized Representative",
 	"authorized representatives": "Authorized Representative", "authorised representative": "Authorized Representative",
@@ -243,6 +243,10 @@ func findLabels(line string) []labelHit {
 		h := labelHit{role: role, start: toks[i].start, end: end, valueStart: end}
 		if m := reSep.FindStringIndex(rest); m != nil {
 			h.colon, h.valueStart = true, end+m[1]
+		} else if i == 0 && n == 1 && weakLabel[toks[i].fold] && strings.TrimSpace(rest) != "" {
+			// "Director of Sales Jane Doe": a common word at the start of
+			// a sentence is not a label unless a colon follows.
+			continue
 		} else if i != 0 && !byLabel(toks[i+n-1].fold) {
 			// A role word in running text ("our director said") is not a
 			// label; "represented by X" is.
@@ -253,6 +257,21 @@ func findLabels(line string) []labelHit {
 		i += n - 1
 	}
 	return hits
+}
+
+// weakLabel lists one-word labels that are also ordinary words; they
+// count only when followed by a colon or alone on their line.
+var weakLabel = map[string]bool{
+	"director": true, "directors": true, "manager": true, "managers": true, "president": true, "secretary": true,
+	"treasurer": true, "chairman": true, "chairwoman": true, "chairperson": true, "chair": true, "owner": true, "owners": true,
+	"officers": true, "management": true, "trustee": true, "trustees": true, "proprietor": true, "ceo": true, "cfo": true, "coo": true,
+	"gerente": true, "gerentes": true, "administrador": true, "administradora": true, "administradores": true, "presidente": true,
+	"presidenta": true, "representante": true, "titular": true, "propietario": true, "consejero": true, "consejera": true,
+	"consejeros": true, "vocal": true, "secretario": true, "tesorero": true, "diretor": true, "diretora": true, "diretores": true,
+	"gerencia": true, "directeur": true, "gerant": true, "administrateur": true, "amministratore": true, "bestuur": true,
+	"bestuurder": true, "directie": true, "direktor": true, "direktorin": true, "inhaber": true, "inhaberin": true, "eigenaar": true,
+	"zarzad": true, "prokura": true, "directorio": true, "diretoria": true, "procurador": true, "apoderado": true, "liquidator": true,
+	"liquidador": true,
 }
 
 // byLabel reports whether a label ends with "by" in some language, so

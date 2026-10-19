@@ -242,6 +242,67 @@ type SiteResult struct {
 	Home     string // the home page that was read
 	Verified bool   // a page names the company
 	Pages    int
+
+	legal, other []Person // people from legal notices and the home page, and from other pages
+}
+
+// entityHeading reports whether a line names a legal entity on its own,
+// such as "Foo Bar GmbH" or "© 2025 Foo S.A.": short, no label, no colon.
+func entityHeading(l string) (string, bool) {
+	if len(l) > 100 || strings.ContainsAny(l, ":：") || len(strings.Fields(l)) > 12 {
+		return "", false
+	}
+	m, ok := match.FindLegalForm(l)
+	if !ok || len(strings.Fields(m.Base)) > 8 {
+		return "", false
+	}
+	return strings.TrimSpace(normWords(m.Base)), true
+}
+
+// companyLines returns the lines of a page that are about the company.
+// A page naming several legal entities (a group's legal notice) is cut
+// into blocks at each entity name, and only the blocks of the company
+// are kept. A page naming no other entity is kept whole.
+func companyLines(lines []string, q Query) []string {
+	type head struct {
+		i    int
+		ours bool
+	}
+	var heads []head
+	others := false
+	for i, l := range lines {
+		base, ok := entityHeading(l)
+		if !ok || base == "" {
+			continue
+		}
+		ours := Mentions(normWords(l), q)
+		if !ours {
+			// The base name alone also counts as ours ("Foo" in "© Foo").
+			ours = strings.Contains(normWords(q.Base), " "+base+" ") || strings.Contains(" "+base+" ", normWords(q.Base))
+		}
+		heads = append(heads, head{i, ours})
+		if !ours {
+			others = true
+		}
+	}
+	if !others {
+		return lines
+	}
+	var out []string
+	for k, h := range heads {
+		if !h.ours {
+			continue
+		}
+		end := len(lines)
+		for _, n := range heads[k+1:] {
+			if !n.ours {
+				end = n.i
+				break
+			}
+		}
+		out = append(out, lines[h.i:end]...)
+	}
+	return out
 }
 
 type pageLink struct {
@@ -314,7 +375,7 @@ func ReadSite(ctx context.Context, c *Client, site string, q Query) SiteResult {
 			pages = append(pages, u.String())
 		}
 	}
-	out.read(q, final.String(), string(body), "company website")
+	out.read(q, final.String(), string(body), "company website", true)
 	for _, p := range pages {
 		if ctx.Err() != nil {
 			break
@@ -323,7 +384,21 @@ func ReadSite(ctx context.Context, c *Client, site string, q Query) SiteResult {
 		if err != nil || fu == nil || !sameSite(fu, final) {
 			continue
 		}
-		out.read(q, fu.String(), string(b), "company legal notice")
+		legal := links[p] == 0 || !inLinks(links, p)
+		what := "company legal notice"
+		if !legal {
+			what = "company website"
+		}
+		out.read(q, fu.String(), string(b), what, legal)
+	}
+	// Representatives from the legal notice win; other pages (about,
+	// team, contact) are used only when the legal notice names nobody.
+	people := out.legal
+	if len(people) == 0 {
+		people = out.other
+	}
+	for _, p := range people {
+		out.addPerson(p)
 	}
 	if !out.Verified {
 		out.Notes = append(out.Notes, "website "+final.Host+": no page names "+q.Name)
@@ -331,22 +406,36 @@ func ReadSite(ctx context.Context, c *Client, site string, q Query) SiteResult {
 	return out
 }
 
-// read extracts everything from one page of the site.
-func (s *SiteResult) read(q Query, pageURL, body, what string) {
+func inLinks(links map[string]int, p string) bool {
+	_, ok := links[p]
+	return ok
+}
+
+// read extracts everything from one page of the site. legal is set for
+// the home page and legal-notice pages.
+func (s *SiteResult) read(q Query, pageURL, body, what string, legal bool) {
 	s.Pages++
-	lines := HTMLText(body)
-	joined := strings.Join(lines, "\n")
-	norm := normWords(joined)
-	named := Mentions(norm, q)
+	all := HTMLText(body)
+	named := Mentions(normWords(strings.Join(all, "\n")), q)
 	if named {
 		s.Verified = true
 	}
+	lines := companyLines(all, q)
+	joined := strings.Join(lines, "\n")
 	src := Source{ID: "website", Name: what + " " + pageURL, URL: pageURL, Kind: KindCompany}
-	before := len(s.People) + len(s.Addresses)
-	for _, p := range ExtractPeople(lines, src) {
-		s.addPerson(p)
+	before := len(s.legal) + len(s.other) + len(s.Addresses)
+	found := ExtractPeople(lines, src)
+	if legal {
+		s.legal = append(s.legal, found...)
+	} else {
+		s.other = append(s.other, found...)
 	}
-	if a := ExtractAddress(lines, q); a != "" && named {
+	if !named {
+		// IDs, addresses and register entries only from pages that name
+		// the company.
+		return
+	}
+	if a := ExtractAddress(lines, q); a != "" {
 		s.Addresses = append(s.Addresses, Address{Text: a, Source: src})
 	}
 	ln, la := structuredData(body)
@@ -368,7 +457,7 @@ func (s *SiteResult) read(q Query, pageURL, body, what string) {
 	for _, r := range ExtractRegister(lines) {
 		s.Register = append(s.Register, RegisterNote{Text: r, Source: src})
 	}
-	if len(s.People)+len(s.Addresses) > before || (named && len(s.Excerpts) == 0) {
+	if len(s.legal)+len(s.other)+len(s.Addresses) > before || len(s.Excerpts) == 0 {
 		s.Sources = append(s.Sources, src)
 		s.Excerpts = append(s.Excerpts, Excerpt{Source: src, Text: excerpt(lines)})
 	}
