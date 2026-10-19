@@ -20,7 +20,7 @@ func TestFillAndReadBack(t *testing.T) {
 		form.FieldName:      "Foo Co., Ltda",
 		form.FieldLegalForm: "Ltda",
 		form.FieldAddress:   "Calle 1 # 2-3, Bogotá & <Co>",
-		form.FieldRegistry:  "SHOULD NOT APPEAR",
+		form.FieldRegistry:  "No commercial registry number was found online consult internal sources for further information",
 		form.FieldReps:      "Jane Doe (General Manager, Legal Representative)",
 		form.FieldDate:      "16/10/2026",
 		form.FieldPerson:    "Max Muster",
@@ -38,15 +38,9 @@ func TestFillAndReadBack(t *testing.T) {
 	}
 	for _, f := range form.AllFields {
 		want := vals[f]
-		if f == form.FieldRegistry {
-			want = ""
-		}
 		if got[f] != want {
 			t.Errorf("%s = %q, want %q", f.Title(), got[f], want)
 		}
-	}
-	if bytes.Contains(out, []byte("SHOULD NOT APPEAR")) {
-		t.Fatal("registry number was written")
 	}
 	// Filling an already filled document must fail.
 	if _, _, err := fmtx.Fill(out, vals); err == nil {

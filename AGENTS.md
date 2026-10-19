@@ -52,8 +52,10 @@ cd "/path/to/working-folder" && numb-form
   unchanged.
 * Never add formatting to documents.
   Never touch section B or anything outside section A.
-* Leave *Commercial Registry Number* blank.
+* Fill *Commercial Registry Number* with the registry text below, unless
+  the person types the number when editing.
 * Use these texts exactly, including the spelling:
+  * `No commercial registry number was found online consult internal sources for further information`
   * `Caution: This field might differ from internal sources or be innacurate due to insufficient information online`
   * `No representatives were found online, please consult other internal sources for more accurate information`
 * Never use the no-representatives text when a plausible representative

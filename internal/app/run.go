@@ -30,6 +30,9 @@ const BigCopyBytes = 2 << 30
 const (
 	CautionText = "Caution: This field might differ from internal sources or be innacurate due to insufficient information online"
 	NoRepsText  = "No representatives were found online, please consult other internal sources for more accurate information"
+	// RegistryText always fills the Commercial Registry Number field; the
+	// user may replace it with the number when editing the form.
+	RegistryText = "No commercial registry number was found online consult internal sources for further information"
 )
 
 // Exit codes.

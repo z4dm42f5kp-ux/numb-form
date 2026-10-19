@@ -2,24 +2,39 @@ package lookup
 
 import (
 	"context"
+	"encoding/json"
 	"html"
 	"net/url"
 	"regexp"
+	"sort"
 	"strings"
-	"unicode"
 
+	"github.com/z4dm42f5kp-ux/numb-form/internal/match"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/textutil"
 )
 
 var (
 	reScript  = regexp.MustCompile(`(?is)<(script|style|noscript|template|svg)\b.*?</(script|style|noscript|template|svg)\s*>`)
+	reLDJSON  = regexp.MustCompile(`(?is)<script[^>]+type\s*=\s*["']application/ld\+json["'][^>]*>(.*?)</script\s*>`)
 	reComment = regexp.MustCompile(`(?s)<!--.*?-->`)
-	reBreak   = regexp.MustCompile(`(?i)<(br|/p|/div|/li|/h[1-6]|/tr|/td|/th|/dd|/dt|/address|/section|/article|hr)\b[^>]*>`)
+	reBreak   = regexp.MustCompile(`(?i)<(br|/p|/div|/li|/h[1-6]|/tr|/td|/th|/dd|/dt|/address|/section|/article|/footer|/header|hr|p|div|li|h[1-6]|tr|td|th|dd|dt|address|section|article|footer)\b[^>]*>`)
 	reTag     = regexp.MustCompile(`(?s)<[^>]*>`)
 	reLink    = regexp.MustCompile(`(?is)<a\b[^>]*?href\s*=\s*["']([^"'#]+)["'][^>]*>(.*?)</a\s*>`)
-	reLegal   = regexp.MustCompile(`(?i)impressum|imprint|legal[\s_-]*notice|aviso[\s_-]*legal|nota[\s_-]*legal|informaci[oó]n[\s_-]*legal|mentions[\s_-]*l[eé]gales|aviso[\s_-]*de[\s_-]*privacidad|legal[\s_-]*information|/legal\b`)
-	rePostal  = regexp.MustCompile(`^(?:[A-Z]{1,2}-)?\d{4,5}\s+\p{Lu}`)
-	reStreet  = regexp.MustCompile(`\p{L}.*\d|\d.*\p{L}`)
+
+	// Pages that carry the legal identity of a company, by priority.
+	legalPages = []*regexp.Regexp{
+		regexp.MustCompile(`(?i)impressum|imprint|legal[\s_-]*notice|aviso[\s_-]*legal|nota[\s_-]*legal|informaci[oó]n[\s_-]*legal|mentions[\s_-]*l[eé]gales|note[\s_-]*legali|colofon|offenlegung|legal[\s_-]*info|site[\s_-]*notice|corporate[\s_-]*information|aviso[\s_-]*de[\s_-]*privacidad|dados[\s_-]*da[\s_-]*empresa|/legal\b`),
+		regexp.MustCompile(`(?i)about[\s_-]*us|[uü]ber[\s_-]*uns|ueber[\s_-]*uns|qui[eé]nes[\s_-]*somos|quem[\s_-]*somos|sobre[\s_-]*n[oó]s|sobre[\s_-]*nosotros|nosotros|qui[\s_-]*sommes|chi[\s_-]*siamo|unternehmen|empresa|company|management|leadership|f[uü]hrung|directorio|diretoria|board|team`),
+		regexp.MustCompile(`(?i)kontakt|contact|contacto|contato|contatti`),
+		regexp.MustCompile(`(?i)datenschutz|privacy|privacidad|privacidade|confidentialit[eé]|terms|t[eé]rminos|termos|condiciones|agb|disclaimer`),
+	}
+	// Paths tried when the home page links to no legal page.
+	legalPaths = []string{"/impressum", "/imprint", "/aviso-legal", "/legal-notice", "/mentions-legales", "/legal"}
+
+	rePostal    = regexp.MustCompile(`(?:^|[\s,])(?:[A-Z]{1,2}-)?\d{4,5}(?:-\d{3,4})?\s+\p{Lu}|(?i:\b(?:c\.?\s?p\.?|cep|zip|postal\s+code|plz)\s*:?\s*\d{4,5})|\b\d{4}\s?[A-Z]{2}\b|\b[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}\b|\b[A-Z]{2}\s+\d{5}(?:-\d{4})?\b`)
+	reStreet    = regexp.MustCompile(`(?i)\p{L}.*\d|\d.*\p{L}|\b(?:stra(?:ss|ß)e|str\.|weg|platz|allee|gasse|ring|damm|calle|avenida|av\.|carrera|cra\.|rua|travessa|rodovia|road|street|st\.|avenue|ave\.|blvd|boulevard|suite|piso|of\.|oficina|col\.|colonia|bairro|via|viale|rue|edificio|torre)\b`)
+	reAddrLabel = regexp.MustCompile(`(?i)^\s*(?:anschrift|adresse|address|postanschrift|sitz(?:\s+der\s+gesellschaft)?|gesch[aä]ftssitz|firmensitz|registered\s+office|head\s+office|headquarters|domicilio(?:\s+social|\s+fiscal)?|direcci[oó]n(?:\s+fiscal)?|sede(?:\s+social)?|endere[cç]o|morada|si[eè]ge(?:\s+social)?|indirizzo|sede\s+legale)\s*[:：]\s*(.*)$`)
+	reNoAddr    = regexp.MustCompile(`(?i)\b(?:tel|telefon|telephone|phone|fon|fax|e-?mail|www\.|https?://|@|ust|uid|vat|iva|cif|nif|nit|rfc|cnpj|hrb|hra|amtsgericht|registergericht|handelsregister|gesch[aä]ftsf[uü]hrer|managing|director|copyright|©)\b`)
 )
 
 // HTMLText converts HTML to plain lines.
@@ -39,127 +54,484 @@ func HTMLText(s string) []string {
 	return out
 }
 
-type roleRule struct {
-	re   *regexp.Regexp
-	role string
+func addressLine(l string) bool {
+	return len(l) < 90 && !reNoAddr.MatchString(l) && (reStreet.MatchString(l) || rePostal.MatchString(l))
 }
 
-var roleRules = []roleRule{
-	{regexp.MustCompile(`(?i)^(?:vertretungsberechtigte[rn]?\s+)?geschäftsführer(?:in|innen)?\b`), "Managing Director"},
-	{regexp.MustCompile(`(?i)^geschäftsführung\b`), "Managing Director"},
-	{regexp.MustCompile(`(?i)^vorstandsvorsitzende[rn]?\b|^vorsitzende[rn]?\s+des\s+vorstand(?:e)?s\b`), "Chairman of the Management Board"},
-	{regexp.MustCompile(`(?i)^vorstand\b`), "Member of the Management Board"},
-	{regexp.MustCompile(`(?i)^prokurist(?:in|en)?\b`), "Authorized Signatory (Prokurist)"},
-	{regexp.MustCompile(`(?i)^inhaber(?:in)?\b`), "Owner"},
-	{regexp.MustCompile(`(?i)^(?:gesetzlich\s+)?vertreten\s+durch\b`), "Legal Representative"},
-	{regexp.MustCompile(`(?i)^managing\s+directors?\b`), "Managing Director"},
-	{regexp.MustCompile(`(?i)^(?:legally\s+)?represented\s+by\b`), "Legal Representative"},
-	{regexp.MustCompile(`(?i)^authori[sz]ed\s+representatives?\b`), "Authorized Representative"},
-	{regexp.MustCompile(`(?i)^(?:ceo|chief\s+executive\s+officer)\b`), "Chief Executive Officer"},
-	{regexp.MustCompile(`(?i)^representante\s+legal\b`), "Legal Representative"},
-	{regexp.MustCompile(`(?i)^gerente\s+general\b`), "General Manager"},
-	{regexp.MustCompile(`(?i)^administrador(?:a)?\s+[úu]nic[oa]\b`), "Sole Administrator"},
-	{regexp.MustCompile(`(?i)^consejer[oa]\s+delegad[oa]\b`), "Chief Executive Officer (Managing Director)"},
-	{regexp.MustCompile(`(?i)^director(?:a)?\s+general\b`), "General Director"},
-	{regexp.MustCompile(`(?i)^gérant(?:e)?\b|^directeur\s+général\b|^président\b`), ""},
-}
-
-var leadWords = regexp.MustCompile(`(?i)^[\s:–—\-]*(?:(?:der|die|den|des|durch|by|the|el|la|los|las|sr\.?|sra\.?|herrn?|frau|mr\.?|mrs\.?|ms\.?)\s+)*`)
-var splitNames = regexp.MustCompile(`(?i)\s*(?:,|;|/|&|\bund\b|\band\b|\by\b|\bsowie\b|\bet\b)\s*`)
-
-var nameStop = map[string]bool{
-	"gmbh": true, "ag": true, "kg": true, "ltd": true, "inc": true, "llc": true, "sa": true, "s.a.": true, "ltda": true,
-	"straße": true, "strasse": true, "str.": true, "tel": true, "tel.": true, "telefon": true, "fax": true, "e-mail": true, "email": true,
-	"registergericht": true, "amtsgericht": true, "handelsregister": true, "hrb": true, "ust-id": true, "ust-idnr.": true,
-	"gesellschaft": true, "company": true, "street": true, "calle": true, "avenida": true, "www": true,
-}
-
-// looksLikeName accepts 2-5 capitalised words made of letters, hyphens,
-// apostrophes and dots, such as "Dr. Erika Mustermann".
-func looksLikeName(s string) bool {
-	if len(s) > 60 {
-		return false
-	}
-	words := strings.Fields(s)
-	if len(words) < 2 || len(words) > 5 {
-		return false
-	}
-	for _, w := range words {
-		if nameStop[strings.ToLower(w)] {
-			return false
-		}
-		r := []rune(w)
-		if !unicode.IsUpper(r[0]) {
-			// Allow particles such as "von", "de", "van", "del".
-			switch strings.ToLower(w) {
-			case "von", "van", "de", "del", "der", "da", "dos", "di", "zu", "la":
-				continue
-			}
-			return false
-		}
-		for _, c := range r {
-			if !(unicode.IsLetter(c) || c == '-' || c == '\'' || c == '.') {
-				return false
-			}
-		}
-	}
-	return true
-}
-
-// ExtractPeople finds representatives named in legal-notice text.
-func ExtractPeople(lines []string, src Source) []Person {
-	var out []Person
+// ExtractAddress finds the company's address in a legal notice: after a
+// label such as "Anschrift:" or "Domicilio:", or in the lines that follow
+// the company name, or as "Street 1" followed by "12345 City".
+func ExtractAddress(lines []string, q ...Query) string {
 	for i, l := range lines {
-		for _, rule := range roleRules {
-			loc := rule.re.FindStringIndex(l)
-			if loc == nil {
+		m := reAddrLabel.FindStringSubmatch(l)
+		if m == nil {
+			continue
+		}
+		parts := []string{}
+		if v := strings.TrimSpace(m[1]); v != "" {
+			parts = append(parts, v)
+		}
+		for j := i + 1; j < len(lines) && j <= i+3 && len(parts) < 3; j++ {
+			if !addressLine(lines[j]) {
+				break
+			}
+			parts = append(parts, lines[j])
+		}
+		a := strings.Join(parts, ", ")
+		if rePostal.MatchString(a) || (len(parts) > 0 && reStreet.MatchString(parts[0]) && strings.ContainsAny(a, "0123456789")) {
+			return a
+		}
+	}
+	if len(q) > 0 {
+		for i, l := range lines {
+			if len(l) > 120 || !Mentions(normWords(l), q[0]) {
 				continue
 			}
-			role := rule.role
-			matched := l[loc[0]:loc[1]]
-			if role == "" {
-				role, _ = TranslateRole(matched)
-			}
-			rest := l[loc[1]:]
-			// "Vertreten durch den Geschäftsführer X": use the inner role.
-			rest = leadWords.ReplaceAllString(rest, "")
-			for _, inner := range roleRules {
-				if m := inner.re.FindStringIndex(rest); m != nil && inner.role != "" {
-					role = inner.role
-					rest = leadWords.ReplaceAllString(rest[m[1]:], "")
+			var parts []string
+			for j := i + 1; j < len(lines) && j <= i+4 && len(parts) < 3; j++ {
+				if !addressLine(lines[j]) {
 					break
 				}
+				parts = append(parts, lines[j])
 			}
-			rest = strings.Trim(rest, " :.-–—")
-			if rest == "" && i+1 < len(lines) {
-				rest = lines[i+1]
+			if len(parts) >= 1 && rePostal.MatchString(strings.Join(parts, " ")) {
+				return strings.Join(parts, ", ")
 			}
-			for _, n := range splitNames.Split(rest, -1) {
-				n = strings.Trim(n, " .:")
-				if looksLikeName(n) {
-					out = append(out, Person{Name: n, Roles: []string{role}, Sources: []Source{src}})
-				}
-			}
-			break
 		}
 	}
-	return out
-}
-
-// ExtractAddress finds "Street 1" followed by "12345 City" in a legal notice.
-func ExtractAddress(lines []string) string {
-	for i := 1; i < len(lines) && i < 80; i++ {
-		if rePostal.MatchString(lines[i]) && reStreet.MatchString(lines[i-1]) && len(lines[i-1]) < 80 && len(lines[i]) < 60 {
+	for i := 1; i < len(lines) && i < 200; i++ {
+		if rePostal.MatchString(lines[i]) && reStreet.MatchString(lines[i-1]) && addressLine(lines[i-1]) && len(lines[i]) < 60 {
 			return lines[i-1] + ", " + lines[i]
 		}
 	}
 	return ""
 }
 
+// ldOrg is the part of schema.org Organization data that is used.
+type ldOrg struct {
+	Type      any               `json:"@type"`
+	LegalName string            `json:"legalName"`
+	Name      string            `json:"name"`
+	Address   any               `json:"address"`
+	Graph     []json.RawMessage `json:"@graph"`
+}
+
+func ldAddress(a any) string {
+	switch v := a.(type) {
+	case string:
+		return textutil.OneLine(v)
+	case map[string]any:
+		get := func(k string) string {
+			switch x := v[k].(type) {
+			case string:
+				return textutil.OneLine(x)
+			case map[string]any:
+				if n, ok := x["name"].(string); ok {
+					return textutil.OneLine(n)
+				}
+			}
+			return ""
+		}
+		var parts []string
+		if s := get("streetAddress"); s != "" {
+			parts = append(parts, s)
+		}
+		if pc := strings.TrimSpace(get("postalCode") + " " + get("addressLocality")); pc != "" {
+			parts = append(parts, pc)
+		}
+		if c := get("addressCountry"); c != "" {
+			parts = append(parts, CountryName(c))
+		}
+		if len(parts) >= 2 {
+			return strings.Join(parts, ", ")
+		}
+	case []any:
+		if len(v) > 0 {
+			return ldAddress(v[0])
+		}
+	}
+	return ""
+}
+
+func typeString(t any) string {
+	switch v := t.(type) {
+	case string:
+		return v
+	case []any:
+		var parts []string
+		for _, x := range v {
+			if s, ok := x.(string); ok {
+				parts = append(parts, s)
+			}
+		}
+		return strings.Join(parts, " ")
+	}
+	return ""
+}
+
+// legalNameIn returns the company's full legal name when a line writes
+// the base name followed by a legal form ("Foo Bar GmbH & Co. KG").
+func legalNameIn(line string, q Query) (string, bool) {
+	words := strings.Fields(q.Base)
+	if len(words) == 0 {
+		return "", false
+	}
+	var p []string
+	for _, w := range words {
+		p = append(p, regexp.QuoteMeta(w))
+	}
+	re, err := regexp.Compile(`(?i)` + strings.Join(p, `[\s\-.,&]+`) + `[^|•·;\n]{0,40}`)
+	if err != nil {
+		return "", false
+	}
+	m := re.FindString(line)
+	if m == "" {
+		return "", false
+	}
+	// Cut at the first comma or dash that follows the legal form.
+	for cut := len(m); cut > len(q.Base); cut-- {
+		cand := strings.TrimSpace(m[:cut])
+		if f, _ := match.LegalForm(cand); f != "" {
+			return strings.Trim(cand, " ,;:"), true
+		}
+	}
+	return "", false
+}
+
+// structuredData reads schema.org Organization data embedded in a page.
+func structuredData(page string) (legalName, address string) {
+	var walk func(b []byte, depth int)
+	walk = func(b []byte, depth int) {
+		if depth > 3 || (legalName != "" && address != "") {
+			return
+		}
+		var list []json.RawMessage
+		if json.Unmarshal(b, &list) == nil {
+			for _, x := range list {
+				walk(x, depth+1)
+			}
+			return
+		}
+		var o ldOrg
+		if json.Unmarshal(b, &o) != nil {
+			return
+		}
+		for _, g := range o.Graph {
+			walk(g, depth+1)
+		}
+		t := strings.ToLower(typeString(o.Type))
+		if !strings.Contains(t, "organization") && !strings.Contains(t, "corporation") && !strings.Contains(t, "localbusiness") {
+			return
+		}
+		if legalName == "" {
+			legalName = textutil.OneLine(o.LegalName)
+		}
+		if address == "" {
+			address = ldAddress(o.Address)
+		}
+	}
+	for _, m := range reLDJSON.FindAllStringSubmatch(page, 5) {
+		walk([]byte(m[1]), 0)
+	}
+	return legalName, address
+}
+
+// SiteResult is what a company website says about the company.
+type SiteResult struct {
+	Result
+	Home     string // the home page that was read
+	Verified bool   // the site belongs to the company (see operator)
+	Pages    int
+
+	mentioned bool // some page names the company, perhaps only in passing
+
+	legal, other []Person // people from legal notices and the home page, and from other pages
+}
+
+// entityHeading reports whether a line names a legal entity on its own,
+// such as "Foo Bar GmbH" or "© 2025 Foo S.A.": short, no label, no colon.
+func entityHeading(l string) (string, bool) {
+	if len(l) > 100 || strings.ContainsAny(l, ":：") || len(strings.Fields(l)) > 12 {
+		return "", false
+	}
+	m, ok := match.FindLegalForm(l)
+	if !ok || len(strings.Fields(m.Base)) > 8 {
+		return "", false
+	}
+	return strings.TrimSpace(normWords(m.Base)), true
+}
+
+// companyLines returns the lines of a page that are about the company.
+// A page naming several legal entities (a group's legal notice) is cut
+// into blocks at each entity name, and only the blocks of the company
+// are kept. A page naming no other entity is kept whole.
+func companyLines(lines []string, q Query) []string {
+	type head struct {
+		i    int
+		ours bool
+	}
+	var heads []head
+	others := false
+	for i, l := range lines {
+		base, ok := entityHeading(l)
+		if !ok || base == "" {
+			continue
+		}
+		ours := Mentions(normWords(l), q)
+		if !ours {
+			// The base name alone also counts as ours ("Foo" in "© Foo").
+			ours = strings.Contains(normWords(q.Base), " "+base+" ") || strings.Contains(" "+base+" ", normWords(q.Base))
+		}
+		heads = append(heads, head{i, ours})
+		if !ours {
+			others = true
+		}
+	}
+	if !others {
+		return lines
+	}
+	var out []string
+	for k, h := range heads {
+		if !h.ours {
+			continue
+		}
+		end := len(lines)
+		for _, n := range heads[k+1:] {
+			if !n.ours {
+				end = n.i
+				break
+			}
+		}
+		out = append(out, lines[h.i:end]...)
+	}
+	return out
+}
+
+type pageLink struct {
+	url  string
+	prio int
+}
+
+// ReadSite reads a company website: the home page and up to four pages
+// that carry its legal identity (legal notice, about, contact, privacy).
+// Verified is set when the company runs the site. typed marks a site the
+// user typed: its findings are kept even when unverified.
+func ReadSite(ctx context.Context, c *Client, site string, q Query, typed bool) SiteResult {
+	var out SiteResult
+	base, ok := NormalizeWebsite(site)
+	if !ok {
+		out.Notes = append(out.Notes, "website: not a usable address: "+site)
+		return out
+	}
+	body, final, _, err := c.get(ctx, base.String(), map[string]string{"Accept": "text/html"})
+	if err != nil {
+		out.Notes = append(out.Notes, "website "+base.Host+": "+sanitizeErr(err))
+		return out
+	}
+	if final == nil {
+		final = base
+	}
+	out.Home = final.Scheme + "://" + final.Host + "/"
+	links := map[string]int{}
+	for _, m := range reLink.FindAllStringSubmatch(string(body), -1) {
+		href := html.UnescapeString(m[1])
+		text := strings.Join(HTMLText(m[2]), " ")
+		u, err := final.Parse(href)
+		if err != nil || (u.Scheme != "https" && u.Scheme != "http") || !sameSite(u, final) {
+			continue
+		}
+		u.Scheme, u.Fragment = "https", ""
+		for p, re := range legalPages {
+			if re.MatchString(u.Path) || re.MatchString(text) {
+				if old, ok := links[u.String()]; !ok || p < old {
+					links[u.String()] = p
+				}
+				break
+			}
+		}
+	}
+	var list []pageLink
+	for u, p := range links {
+		list = append(list, pageLink{u, p})
+	}
+	sort.Slice(list, func(i, j int) bool {
+		if list[i].prio != list[j].prio {
+			return list[i].prio < list[j].prio
+		}
+		return len(list[i].url) < len(list[j].url)
+	})
+	var pages []string
+	perPrio := map[int]int{}
+	for _, l := range list {
+		if len(pages) >= 4 || perPrio[l.prio] >= 2 {
+			continue
+		}
+		perPrio[l.prio]++
+		pages = append(pages, l.url)
+	}
+	if len(links) == 0 || perPrio[0] == 0 {
+		for _, p := range legalPaths {
+			if len(pages) >= 4 {
+				break
+			}
+			u, _ := final.Parse(p)
+			pages = append(pages, u.String())
+		}
+	}
+	out.read(q, final.String(), string(body), "company website", true)
+	for _, p := range pages {
+		if ctx.Err() != nil {
+			break
+		}
+		b, fu, _, err := c.get(ctx, p, map[string]string{"Accept": "text/html"})
+		if err != nil || fu == nil || !sameSite(fu, final) {
+			continue
+		}
+		legal := links[p] == 0 || !inLinks(links, p)
+		what := "company legal notice"
+		if !legal {
+			what = "company website"
+		}
+		out.read(q, fu.String(), string(b), what, legal)
+	}
+	// Representatives from the legal notice win; other pages (about,
+	// team, contact) are used only when the legal notice names nobody.
+	people := out.legal
+	if len(people) == 0 {
+		people = out.other
+	}
+	for _, p := range people {
+		out.addPerson(p)
+	}
+	if !out.Verified && out.mentioned && domainIsName(final, q) {
+		out.Verified = true
+	}
+	if !out.Verified && !typed {
+		if out.mentioned {
+			out.Notes = append(out.Notes, "website "+final.Host+": names "+q.Name+" only in passing; not taken as its website")
+		} else {
+			out.Notes = append(out.Notes, "website "+final.Host+": no page names "+q.Name)
+		}
+		out.Result = Result{Notes: out.Notes}
+		out.legal, out.other = nil, nil
+	}
+	return out
+}
+
+// domainIsName reports whether the site's domain is the company's name,
+// such as foobar.de for "Foo Bar GmbH".
+func domainIsName(u *url.URL, q Query) bool {
+	label := strings.SplitN(hostKey(u), ".", 2)[0]
+	for _, s := range slugs(q) {
+		if label == s {
+			return true
+		}
+	}
+	return false
+}
+
+// operator reports whether the company runs the site: on a legal notice
+// or home page, it is the first legal entity named, or it appears in the
+// copyright line.
+func operator(lines []string, q Query) bool {
+	first := true
+	for _, l := range lines {
+		if strings.Contains(l, "©") || strings.Contains(strings.ToLower(l), "copyright") {
+			if Mentions(normWords(l), q) {
+				return true
+			}
+			continue
+		}
+		if _, ok := entityHeading(l); ok && first {
+			first = false
+			if Mentions(normWords(l), q) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func inLinks(links map[string]int, p string) bool {
+	_, ok := links[p]
+	return ok
+}
+
+// read extracts everything from one page of the site. legal is set for
+// the home page and legal-notice pages.
+func (s *SiteResult) read(q Query, pageURL, body, what string, legal bool) {
+	s.Pages++
+	all := HTMLText(body)
+	named := Mentions(normWords(strings.Join(all, "\n")), q)
+	if named {
+		s.mentioned = true
+		if legal && operator(all, q) {
+			s.Verified = true
+		}
+	}
+	lines := companyLines(all, q)
+	joined := strings.Join(lines, "\n")
+	src := Source{ID: "website", Name: what + " " + pageURL, URL: pageURL, Kind: KindCompany}
+	before := len(s.legal) + len(s.other) + len(s.Addresses)
+	found := ExtractPeople(lines, src)
+	if legal {
+		s.legal = append(s.legal, found...)
+	} else {
+		s.other = append(s.other, found...)
+	}
+	if !named {
+		// IDs, addresses and register entries only from pages that name
+		// the company.
+		return
+	}
+	if a := ExtractAddress(lines, q); a != "" {
+		s.Addresses = append(s.Addresses, Address{Text: a, Source: src})
+	}
+	ln, la := structuredData(body)
+	if ln != "" && (Mentions(normWords(ln), q) || SameEntity(q, ln)) {
+		s.LegalNames = append(s.LegalNames, LegalName{Name: ln, Source: src})
+		if la != "" {
+			s.Addresses = append(s.Addresses, Address{Text: la, Source: src})
+		}
+	}
+	for _, l := range lines {
+		if len(l) < 120 && Mentions(normWords(l), Query{Name: q.Base, Base: q.Base}) {
+			if f, ok := legalNameIn(l, q); ok {
+				s.LegalNames = append(s.LegalNames, LegalName{Name: f, Source: src})
+				break
+			}
+		}
+	}
+	s.IDs = appendIDs(s.IDs, ExtractIDs(joined))
+	for _, r := range ExtractRegister(lines) {
+		s.Register = append(s.Register, RegisterNote{Text: r, Source: src})
+	}
+	if len(s.legal)+len(s.other)+len(s.Addresses) > before || len(s.Excerpts) == 0 {
+		s.Sources = append(s.Sources, src)
+		s.Excerpts = append(s.Excerpts, Excerpt{Source: src, Text: excerpt(lines)})
+	}
+}
+
+func appendIDs(a, b []ID) []ID {
+	for _, x := range b {
+		dup := false
+		for _, y := range a {
+			if x == y {
+				dup = true
+				break
+			}
+		}
+		if !dup {
+			a = append(a, x)
+		}
+	}
+	return a
+}
+
 func excerpt(lines []string) string {
 	start := 0
 	for i, l := range lines {
-		if reLegal.MatchString(l) {
+		if legalPages[0].MatchString(l) {
 			start = i
 			break
 		}
@@ -195,85 +567,19 @@ func NormalizeWebsite(s string) (*url.URL, bool) {
 	return u, true
 }
 
+func hostKey(u *url.URL) string { return strings.TrimPrefix(strings.ToLower(u.Hostname()), "www.") }
+
 func sameSite(a, b *url.URL) bool {
-	h := func(u *url.URL) string { return strings.TrimPrefix(strings.ToLower(u.Hostname()), "www.") }
-	x, y := h(a), h(b)
+	x, y := hostKey(a), hostKey(b)
 	return x == y || strings.HasSuffix(x, "."+y) || strings.HasSuffix(y, "."+x)
 }
 
-// Website reads the company's own legal notice: it loads the home page,
-// follows links to Impressum / Aviso legal / Legal notice pages on the
-// same site (at most three) and extracts representatives and an address.
-func Website(ctx context.Context, c *Client, site string) Result {
-	var res Result
-	base, ok := NormalizeWebsite(site)
-	if !ok {
-		res.Notes = append(res.Notes, "website: not a usable HTTPS address")
-		return res
+// Website reads the legal notice of a site the user typed.
+func Website(ctx context.Context, c *Client, site string, q ...Query) Result {
+	qq := Query{}
+	if len(q) > 0 {
+		qq = q[0]
 	}
-	body, final, _, err := c.get(ctx, base.String(), map[string]string{"Accept": "text/html"})
-	if err != nil {
-		res.Notes = append(res.Notes, "website: "+sanitizeErr(err))
-		return res
-	}
-	if final == nil {
-		final = base
-	}
-	var pages []string
-	seen := map[string]bool{}
-	for _, m := range reLink.FindAllStringSubmatch(string(body), -1) {
-		href := html.UnescapeString(m[1])
-		text := strings.Join(HTMLText(m[2]), " ")
-		if !reLegal.MatchString(href) && !reLegal.MatchString(text) {
-			continue
-		}
-		u, err := final.Parse(href)
-		if err != nil || (u.Scheme != "https" && u.Scheme != "http") || !sameSite(u, final) {
-			continue
-		}
-		u.Scheme, u.Fragment = "https", ""
-		if !seen[u.String()] && len(pages) < 3 {
-			seen[u.String()] = true
-			pages = append(pages, u.String())
-		}
-	}
-	if len(pages) == 0 {
-		for _, p := range []string{"/impressum", "/imprint", "/aviso-legal", "/legal-notice"} {
-			u, _ := final.Parse(p)
-			pages = append(pages, u.String())
-		}
-	}
-	found := 0
-	for _, p := range pages {
-		if found >= 2 {
-			break
-		}
-		b, fu, _, err := c.get(ctx, p, map[string]string{"Accept": "text/html"})
-		if err != nil {
-			continue
-		}
-		lines := HTMLText(string(b))
-		joined := strings.Join(lines, "\n")
-		if !reLegal.MatchString(joined) {
-			continue
-		}
-		found++
-		page := p
-		if fu != nil {
-			page = fu.String()
-		}
-		src := Source{ID: "website", Name: "company legal notice " + page, URL: page, Kind: KindCompany}
-		res.Sources = append(res.Sources, src)
-		for _, person := range ExtractPeople(lines, src) {
-			res.addPerson(person)
-		}
-		if a := ExtractAddress(lines); a != "" {
-			res.Addresses = append(res.Addresses, Address{Text: a, Source: src})
-		}
-		res.Excerpts = append(res.Excerpts, Excerpt{Source: src, Text: excerpt(lines)})
-	}
-	if found == 0 {
-		res.Notes = append(res.Notes, "website: no legal notice page found on "+final.Host)
-	}
-	return res
+	r := ReadSite(ctx, c, site, qq, true)
+	return r.Result
 }

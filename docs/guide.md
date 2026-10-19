@@ -95,12 +95,24 @@ To give a different answer, type it and press Enter.
 Each company starts with a line like `[3/11] Foo GmbH  (Sheet1!C5)`:
 the third of eleven companies, and the cell it was taken from.
 
+Then numb-form looks the company up by itself, which takes a few
+seconds: official registers, the company's own website (it finds it
+alone), official numbers printed there, government gazettes and a web
+search.
+It shows the website it used, any register entry printed there (for
+example `HRB 12345`), and how many addresses and representatives it
+found.
+The legal form is taken from the company name without asking.
+*Commercial Registry Number* always gets the sentence "No commercial
+registry number was found online consult internal sources for further
+information"; to put the number instead, choose `e` (edit) and field 4
+at the end.
+
 | numb-form asks | What it means | What you usually do |
 | --- | --- | --- |
 | `Full name of the person processing the form:` | Only asked if you skipped step 2 | Type your name; Enter at the next question uses it for every form in this run |
 | `Is the existing folder "Foo Gmbh" this company's folder? (...) [y/N]` | A folder with a very similar name already exists | `y` if it is the same company (nothing is created), otherwise Enter |
-| `Official company website to read its legal notice (...)` | The company's own website; numb-form reads its legal notice (Impressum) | Type the address, for example `foo.de`; or Enter, which takes the suggested website if one is shown and otherwise skips; `-` skips |
-| `Legal form (Enter = keep, '-' = blank) [GmbH]` | Taken from the end of the company name | Enter |
+| `Legal form (Enter = keep, '-' = blank) [GmbH]` | Asked only when the company name has no legal form such as `GmbH` or `S.A.`; the suggestion comes from the register or website | Enter |
 | `Headquarters / Address candidates` and a numbered list, then `Choose a number, 'm' to type it, 'b' to leave blank [1]` | Addresses found, the most reliable (official registers) first; each shows its source | Enter takes number 1; type another number; `m` to type the address yourself; `b` to leave it blank |
 | `Address (Enter = keep, or correct it) [...]` | The address you picked, so you can correct a typo | Enter, or type the corrected address |
 | `Add the caution text to the address (not fully verified)? [y/N]` | Adds the sentence "Caution: This field might differ from internal sources ..." The same question can come for the representatives | Press Enter: the suggestion already depends on how reliable the source is |
@@ -208,6 +220,15 @@ If the development line says `CHECKSUM MISMATCH`, a new build was being
 uploaded at that moment: wait five minutes and run it once more.
 If it happens again, or with the stable line, stop and tell whoever looks
 after the tool.
+
+## Read this manual in the window
+
+Type `numb-form man` to read everything in the blue window, one screen
+at a time (Enter: next screen; q and Enter: quit).
+`numb-form man guide` shows only this guide; add `de` or `es` for German
+or Spanish: `numb-form man guide de`.
+In Command Prompt (the black window) `man numb-form` works too, after
+running `numb-form man -install` once.
 
 ## When something goes wrong
 

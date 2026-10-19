@@ -7,27 +7,35 @@ import (
 
 	"github.com/z4dm42f5kp-ux/numb-form/internal/form"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/lookup"
-	"github.com/z4dm42f5kp-ux/numb-form/internal/match"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/textutil"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/ui"
 )
 
 // askValues lets the user decide on every value (confirm = each).
 func (r *run) askValues(name string, g gathered) (form.Values, error) {
-	vals := form.Values{form.FieldName: name, form.FieldDate: r.date, form.FieldPerson: r.person}
-	lf, _ := match.LegalForm(name)
+	vals := form.Values{form.FieldName: name, form.FieldRegistry: RegistryText, form.FieldDate: r.date, form.FieldPerson: r.person}
 	r.ui.Println()
-	if len(g.res.FormHints) > 0 {
-		r.ui.Printf("  Register lists the legal form as: %s\n", ui.Safe(strings.Join(g.res.FormHints, "; ")))
+	lf, from := legalFormFor(name, g)
+	var err error
+	if lf != "" && from == "" {
+		// Taken from the name itself: no question; it can still be
+		// changed with [e]dit before accepting.
+		r.ui.Printf("  Legal form: %s (from the name)\n", ui.Safe(lf))
+	} else {
+		if lf != "" {
+			r.ui.Printf("  The name has no legal form; %s gives: %s\n", ui.Safe(from), ui.Safe(lf))
+		}
+		if len(g.res.FormHints) > 0 {
+			r.ui.Printf("  Register lists the legal form as: %s\n", ui.Safe(strings.Join(g.res.FormHints, "; ")))
+		}
+		if lf, err = r.ui.AskDefault("  Legal form (Enter = keep, '-' = blank)", lf); err != nil {
+			return nil, err
+		}
+		if lf == "-" {
+			lf = ""
+		}
 	}
-	a, err := r.ui.AskDefault("  Legal form (Enter = keep, '-' = blank)", lf)
-	if err != nil {
-		return nil, err
-	}
-	if a == "-" {
-		a = ""
-	}
-	vals[form.FieldLegalForm] = textutil.OneLine(a)
+	vals[form.FieldLegalForm] = textutil.OneLine(lf)
 	if vals[form.FieldAddress], err = r.chooseAddress(g.addresses()); err != nil {
 		return nil, err
 	}

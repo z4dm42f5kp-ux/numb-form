@@ -30,14 +30,14 @@ var vals = form.Values{
 	form.FieldName:      "Foo Co., Ltda",
 	form.FieldLegalForm: "Ltda",
 	form.FieldAddress:   "Calle 1 # 2-3, Bogotá & <Co> {x} \\ y",
-	form.FieldRegistry:  "SHOULD NOT APPEAR",
+	form.FieldRegistry:  "No commercial registry number was found online consult internal sources for further information",
 	form.FieldReps:      "Jane Doe (General Manager, Legal Representative), Łukasz Żółć (Director) 😀",
 	form.FieldDate:      "16/10/2026",
 	form.FieldPerson:    "Max Muster",
 }
 
 // Every format must fill every field, read back exactly what was written,
-// never write the registry number and refuse to fill twice.
+// and refuse to fill twice.
 func TestAllFormats(t *testing.T) {
 	for _, c := range cases(t) {
 		t.Run(c.name, func(t *testing.T) {
@@ -54,15 +54,9 @@ func TestAllFormats(t *testing.T) {
 			}
 			for _, f := range form.AllFields {
 				want := vals[f]
-				if f == form.FieldRegistry {
-					want = ""
-				}
 				if got[f] != want {
 					t.Errorf("%s = %q, want %q", f.Title(), got[f], want)
 				}
-			}
-			if bytes.Contains(out, []byte("SHOULD NOT APPEAR")) {
-				t.Fatal("registry number written")
 			}
 			if _, _, err := c.f.Fill(out, vals); err == nil {
 				t.Fatal("refilling succeeded")

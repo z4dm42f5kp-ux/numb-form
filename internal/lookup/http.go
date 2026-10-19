@@ -89,7 +89,31 @@ func NewClient() *Client {
 	}}
 }
 
+// StatusError is returned for HTTP responses other than 200 OK.
+type StatusError struct {
+	Host string
+	Code int
+}
+
+func (e *StatusError) Error() string { return fmt.Sprintf("%s: HTTP %d", e.Host, e.Code) }
+
 func (c *Client) get(ctx context.Context, u string, hdr map[string]string) ([]byte, *url.URL, string, error) {
+	return c.do(ctx, http.MethodGet, u, "", hdr)
+}
+
+// postForm sends an HTML form, as a browser does when a search form is
+// submitted.
+func (c *Client) postForm(ctx context.Context, u string, form url.Values, hdr map[string]string) ([]byte, *url.URL, string, error) {
+	h := map[string]string{"Content-Type": "application/x-www-form-urlencoded"}
+	for k, v := range hdr {
+		h[k] = v
+	}
+	return c.do(ctx, http.MethodPost, u, form.Encode(), h)
+}
+
+// do performs one request. The body is returned even for status codes
+// other than 200, together with a *StatusError.
+func (c *Client) do(ctx context.Context, method, u, body string, hdr map[string]string) ([]byte, *url.URL, string, error) {
 	pu, err := url.Parse(u)
 	if err != nil {
 		return nil, nil, "", err
@@ -97,11 +121,16 @@ func (c *Client) get(ctx context.Context, u string, hdr map[string]string) ([]by
 	if pu.Scheme != "https" {
 		return nil, nil, "", fmt.Errorf("refusing non-HTTPS URL %s", u)
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
+	var rd io.Reader
+	if body != "" {
+		rd = strings.NewReader(body)
+	}
+	req, err := http.NewRequestWithContext(ctx, method, u, rd)
 	if err != nil {
 		return nil, nil, "", err
 	}
 	req.Header.Set("User-Agent", UserAgent)
+	req.Header.Set("Accept-Language", "en, de;q=0.9, es;q=0.8, pt;q=0.7, fr;q=0.6")
 	for k, v := range hdr {
 		req.Header.Set(k, v)
 	}
@@ -110,17 +139,17 @@ func (c *Client) get(ctx context.Context, u string, hdr map[string]string) ([]by
 		return nil, nil, "", err
 	}
 	defer resp.Body.Close()
-	body, err := io.ReadAll(io.LimitReader(resp.Body, maxBody+1))
+	b, err := io.ReadAll(io.LimitReader(resp.Body, maxBody+1))
 	if err != nil {
 		return nil, nil, "", err
 	}
-	if len(body) > maxBody {
-		body = body[:maxBody]
+	if len(b) > maxBody {
+		b = b[:maxBody]
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, resp.Request.URL, "", fmt.Errorf("%s: HTTP %d", pu.Host, resp.StatusCode)
+		return b, resp.Request.URL, "", &StatusError{Host: pu.Host, Code: resp.StatusCode}
 	}
-	return body, resp.Request.URL, resp.Header.Get("Content-Type"), nil
+	return b, resp.Request.URL, resp.Header.Get("Content-Type"), nil
 }
 
 func (c *Client) getJSON(ctx context.Context, u string, hdr map[string]string, v any) error {

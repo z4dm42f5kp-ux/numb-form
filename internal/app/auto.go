@@ -30,10 +30,14 @@ func addCaution(v string, yes bool) string {
 // only the sources and trust level allowed by the configuration. Every
 // choice is written to the log.
 func (r *run) autoValues(name string, g gathered) form.Values {
-	lf, _ := match.LegalForm(name)
+	lf, from := legalFormFor(name, g)
+	if from != "" {
+		r.logf("auto legal form for %q from %s: %s", name, from, lf)
+	}
 	vals := form.Values{
 		form.FieldName:      name,
 		form.FieldLegalForm: lf,
+		form.FieldRegistry:  RegistryText,
 		form.FieldDate:      r.date,
 		form.FieldPerson:    r.person,
 	}
@@ -71,4 +75,19 @@ func nonEmpty(v form.Values) []string {
 		}
 	}
 	return out
+}
+
+// legalFormFor returns the legal form written in the company name. When
+// the name has none, it uses the full legal name found in the most
+// authoritative source that matched the company, and from says which.
+func legalFormFor(name string, g gathered) (form, from string) {
+	if f, _ := match.LegalForm(name); f != "" {
+		return f, ""
+	}
+	for _, ln := range g.res.LegalNames {
+		if f, _ := match.LegalForm(ln.Name); f != "" {
+			return f, ln.Source.String()
+		}
+	}
+	return "", ""
 }

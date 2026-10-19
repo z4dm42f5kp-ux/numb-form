@@ -91,29 +91,37 @@ type Excerpt struct {
 	Text   string
 }
 
+// LegalName is the full legal name of the company as a source writes it.
+type LegalName struct {
+	Name   string
+	Source Source
+}
+
 // Result is everything found for one company.
 type Result struct {
-	Addresses []Address
-	People    []Person
-	FormHints []string
-	Websites  []string
-	Excerpts  []Excerpt
-	Notes     []string
-	Sources   []Source
+	Addresses  []Address
+	People     []Person
+	FormHints  []string
+	LegalNames []LegalName
+	Websites   []string // suggested by registers (Wikidata)
+	Website    string   // the company's own website that was read
+	IDs        []ID     // official identifiers printed on its website
+	Register   []RegisterNote
+	Excerpts   []Excerpt
+	Notes      []string
+	Sources    []Source
 }
 
 // Query is what is known about a company before the lookup.
 type Query struct {
-	Name string
-	Form string
-	Base string
+	Name      string
+	Form      string
+	Base      string
+	Countries []string // where the legal form is used, most common first
 }
 
 // NewQuery builds a query from the literal spreadsheet name.
-func NewQuery(name string) Query {
-	f, b := match.LegalForm(name)
-	return Query{Name: name, Form: f, Base: b}
-}
+func NewQuery(name string) Query { return queryFor(name) }
 
 var formEquiv = map[string]string{
 	"limited": "ltd", "ltd": "ltd",
@@ -187,6 +195,23 @@ func (r *Result) merge(o Result) {
 		r.addPerson(p)
 	}
 	r.FormHints = union(r.FormHints, o.FormHints)
+	r.LegalNames = append(r.LegalNames, o.LegalNames...)
+	if r.Website == "" {
+		r.Website = o.Website
+	}
+	r.IDs = appendIDs(r.IDs, o.IDs)
+	for _, n := range o.Register {
+		dup := false
+		for _, m := range r.Register {
+			if strings.EqualFold(m.Text, n.Text) {
+				dup = true
+				break
+			}
+		}
+		if !dup {
+			r.Register = append(r.Register, n)
+		}
+	}
 	r.Websites = union(r.Websites, o.Websites)
 	r.Excerpts = append(r.Excerpts, o.Excerpts...)
 	r.Notes = append(r.Notes, o.Notes...)
@@ -211,6 +236,7 @@ func union(a, b []string) []string {
 func (r *Result) sortResult() {
 	sort.SliceStable(r.Addresses, func(i, j int) bool { return r.Addresses[i].Source.Kind < r.Addresses[j].Source.Kind })
 	sort.SliceStable(r.People, func(i, j int) bool { return r.People[i].Best() < r.People[j].Best() })
+	sort.SliceStable(r.LegalNames, func(i, j int) bool { return r.LegalNames[i].Source.Kind < r.LegalNames[j].Source.Kind })
 	// Drop duplicate address texts, keeping the most authoritative.
 	seen := map[string]bool{}
 	var out []Address
@@ -228,9 +254,14 @@ func (r *Result) sortResult() {
 // Config holds optional free API keys and the enabled sources.
 type Config struct {
 	CompaniesHouseKey string
-	// Sources lists the enabled sources ("companies-house", "gleif",
-	// "website", "wikidata"); nil enables all.
+	// Sources lists the enabled sources ("companies-house", "vies",
+	// "brasil-cnpj", "official", "gleif", "website", "search",
+	// "wikidata"); nil enables all.
 	Sources []string
+	// Search is "duckduckgo" (default) or "none".
+	Search string
+	// GuessDomains also tries addresses such as companyname.de.
+	GuessDomains bool
 }
 
 func (c Config) enabled(s string) bool {

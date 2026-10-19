@@ -62,9 +62,16 @@ func FormatAddress(lines []string, postal, city, country string) string {
 // gleif searches the Global LEI Index (https://api.gleif.org), a free,
 // keyless register overseen by the Regulatory Oversight Committee.
 func gleif(ctx context.Context, c *Client, q Query) (Result, error) {
+	// Searching for the core name finds the record however the register
+	// writes the legal form ("GRUPO BIMBO, S.A.B. DE C.V."); SameEntity
+	// then keeps only exact matches.
+	term := q.Base
+	if len(strings.TrimSpace(term)) < 3 {
+		term = q.Name
+	}
 	u := gleifAPI + "/lei-records?" + url.Values{
-		"filter[fulltext]": {q.Name},
-		"page[size]":       {"10"},
+		"filter[fulltext]": {term},
+		"page[size]":       {"20"},
 	}.Encode()
 	var resp gleifResp
 	if err := c.getJSON(ctx, u, map[string]string{"Accept": "application/vnd.api+json"}, &resp); err != nil {
