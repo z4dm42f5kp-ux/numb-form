@@ -78,6 +78,19 @@ func TestAllFormats(t *testing.T) {
 	}
 }
 
+// A template without one of the labels must fail the check up front.
+func TestCheckNeedsEveryLabel(t *testing.T) {
+	for _, c := range cases(t) {
+		if _, err := form.Check(c.f, c.tpl); err != nil {
+			t.Fatalf("%s: complete template rejected: %v", c.name, err)
+		}
+	}
+	broken := bytes.Replace(testfix.RTF(), []byte("Date of the evaluation:"), []byte("Datum:"), 1)
+	if _, err := form.Check(rtf.Format{}, broken); err == nil {
+		t.Fatal("template without the date label passed the check")
+	}
+}
+
 func FuzzAllFormats(f *testing.F) {
 	f.Add("GmbH", "Street 1", "A B (CEO)")
 	f.Add("<&>\x00\x1b[31m", "]]>{\\}", "\u202e\U0001F600")

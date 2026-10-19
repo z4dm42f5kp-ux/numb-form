@@ -34,8 +34,9 @@ Settings are described in [configuration.md](configuration.md).
 
 A run proceeds as follows:
 
-1. The template is checked.
-   The run stops if section A or one of its labels cannot be found.
+1. The template is checked with a trial fill of every field.
+   The run stops if section A, or any label other than *Commercial
+   Registry Number*, cannot be found or is not empty.
 2. The name of the person processing the form is taken from the
    configuration, or typed once.
 3. With `mode = review`, the whole working folder is copied to
