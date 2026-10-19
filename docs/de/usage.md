@@ -29,7 +29,7 @@ Unterstützte Formate sind in [formats.md](formats.md) aufgeführt. Die Einstell
 
 Ein Lauf läuft wie folgt ab:
 
-1. Das Template wird überprüft. Der Lauf stoppt, wenn Abschnitt A oder eines seiner Labels nicht gefunden werden kann.
+1. Die Vorlage wird mit einer Probefüllung jedes Feldes überprüft. Der Lauf stoppt, wenn Abschnitt A oder ein anderes Label als *Commercial Registry Number* nicht gefunden werden kann oder nicht leer ist.
 2. Der Name der Person, die das Formular verarbeitet, wird der Konfiguration entnommen oder einmal eingegeben.
 3. Mit `mode = review` wird der gesamte Arbeitsordner in `Downloads/numb-form-runs/<date>_<time>_<id>/` kopiert und alles nach diesem Schritt geschieht in der Kopie. Mit `mode = direct` (dem Standard) wird der Arbeitsordner selbst verwendet und das Protokoll geht in den Statusordner pro Benutzer.
 4. Firmennamen werden aus der Spalte mit der Überschrift `Company Name` von oben nach unten gelesen. Alle anderen Spalten werden ignoriert, einschließlich `Report created`. Die Tabelle wird nie geschrieben; seine SHA-256 Prüfsumme wird vor und nach dem Lauf überprüft.

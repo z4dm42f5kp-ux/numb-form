@@ -29,7 +29,7 @@ Los formatos compatibles se enumeran en [formats.md](formats.md). Los ajustes se
 
 A run proceeds as follows:
 
-1. La plantilla está marcada. La carrera se detiene si no se puede encontrar la sección A o una de sus etiquetas.
+1. La plantilla se revisa con un llenado de ensayo de cada campo. La carrera se detiene si la sección A, o cualquier etiqueta que no sea *Commercial Registry Number*, no se puede encontrar o no está vacía.
 2. El nombre de la persona que procesa el formulario se toma de la configuración, o se escribe una vez.
 3. Con `mode = review`, toda la carpeta de trabajo se copia a `Downloads/numb-form-runs/<date>_<time>_<id>/` y todo después de este paso sucede en la copia. Con `mode = direct` (el predeterminado), la carpeta de trabajo en sí se utiliza y el registro va a la carpeta de estado por usuario.
 4. Los nombres de las empresas se leen desde la columna encabezada `Company Name`, de arriba a abajo. Todas las demás columnas son ignoradas, incluyendo `Report created`. La hoja de cálculo nunca se escribe a; su suma de comprobación SHA-256 se revisa antes y después de la carrera.
