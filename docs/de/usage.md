@@ -45,19 +45,27 @@ Nur die Zeilen von Abschnitt A, *Information About the Contracting Party*, sind 
 | Feld | Wert |
 | --- | --- |
 | Name / Company Name of the Contracting Party | die wörtliche Tabellenkalkulationszelle |
-| Legal form | das Suffix des Namens, wie geschrieben (`GmbH`, `S.A.`, `C.A. de C.V.`) |
+| Legal form | gefunden im Namen, auch vor einer Zweig- oder Ländernote (`Foo GmbH (Wien)`), geschrieben wie im Namen mit herkömmlichen Großbuchstaben (`GMBH` gibt `GmbH`); nur gefragt, wenn der Name keine hat |
 | Headquarters / Address | ausgewählt aus den gefundenen Kandidaten |
-| Commercial Registry Number | immer leer |
+| Commercial Registry Number | immer `No commercial registry number was found online consult internal sources for further information`; es kann durch die Nummer mit *edit* ersetzt werden |
 | Authorized Representatives | `Full Name (Role 1, Role 2), Full Name (Role)`, Rollen in Englisch |
 | Date of the evaluation | heute `date_format` (Standard `DD/MM/YYYY`) |
 | Person Processing the Form | aus der Konfiguration oder zu Beginn eingegeben |
 
-Die Kandidaten werden gesammelt aus, in der Reihenfolge der Autorität:
+Alles wird in einem Durchgang pro Unternehmen nachgeschlagen, ohne Fragen. Die Kandidaten kommen aus, in der Reihenfolge der Autorität:
 
-1. UK Companies House (Regierungsregister; nur mit einem freien Schlüssel);
-2. das GLEIF LEI-Register (Regulierungsregister; kein Schlüssel);
-3. den eigenen rechtlichen Hinweis des Unternehmens (Impressum, Aviso legal, Rechtlicher Hinweis);
-4. Wikidata (Community-editiert; hauptsächlich verwendet, um die Website zu finden).
+1. Regierungsregister: UK Companies House (nur mit einem kostenlosen Schlüssel); EU VIES, für eine EU-Mehrwertsteuernummer, die auf der Website des Unternehmens gedruckt wird (Name und Anschrift; Deutschland bestätigt nur, dass die Nummer gültig ist); Receita Federal, für eine brasilianische CNPJ, die auf der Website gedruckt wird (Adresse, Administratoren und Direktoren), lesen Sie den kostenlosen BrasilAPI-Spiegel; Regierungsblatter und Register, die bei der Suche nach ihren Websites für das Unternehmen gefunden werden: BORME (Spanien), Portal da Justiça (Portugal), Boletín Oficial (Argentinien), Sunbiz (Florida), Companies House-Seiten (Vereinigtes Königreich); welche von den Ländern abhängt, auf die die Rechtsform hinweist;
+2. das GLEIF LEI-Register (Regulierungsregister);
+3. die eigene Website des Unternehmens: seine rechtlichen Hinweise (Impressum, Aviso legal, Erwähnungen légales, Rechtliche Hinweise) zuerst, dann über, Kontakt- und Datenschutzseiten;
+4. Wikidata und die Snippets der Web-Suchergebnisse (Community-Daten, nicht verifiziert; Snippets werden nur gelesen, wenn nichts anderes jemanden benannt hat).
+
+Die Website wird automatisch gefunden: von Wikidata, von einer DuckDuckGo-Suche nach dem genauen Namen und von Adressen wie `foobar.de` oder `foobar.com.mx`, die aus dem Namen und den Ländern ihrer Rechtsform erstellt wurden. Eine Website wird nur verwendet, wenn eine ihrer Seiten das Unternehmen mit seiner Rechtsform benennt. Auf dem rechtlichen Hinweis einer Gruppe, der mehrere Unternehmen benennt, wird nur der Teil über das Unternehmen gelesen.
+
+Repräsentative Labels werden in deutscher, englischer, spanischer, portugiesischer, französischer, italienischer, niederländischer, polnischer, tschechischer, slowakischer und nordischer Sprache überall in einer Zeile, in Tabellen und Fußzeilen anerkannt und in englische Rollen übersetzt. Labels, die andere Personen benennen (Aufsichtsrat, Datenschutzbeauftragter, Inhaltsverantwortlicher, Kontakt, registrierter Agent) und Personen, die gegangen sind (*Ceses/Dimisiones*, *ehemalig*, *ehemalig*), werden übersprungen.
+
+Offizielle Nummern und Registereinträge, die auf der Website gedruckt werden (z. B. `HRB 12345` oder `FN 123456 a`), werden vor dem Abfassen des Formulars angezeigt; die Nummer kann mit *Bearbeiten* in *Commercial Registry Number* eingegeben werden.
+
+DuckDuckGo wird höchstens einige Male pro Unternehmen im Abstand von wenigen Sekunden gefragt. Wenn es nach einem menschlichen Check fragt, werden Suchpausen für eine Minute und die anderen Quellen zwischenzeitlich verwendet.
 
 Welche Quellen welches Feld speisen, die am wenigsten vertrauenswürdige Quelle, die für Vertreter akzeptiert wird, und die Fallbacks werden in der Konfiguration festgelegt. Personen und Adressen werden niemals von einem Elternteil, einer Tochtergesellschaft oder einer ähnlich benannten Einheit übernommen. Nicht verifizierte Werte erhalten genau diesen Text, wenn `caution` dies sagt:
 
@@ -85,6 +93,9 @@ Wenn kein Vertreter gefunden wird, lautet das Feld:
 
 `keys`
 : Erklären Sie die optionalen kostenlosen API-Schlüssel.
+
+`man` [*topic*] [`en` | `es` | `de`]
+: Zeigen Sie dieses Handbuch im Terminal, jeweils einen Bildschirm (Enter: next screen; q und Enter: quit). Ohne ein Thema wird das gesamte Handbuch angezeigt, beginnend mit dem Leitfaden. Themen: `guide`, `usage`, `configuration`, `install`, `formats`, `containers`, `security`; `numb-form man topics` listet sie auf. Die Sprache folgt `LANG` oder wird angegeben. `numb-form man -install` lässt `man numb-form` funktionieren: Unter Linux, macOS und den BSDs schreibt es die Handbuchseite zu `~/.local/share/man/man1` (erneuert von `numb-form update`); Unter Windows schreibt es `man.cmd` neben `numb-form.exe` für Command Prompt. Windows PowerShell behält `man` für seine eigene Hilfe: dort, Typ `numb-form man`.
 
 `update` [`stable` | `edge`]
 : Ersetzen Sie das installierte `numb-form` und `numb-commit` durch das neueste stabile Release oder den neuesten `edge`-Entwicklungs-Build, wie es die Installationsbefehle tun: Das Archiv und `SHA256SUMS` werden nur von GitHub über HTTPS heruntergeladen, die Prüfsumme muss übereinstimmen und das neue `numb-form` muss beginnen, bevor etwas ersetzt wird. Ohne Argument wird der Kanal des laufenden Builds verwendet. Einstellungen werden beibehalten. Verweigert mit `-offline`, mit `online = no` und für Builds von der Quelle. Unter Windows wird das alte Programm in `numb-form.old.exe` umbenannt und beim nächsten Start entfernt.

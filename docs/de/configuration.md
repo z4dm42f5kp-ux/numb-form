@@ -93,15 +93,15 @@ numb-form config init && numb-form config
 
 ### Quellen
 
-Quellen sind `companies-house`, `gleif`, `website` und `wikidata`. Listen sind durch Leerzeichen oder Kommas getrennt; ihre Reihenfolge ist die Reihenfolge der Präferenz.
+Quellen sind `companies-house`, `vies`, `brasil-cnpj`, `official` (Regierungsblätter und Register durch Suche gefunden), `gleif`, `website`, `search` (Websuche, auch verwendet, um die Website zu finden) und `wikidata`. Listen sind durch Leerzeichen oder Kommas getrennt; ihre Reihenfolge ist die Reihenfolge der Präferenz.
 
-`address_sources = companies-house gleif website wikidata`
+`address_sources = companies-house vies brasil-cnpj official gleif website search wikidata`
 : Quellen für *Headquarters / Address*.
 
 `address_fallback = ask` | `blank`
 : Wenn keine Adresse gefunden wird. Mit `confirm = none` fungiert `ask` als `blank`.
 
-`reps_sources = companies-house gleif website wikidata`
+`reps_sources = companies-house vies brasil-cnpj official gleif website search wikidata`
 : Quellen für *Authorized Representatives*.
 
 `reps_min_trust = any` | `website` | `register`
@@ -113,8 +113,14 @@ Quellen sind `companies-house`, `gleif`, `website` und `wikidata`. Listen sind d
 `caution = auto` | `always` | `never`
 : Der Vorsichtstext. **auto**: für Werte vorgeschlagen, die nicht durch ein Register bestätigt wurden (gefragt bei `confirm = each`).
 
-`website = ask` | `wikidata` | `never`
-: Die Website des Unternehmens las für seinen rechtlichen Hinweis: Fragen Sie danach, verwenden Sie nur den Vorschlag von Wikidata oder nie. Mit `confirm = none` fungiert `ask` als `wikidata`.
+`website = auto` | `ask` | `never`
+: Die Website des Unternehmens las für seinen rechtlichen Hinweis. **auto** (Standard): automatisch gefunden und nur verwendet, wenn das Unternehmen benannt wird. **ask**: Sie geben die Adresse für jedes Unternehmen ein (Enter findet sie automatisch). **never**: keine Website gelesen wird. Mit `confirm = none` fungiert `ask` als `auto`. Der ältere Wert `wikidata` bedeutet `auto`.
+
+`search = duckduckgo` | `none`
+: Web-Suche verwendet, um Websites zu finden, Regierung Gazette Einträge und, als letztes Mittel, Vertreter in Ergebnis Snippets. Es wird nur der Firmenname mit Wörtern wie `impressum` oder `site:boe.es` gesendet. **none** schaltet die Suche aus; Register und erratene Adressen werden weiterhin verwendet.
+
+`guess_domains = yes` | `no`
+: Versuchen Sie auch, Adressen aus dem Namen gebaut, wie `foobar.de` oder `foobar.com.br`, von den Ländern der Rechtsform gewählt.
 
 ### Formate
 

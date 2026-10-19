@@ -45,19 +45,27 @@ Sólo se llenan las líneas de la sección A, *Information About the Contracting
 | Campo | Valor |
 | --- | --- |
 | Name / Company Name of the Contracting Party | la hoja de cálculo literal |
-| Legal form | el sufijo del nombre, como está escrito (`GmbH`, `S.A.`, `C.A. de C.V.`) |
+| Legal form | encontrado en el nombre, también antes de una filial o nota de país (`Foo GmbH (Wien)`), escrito como en el nombre con capitales convencionales (`GMBH` da `GmbH`); preguntado sólo cuando el nombre no tiene ninguno |
 | Headquarters / Address | elegido de los candidatos encontrados |
-| Commercial Registry Number | siempre en blanco |
+| Commercial Registry Number | siempre `No commercial registry number was found online consult internal sources for further information`; puede ser reemplazado por el número con *edit* |
 | Authorized Representatives | `Full Name (Role 1, Role 2), Full Name (Role)`, roles en inglés |
 | Date of the evaluation | hoy, `date_format` (predeterminado `DD/MM/YYYY`) |
 | Person Processing the Form | desde la configuración o escribe al inicio |
 
-Los candidatos son recogidos, en orden de autoridad:
+Todo es buscado en un pase por compañía, sin preguntas. Los candidatos proceden, en orden de autoridad:
 
-1. UK Companies House (registro gubernamental; sólo con una llave gratuita);
-2. el registro GLEIF LEI (regulación de registro; no llave);
-3. el propio aviso legal de la empresa (Impressum, Aviso legal, Aviso legal);
-4. Wikidata (editado comunitario; utilizado principalmente para encontrar el sitio web).
+1. government registers: UK Companies House (only with a free key); EU VIES, for an EU VAT number printed on the company's website (name and address; Germany confirms only that the number is valid); Receita Federal, for a Brazilian CNPJ printed on the website (address, administrators and directors), read through the free BrasilAPI mirror; government gazettes and registers found by searching their websites for the company: BORME (Spain), Portal da Justiça (Portugal), Boletín Oficial (Argentina), Sunbiz (Florida), Companies House pages (United Kingdom); which one depends on the countries the legal form points to;
+2. el registro GLEIF LEI (regulación de registro);
+3. el propio sitio web de la empresa: su aviso legal (Impressum, Aviso legal, Mentions légales, Aviso legal) primero, luego sobre, páginas de contacto y privacidad;
+4. Wikidata, y los fragmentos de los resultados de la búsqueda web (datos comunitarios, no verificados; los snippets se leen solamente cuando nada más se nombra a nadie).
+
+El sitio web se encuentra automáticamente: desde Wikidata, desde un DuckDuckGo buscar el nombre exacto, y desde direcciones como `foobar.de` o `foobar.com.mx` construidas desde el nombre y los países de su forma legal. Un sitio se utiliza sólo si una de sus páginas llama a la empresa con su forma legal. En el aviso legal de un grupo que nombre varias empresas, sólo se lee la parte sobre la empresa.
+
+Las etiquetas son reconocidas en alemán, inglés, español, portugués, francés, italiano, holandés, polaco, checo, eslovaco y nórdico, en cualquier lugar de una línea, en tablas y a pie, y se traducen a roles de inglés. Se eliminan las etiquetas que nombran a otras personas (papel de supervisión, oficial de protección de datos, persona responsable de contenido, contacto, agente registrado) y personas que se fueron (*Ceses/Dimisiones*, *ehemalig*, *former*).
+
+Los números oficiales y las entradas de registro impresos en el sitio web (por ejemplo `HRB 12345` o `FN 123456 a`) se muestran antes de que el formulario esté escrito; el número se puede escribir en *Commercial Registry Number* con *edit*.
+
+DuckDuckGo se le pide a la mayoría de unas cuantas veces por compañía, a unos segundos de distancia. Si pide un cheque humano, busca pausas por un minuto y las otras fuentes se utilizan mientras tanto.
 
 Las fuentes alimentan qué campo, la fuente menos confiable aceptada para los representantes y los inconvenientes se establecen en la configuración. Las personas y direcciones nunca son tomadas de una entidad madre, subsidiaria o similarmente nombrada. Los valores no verificados obtienen este texto exacto cuando `caution` lo dice:
 
@@ -85,6 +93,9 @@ Cuando no se encuentra representante, el campo dice:
 
 `keys`
 : Explica las claves de API gratuitas opcionales.
+
+`man` [*topic*] [`en` | `es` | `de`]
+: Mostrar este manual en el terminal, una pantalla a la vez (Enter: siguiente pantalla; q y Enter: renunciar). Sin un tema se muestra todo el manual, comenzando por el guía. Temas: `guide`, `usage`, `configuration`, `install`, `formats`, `containers`, `security`; `numb-form man topics` los lista. El idioma sigue `LANG`, o se da. `numb-form man -install` hace que `man numb-form` funcione: en Linux, macOS y BSD escribe la página manual a `~/.local/share/man/man1` (refreshed by `numb-form update`); en Windows escribe `man.cmd` junto a `numb-form.exe`, para Command Prompt. Windows PowerShell mantiene `man` por su propia ayuda: allí, escriba `numb-form man`.
 
 `update` [`stable` ← `edge`]
 : Reemplazar el `numb-form` instalado y `numb-commit` con la nueva versión estable o la nueva construcción de desarrollo `edge`, como lo hacen los comandos de instalación: el archivo y `SHA256SUMS` se descargan sobre HTTPS de GitHub solamente, la suma de comprobación debe coincidir, y el nuevo `numb-form` debe comenzar antes de que todo sea reemplazado. Sin un argumento se utiliza el canal de la construcción de ejecución. Se mantienen los ajustes. Refusado con `-offline`, con `online = no`, y para construcciones de origen. En Windows el viejo programa es renombrado a `numb-form.old.exe` y eliminado al siguiente inicio.

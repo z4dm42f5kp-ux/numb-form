@@ -93,15 +93,15 @@ numb-form config init && numb-form config
 
 ### Fuentes
 
-Las fuentes son `companies-house`, `gleif`, `website` y `wikidata`. Las listas están separadas por espacios o comas; su orden es el orden de preferencia.
+Las fuentes son `companies-house`, `vies`, `brasil-cnpj`, `official` (fotones y registros gubernamentales encontrados por la búsqueda), `gleif`, `website`, `search` (búsqueda web, también utilizada para encontrar el sitio web) y `wikidata`. Las listas están separadas por espacios o comas; su orden es el orden de preferencia.
 
-`address_sources = companies-house gleif website wikidata`
+`address_sources = companies-house vies brasil-cnpj official gleif website search wikidata`
 : Fuentes para *Headquarters / Address*.
 
 `address_fallback = ask` | `blank`
 : Cuando no se encuentra ninguna dirección. Con `confirm = none`, `ask` actúa como `blank`.
 
-`reps_sources = companies-house gleif website wikidata`
+`reps_sources = companies-house vies brasil-cnpj official gleif website search wikidata`
 : Fuentes para *Authorized Representatives*.
 
 `reps_min_trust = any` | `website` | `register`
@@ -113,8 +113,14 @@ Las fuentes son `companies-house`, `gleif`, `website` y `wikidata`. Las listas e
 `caution = auto` | `always` | `never`
 : El texto de precaución. **auto**: sugerida para valores no confirmados por un registro (asked cuando `confirm = each`).
 
-`website = ask` | `wikidata` | `never`
-: El sitio web de la empresa lee por su aviso legal: pídalo, use sólo la sugerencia de Wikidata, o nunca. Con `confirm = none`, `ask` actúa como `wikidata`.
+`website = auto` | `ask` | `never`
+: El sitio web de la empresa leyó su aviso legal. **auto** (predeterminado): encontrado automáticamente y utilizado sólo si se llama la empresa. **ask**: escriba la dirección de cada empresa (Enter la encuentra automáticamente). **never**: no se lee ningún sitio web. Con `confirm = none`, `ask` actúa como `auto`. El valor más antiguo `wikidata` significa `auto`.
+
+`search = duckduckgo` | `none`
+: Búsqueda web usada para encontrar sitios web, entradas de la gaceta del gobierno y, como último recurso, representantes en resultados snippets. Sólo se envía el nombre de la empresa, con palabras como `impressum` o `site:boe.es`. **none** apaga la búsqueda; registros y direcciones conjeturadas todavía se utilizan.
+
+`guess_domains = yes` | `no`
+: También pruebe las direcciones construidas desde el nombre, como `foobar.de` o `foobar.com.br`, elegidas por los países de la forma legal.
 
 ### Formatos
 

@@ -73,12 +73,13 @@ Viele Fragen zeigen einen Vorschlag in eckigen Klammern, wie `[GmbH]` oder `[y/N
 
 Jedes Unternehmen beginnt mit einer Linie wie `[3/11] Foo GmbH  (Sheet1!C5)`: das dritte von elf Unternehmen, und die Zelle, von der es genommen wurde.
 
+Dann sieht numb-form das Unternehmen selbst, was einige Sekunden dauert: offizielle Register, die eigene Website des Unternehmens (es findet es allein), offizielle Nummern, die dort gedruckt werden, Regierungsblätter und eine Websuche. Es zeigt die von ihm verwendete Website, jeden dort gedruckten Registereintrag (z. B. `HRB 12345`) und wie viele Adressen und Vertreter es gefunden hat. Die Rechtsform wird dem Firmennamen entnommen, ohne zu fragen. *Commercial Registry Number* erhält immer den Satz "Keine kommerzielle Registernummer wurde online gefunden, konsultieren Sie interne Quellen für weitere Informationen"; Um die Nummer stattdessen einzugeben, wählen Sie `e` (Bearbeitung) und Feld 4 am Ende.
+
 | numb-form fragt | Was es bedeutet | Was Sie normalerweise tun |
 | --- | --- | --- |
 | `Full name of the person processing the form:` | Nur gefragt, ob Sie Schritt 2 übersprungen haben | Geben Sie Ihren Namen ein; Enter bei der nächsten Frage verwendet es für jedes Formular in diesem Lauf |
 | `Is the existing folder "Foo Gmbh" this company's folder? (...) [y/N]` | Ein Ordner mit einem sehr ähnlichen Namen existiert bereits | `y`, wenn es sich um dieselbe Firma handelt (es wird nichts erstellt), andernfalls Enter |
-| `Official company website to read its legal notice (...)` | Die eigene Website des Unternehmens; numb-form liest seinen rechtlichen Hinweis (Impressum) | Geben Sie die Adresse ein, z. B. `foo.de`; oder Enter, die die vorgeschlagene Website nimmt, wenn eine gezeigt wird und ansonsten überspringt; `-` überspringt |
-| `Legal form (Enter = keep, '-' = blank) [GmbH]` | Vom Ende des Firmennamens übernommen | Eingang |
+| `Legal form (Enter = keep, '-' = blank) [GmbH]` | Gefragt nur, wenn der Firmenname keine Rechtsform wie `GmbH` oder `S.A.` hat; der Vorschlag stammt aus dem Register oder der Website | Eingang |
 | `Headquarters / Address candidates` und eine nummerierte Liste, dann `Choose a number, 'm' to type it, 'b' to leave blank [1]` | Adressen gefunden, das zuverlässigste (offizielle Register) zuerst; jedes zeigt seine Quelle | Enter nimmt Nummer 1; geben Sie eine andere Nummer ein; `m`, um die Adresse selbst einzugeben; `b`, um sie leer zu lassen |
 | `Address (Enter = keep, or correct it) [...]` | Die Adresse, die Sie ausgewählt haben, damit Sie einen Tippfehler korrigieren können | Geben Sie die korrigierte Adresse ein |
 | `Add the caution text to the address (not fully verified)? [y/N]` | Fügt den Satz "Vorsicht" hinzu: Dieses Feld kann sich von internen Quellen unterscheiden ... Die gleiche Frage kann für die Vertreter kommen | Press Enter: Der Vorschlag hängt bereits davon ab, wie zuverlässig die Quelle ist |
@@ -148,6 +149,10 @@ Beide drucken die von ihnen installierte Version, z. B. `v0.1.1` (stabil) oder `
 Wenn PowerShell `Unexpected token` oder `Missing ...` rot beantwortet, wurde die Zeile beim Kopieren geändert (normalerweise ging ein Zeichen verloren): Kopieren Sie es erneut mit dem Kopiersymbol.
 
 Wenn die Entwicklungslinie `CHECKSUM MISMATCH` sagt, wurde in diesem Moment ein neuer Build hochgeladen: Warten Sie fünf Minuten und führen Sie ihn noch einmal aus. Wenn es wieder passiert, oder mit der stabilen Linie, stoppen und sagen, wer sich um das Werkzeug kümmert.
+
+## Lesen Sie dieses Handbuch im Fenster
+
+Geben Sie `numb-form man` ein, um alles im blauen Fenster zu lesen, jeweils einen Bildschirm (Enter: next screen; q und Enter: quit). `numb-form man guide` zeigt nur diese Anleitung; fügen Sie `de` oder `es` für Deutsch oder Spanisch hinzu: `numb-form man guide de`. In Command Prompt (dem schwarzen Fenster) funktioniert `man numb-form` auch, nachdem `numb-form man -install` einmal ausgeführt wurde.
 
 ## Wenn etwas schief geht
 

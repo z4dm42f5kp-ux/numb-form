@@ -73,12 +73,13 @@ Muchas preguntas muestran una sugerencia entre corchetes, como `[GmbH]` o `[y/N]
 
 Cada empresa comienza con una línea como `[3/11] Foo GmbH  (Sheet1!C5)`: la tercera de once empresas, y la célula de la que fue tomado.
 
+A continuación, numb-form mira a la empresa por sí misma, que lleva unos segundos: registros oficiales, el propio sitio web de la empresa (lo encuentra solo), números oficiales impresos allí, gacetas gubernamentales y una búsqueda web. Muestra el sitio web que utilizó, cualquier registro impreso allí (por ejemplo `HRB 12345`), y cuántas direcciones y representantes encontró. La forma legal se toma del nombre de la empresa sin preguntar. *Commercial Registry Number* siempre recibe la frase "No se encontró ningún número de registro comercial en línea consulta fuentes internas para más información"; para poner el número en su lugar, seleccione `e` (edita) y campo 4 al final.
+
 | numb-form pregunta | Lo que significa | Lo que normalmente haces |
 | --- | --- | --- |
 | `Full name of the person processing the form:` | Sólo preguntaba si saltaste el paso 2 | Escriba su nombre; Ingrese en la siguiente pregunta lo utiliza para cada forma en esta carrera |
 | `Is the existing folder "Foo Gmbh" this company's folder? (...) [y/N]` | Una carpeta con un nombre muy similar ya existe | `y` si es la misma empresa (nada se crea), de lo contrario Enter |
-| `Official company website to read its legal notice (...)` | El propio sitio web de la empresa; numb-form lee su aviso legal (Impressum) | Escriba la dirección, por ejemplo `foo.de`; o Enter, que toma el sitio web sugerido si se muestra y se salta de otra manera; `-` skips |
-| `Legal form (Enter = keep, '-' = blank) [GmbH]` | Tomado desde el final del nombre de la empresa | Entra |
+| `Legal form (Enter = keep, '-' = blank) [GmbH]` | Se le preguntó solamente cuando el nombre de la empresa no tiene forma legal como `GmbH` o `S.A.`; la sugerencia viene del registro o sitio web | Entra |
 | `Headquarters / Address candidates` y una lista numerada, entonces `Choose a number, 'm' to type it, 'b' to leave blank [1]` | Discursos encontrados, los registros oficiales más fiables primero; cada uno muestra su fuente | Entrar toma el número 1; escriba otro número; `m` para escribir la dirección usted mismo; `b` para dejarlo en blanco |
 | `Address (Enter = keep, or correct it) [...]` | La dirección que elegiste, para corregir un typo | Introduzca o escriba la dirección corregida |
 | `Add the caution text to the address (not fully verified)? [y/N]` | Añade la frase "Caution: Este campo puede diferir de fuentes internas..." La misma pregunta puede plantearse a los representantes | Press Enter: la sugerencia ya depende de lo fiable que sea la fuente |
@@ -148,6 +149,10 @@ Ambos imprimir la versión que instalaron, por ejemplo `v0.1.1` (estable) o `edg
 Si PowerShell responde `Unexpected token` o `Missing ...` en rojo, la línea fue cambiada mientras se copia (normalmente se perdió un personaje): copiarlo de nuevo con el icono de copia.
 
 Si la línea de desarrollo dice `CHECKSUM MISMATCH`, se estaba subiendo una nueva construcción en ese momento: esperar cinco minutos y ejecutarla una vez más. Si sucede de nuevo, o con la línea estable, deténgase y dígale a quien se ocupa de la herramienta.
+
+## Lea este manual en la ventana
+
+Escriba `numb-form man` para leer todo en la ventana azul, una pantalla a la vez (Enter: siguiente pantalla; q y Enter: dejar). `numb-form man guide` sólo muestra esta guía; añadir `de` o `es` para alemán o español: `numb-form man guide de`. En Command Prompt (la ventana negra) `man numb-form` funciona también, después de ejecutar `numb-form man -install` una vez.
 
 ## Cuando algo sale mal
 

@@ -31,7 +31,13 @@ numb-form maneja documentos de cliente, por lo que las reglas de diseño son est
 
 ## Red
 
-Los buscadores en línea envían sólo nombres de empresa y el sitio web de la empresa el usuario confirma. Ellos van a la API GLEIF, Wikidata, el propio sitio web de la empresa y, sólo cuando se establece una llave gratuita, UK Companies House. Utilice `-offline` para enviar nada.
+Los buscadores en línea envían sólo nombres de empresa y números oficiales impresos en el propio sitio web de la empresa:
+
+* nombre de la empresa a la GLEIF API, Wikidata y DuckDuckGo (con palabras como `impressum` o `site:boe.es`), y a UK Companies House sólo cuando se establece una llave gratuita;
+* Números de IVA de la UE a VIES de la UE, y números de CNPJ brasileños a BrasilAPI;
+* Solicitudes de página ordinarias a la página web de la empresa (encontradas automáticamente, o escritas por el usuario) y a las páginas de consulta gubernamentales (BORME, Portal da Justiça, Boletín Oficial, Sunbiz, Companies House) encontradas por búsqueda.
+
+Nada de la hoja de cálculo aparte del nombre de la empresa es enviado, y nada sobre la persona que procesa la forma. `search = none` deja de buscar; `-offline` o `online = no` no envía nada en absoluto. Las búsquedas están separadas unos segundos y pausan por un minuto cuando DuckDuckGo pide un cheque humano.
 
 * HTTPS sólo, TLS 1.2 o posterior, a la mayoría de cinco HTTPS redirige.
 * Sin un proxy, se rechazan las conexiones con el bucleback, las direcciones privadas, locales de enlace y multicast (solicitud de guardia de falsificación del lado del servidor).

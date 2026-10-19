@@ -31,7 +31,13 @@ numb-form verarbeitet Kundendokumente, daher sind die Designregeln streng.
 
 ## Netz
 
-Online-Lookups senden nur Firmennamen und die Unternehmenswebsite, die der Benutzer bestätigt. Sie gehen auf die GLEIF API, Wikidata, die firmeneigene Website und, nur wenn ein freier Schlüssel gesetzt ist, UK Companies House. Verwenden Sie `-offline`, um nichts zu senden.
+Online-Lookups senden nur Firmennamen und offizielle Nummern, die auf der eigenen Website des Unternehmens gedruckt sind:
+
+* Firmennamen für die GLEIF API, Wikidata und DuckDuckGo (mit Wörtern wie `impressum` oder `site:boe.es`) und für UK Companies House nur, wenn ein freier Schlüssel festgelegt ist;
+* EU-Mehrwertsteuernummern für EU VIES und brasilianische CNPJ-Nummern für BrasilAPI;
+* gewöhnliche Seitenanfragen auf der Website des Unternehmens (automatisch gefunden oder vom Benutzer eingegeben) und auf Seiten des Regierungsblatts (BORME, Portal da Justiça, Boletín Oficial, Sunbiz, Companies House), die durch Suche gefunden werden.
+
+Nichts aus der Tabelle außer dem Firmennamen wird gesendet und nichts über die Person, die das Formular verarbeitet. `search = none` stoppt die Suche; `-offline` oder `online = no` sendet überhaupt nichts. Die suchanfragen sind einige sekunden voneinander entfernt und halten eine minute inne, wenn duckduckgo nach einem menschlichen check fragt.
 
 * Nur HTTPS, TLS 1.2 oder höher, höchstens fünf HTTPS-Weiterleitungen.
 * Ohne Proxy werden Verbindungen zu Loopback-, Private-, Link-Local- und Multicast-Adressen abgelehnt (serverseitiger Request Forgery Guard).
