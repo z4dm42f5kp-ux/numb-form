@@ -23,8 +23,14 @@ Start it in the folder above the working folder:
 cd /path/to/folder-above && numb-form
 ```
 
-On Windows:
+On Windows, in Command Prompt:
 
 ```
 cd /d "S:\path\to\folder-above" && numb-form
+```
+
+In Windows PowerShell:
+
+```
+Set-Location 'S:\path\to\folder-above'; if ($?) { numb-form }
 ```

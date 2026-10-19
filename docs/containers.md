@@ -46,7 +46,9 @@ folder:
 mkdir -p "$HOME/Downloads/numb-form-logs" && docker run --rm -it --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges -e TZ=Europe/Berlin -e XDG_STATE_HOME=/downloads/numb-form-logs -v "$PWD:/data" -v "$HOME/Downloads:/downloads" ghcr.io/z4dm42f5kp-ux/numb-form:latest
 ```
 
-On Windows with Docker Desktop, in Command Prompt:
+On Windows with Docker Desktop, in Windows PowerShell replace `%cd%` with
+`${PWD}` and `%USERPROFILE%` with `$env:USERPROFILE`.
+In Command Prompt:
 
 ```
 docker run --rm -it --read-only --cap-drop ALL --security-opt no-new-privileges -e TZ=Europe/Berlin -e XDG_STATE_HOME=/downloads/numb-form-logs -v "%cd%:/data" -v "%USERPROFILE%\Downloads:/downloads" ghcr.io/z4dm42f5kp-ux/numb-form:latest

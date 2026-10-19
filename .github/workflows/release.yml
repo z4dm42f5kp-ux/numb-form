@@ -57,9 +57,17 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ github.ref_name }}
         run: |
-          gh release create "$VERSION" --verify-tag --title "$VERSION" \
-            --notes "Verify downloads as described in docs/install.md (SHA256SUMS, Sigstore bundle, build provenance)." \
-            dist/*.tar.gz dist/*.zip dist/SHA256SUMS dist/SHA256 dist/SHA256SUMS.sigstore.json
+          # A release created in the GitHub web page (which also creates the
+          # tag) already exists: add the files to it instead.
+          files="dist/*.tar.gz dist/*.zip dist/SHA256SUMS dist/SHA256 dist/SHA256SUMS.sigstore.json"
+          if gh release view "$VERSION" > /dev/null 2>&1; then
+            # shellcheck disable=SC2086
+            gh release upload "$VERSION" --clobber $files
+          else
+            # shellcheck disable=SC2086
+            gh release create "$VERSION" --verify-tag --title "$VERSION" \
+              --notes "Verify downloads as described in docs/install.md (SHA256SUMS, Sigstore bundle, build provenance)." $files
+          fi
       - name: Build and push image (FROM scratch, amd64 + arm64)
         id: image
         env:
