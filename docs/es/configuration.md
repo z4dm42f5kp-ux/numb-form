@@ -68,7 +68,7 @@ numb-form config init && numb-form config
 `overview_dir = Übersicht`
 : Pattern of the folder that holds the spreadsheet. Case, accents and punctuation are ignored, and umlauts match both spellings, so `Übersicht` matches `3. Übersichten` and `Uebersicht`.
 
-`header = Company Name`, `id_header = Customer ID`
+`header = Customer Name`, `id_header = Customer ID`
 : Cabeceras de columna de hoja de cálculo.
 
 `template_name = Appendix A - Risk Assesment`

@@ -39,7 +39,7 @@ Unternehmen, die bereits einen Ordner haben, werden übersprungen. Die Excel-Lis
 
 Sie benötigen keine Administratorrechte. Wenn dort `CHECKSUM MISMATCH` steht, wurde der Download beschädigt oder geändert: Fahren Sie nicht fort und sagen Sie, wer sich um das Tool kümmert.
 
-Um numb-form später zu aktualisieren, führen Sie die gleiche Zeile erneut aus.
+Um numb-form später zu aktualisieren, siehe [Reinstall oder update](#reinstall-or-update).
 
 ## 2. Speichern Sie Ihren Namen (einmal)
 
@@ -119,6 +119,26 @@ numb-form config set mode review
 
 Von da an kopiert numb-form GWG in Ihren **Downloads** Ordner und funktioniert nur noch auf der Kopie. Schauen Sie sich die neuen Ordner dort an. Wenn alles in Ordnung ist, geben Sie `numb-commit` ein: Es kopiert die neuen Ordner in den echten GWG-Ordner, nachdem Sie noch einmal gefragt wurden. Wechseln Sie zurück mit `numb-form config set mode direct`.
 
+## Neuinstallation oder Update
+
+Schließen Sie zuerst jedes numb-form-Fenster. Öffnen Sie dann Windows PowerShell und fügen Sie eine dieser beiden Zeilen ein. Ihre gespeicherten Einstellungen (Ihr Name, die Überschrift, der Modus) bleiben erhalten.
+
+**Stable version** (die neueste veröffentlichte Version; verwenden Sie diese für echte Arbeit):
+
+```
+& { $ErrorActionPreference = 'Stop'; if (Get-Process numb-form, numb-commit -ErrorAction SilentlyContinue) { throw 'Close every numb-form window first, then run this again' }; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $u = 'https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download'; $z = 'numb-form_windows_amd64.zip'; $d = Join-Path $env:LOCALAPPDATA 'Programs\numb-form'; New-Item -ItemType Directory -Force $d | Out-Null; Push-Location $d; try { Invoke-WebRequest -UseBasicParsing "$u/$z" -OutFile $z; Invoke-WebRequest -UseBasicParsing "$u/SHA256SUMS" -OutFile SHA256SUMS; $h = (Get-FileHash $z -Algorithm SHA256).Hash.ToLower(); if (-not (Select-String -Path SHA256SUMS -SimpleMatch "$h  $z" -Quiet)) { throw 'CHECKSUM MISMATCH' }; Remove-Item -Force -ErrorAction SilentlyContinue numb-form.exe, numb-commit.exe; Expand-Archive -Force $z -DestinationPath $d } finally { Remove-Item -ErrorAction SilentlyContinue $z, SHA256SUMS; Pop-Location }; $p = [Environment]::GetEnvironmentVariable('Path', 'User'); if (-not $p) { $p = '' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';') + ';' + $d).TrimStart(';'), 'User') }; & (Join-Path $d 'numb-form.exe') -version; 'OK, reinstalled. Your settings are kept. Open a new PowerShell window' }
+```
+
+**Entwicklungsversion** (die neuesten Änderungen, automatisch nach jedem Update auf GitHub neu erstellt; verwenden Sie dies, um sofort eine Korrektur zu versuchen):
+
+```
+& { $ErrorActionPreference = 'Stop'; if (Get-Process numb-form, numb-commit -ErrorAction SilentlyContinue) { throw 'Close every numb-form window first, then run this again' }; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $u = 'https://github.com/z4dm42f5kp-ux/numb-form/releases/download/edge'; $z = 'numb-form_windows_amd64.zip'; $d = Join-Path $env:LOCALAPPDATA 'Programs\numb-form'; New-Item -ItemType Directory -Force $d | Out-Null; Push-Location $d; try { Invoke-WebRequest -UseBasicParsing "$u/$z" -OutFile $z; Invoke-WebRequest -UseBasicParsing "$u/SHA256SUMS" -OutFile SHA256SUMS; $h = (Get-FileHash $z -Algorithm SHA256).Hash.ToLower(); if (-not (Select-String -Path SHA256SUMS -SimpleMatch "$h  $z" -Quiet)) { throw 'CHECKSUM MISMATCH' }; Remove-Item -Force -ErrorAction SilentlyContinue numb-form.exe, numb-commit.exe; Expand-Archive -Force $z -DestinationPath $d } finally { Remove-Item -ErrorAction SilentlyContinue $z, SHA256SUMS; Pop-Location }; $p = [Environment]::GetEnvironmentVariable('Path', 'User'); if (-not $p) { $p = '' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';') + ';' + $d).TrimStart(';'), 'User') }; & (Join-Path $d 'numb-form.exe') -version; 'OK, reinstalled. Your settings are kept. Open a new PowerShell window' }
+```
+
+Beide drucken die von ihnen installierte Version, z. B. `v0.1.1` (stabil) oder `edge-3f976cc` (Entwicklung), und enden mit `OK, reinstalled`. Öffnen Sie danach ein neues PowerShell-Fenster.
+
+Wenn die Entwicklungslinie `CHECKSUM MISMATCH` sagt, wurde in diesem Moment ein neuer Build hochgeladen: Warten Sie fünf Minuten und führen Sie ihn noch einmal aus. Wenn es wieder passiert, oder mit der stabilen Linie, stoppen und sagen, wer sich um das Werkzeug kümmert.
+
 ## Wenn etwas schief geht
 
 **`numb-form` wird nicht erkannt**
@@ -136,8 +156,8 @@ Von da an kopiert numb-form GWG in Ihren **Downloads** Ordner und funktioniert n
 **`2 spreadsheets in ...; expected exactly one`**
 : `3. Übersichten` muss genau eine Excel-Datei enthalten. Verlegen Sie die anderen woanders.
 
-**`no sheet has a "Company Name" header cell`**
-: numb-form sucht nach einer Zelle, die `Company Name` sagt und die Namen darunter nimmt. Wenn Ihre Liste eine andere Überschrift verwendet, z. B. `Firmenname`, speichern Sie sie einmal mit `numb-form config set header "Firmenname"`.
+**`no sheet has a "Customer Name" header cell`**
+: numb-form sucht nach der Überschrift `Customer Name` und nimmt die Namen darunter. Die Nachricht listet die Überschriften auf, die sie gefunden hat. Wenn Ihre Liste eine andere Überschrift verwendet, z. B. `Firmenname`, speichern Sie sie einmal mit `numb-form config set header "Firmenname"`. Versionen 0.1.1 und älter suchen stattdessen nach `Company Name`; dort führen Sie `numb-form config set header "Customer Name"` einmal aus.
 
 **`Time limit of 25m0s reached`**
 : Ein Lauf stoppt nach 25 Minuten aus Sicherheitsgründen. Starten Sie es erneut; Unternehmen, die bereits fertig sind, werden übersprungen.

@@ -68,7 +68,7 @@ numb-form config init && numb-form config
 `overview_dir = Übersicht`
 : Muster des Ordners, der die Tabellenkalkulation enthält. Fall, Akzente und Interpunktion werden ignoriert, und Umlaute stimmen mit beiden Schreibweisen überein, so dass `Übersicht` mit `3. Übersichten` und `Uebersicht` übereinstimmt.
 
-`header = Company Name`, `id_header = Customer ID`
+`header = Customer Name`, `id_header = Customer ID`
 : Tabellenüberschriften.
 
 `template_name = Appendix A - Risk Assesment`
