@@ -61,8 +61,17 @@ type Filler interface {
 	ReadBack(doc []byte) (Values, error)
 }
 
-// Check validates that a template has a fillable section A.
+// Check validates that a template has a fillable section A: every label
+// must be present and empty, and a trial fill of every field must pass
+// the self-check. Only the registry label may be missing (it is always
+// left blank anyway).
 func Check(f Filler, template []byte) ([]string, error) {
-	_, w, err := f.Fill(template, Values{})
+	probe := Values{}
+	for _, fl := range AllFields {
+		if fl != FieldRegistry {
+			probe[fl] = "x"
+		}
+	}
+	_, w, err := f.Fill(template, probe)
 	return w, err
 }
