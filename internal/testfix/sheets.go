@@ -24,7 +24,7 @@ func odsContent(ids, names []string) string {
 		return `<table:table-cell office:value-type="string"><text:p>` + xmlText(v) + `<office:annotation><text:p>comment ignored</text:p></office:annotation></text:p></table:table-cell>`
 	}
 	b.WriteString(`<table:table-row><table:table-cell/>`)
-	for _, h := range []string{"Customer ID", "Company Name", "Country Created", "Currency", "Report created"} {
+	for _, h := range []string{"Customer ID", "Customer Name", "Country Created", "Currency", "Report created"} {
 		b.WriteString(cell(h))
 	}
 	b.WriteString(`</table:table-row>`)
@@ -64,7 +64,7 @@ func FODS(ids, names []string) []byte {
 // CSV builds a delimited export, optionally in Windows-1252.
 func CSV(ids, names []string, sep string, cp1252 bool) []byte {
 	var b strings.Builder
-	b.WriteString(sep + "Customer ID" + sep + "Company Name" + sep + "Country Created\r\n")
+	b.WriteString(sep + "Customer ID" + sep + "Customer Name" + sep + "Country Created\r\n")
 	for i := range names {
 		n := names[i]
 		if strings.ContainsAny(n, sep+`"`) {
@@ -100,7 +100,7 @@ func le32(v int) []byte { return binary.LittleEndian.AppendUint32(nil, uint32(v)
 // string table is split across a CONTINUE record in the middle of a
 // string, and switches between compressed and UTF-16 characters there.
 func XLS(t testing.TB, ids, names []string) []byte {
-	strs := append([]string{"Customer ID", "Company Name"}, append(append([]string{}, ids...), names...)...)
+	strs := append([]string{"Customer ID", "Customer Name"}, append(append([]string{}, ids...), names...)...)
 	// Shared strings, recorded as raw pieces so one can be split.
 	var sst []byte
 	sst = append(sst, le32(len(strs))...)

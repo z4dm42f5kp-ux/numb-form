@@ -65,7 +65,7 @@ cd "/path/to/working-folder" && numb-form
 * Representatives: `Full Name (Role 1, Role 2), Full Name (Role)`,
   roles in English.
 * Date: `DD/MM/YYYY` from the system clock.
-* Ignore every spreadsheet column except `Company Name`;
+* Ignore every spreadsheet column except `Customer Name`;
   the folder tree is the source of truth for which reports exist.
 * Runs take at most 25 minutes and leave no cache behind.
 * Never commit customer files, logs or run folders to this public
@@ -127,4 +127,4 @@ cd "/path/to/working-folder" && numb-form
 | `internal/runlog` | log and manifest |
 | `internal/ui` | terminal prompts with the run deadline |
 | `container/`, `k8s/` | image and Kubernetes manifests |
-| `.github/workflows` | CI, security, release, translation, scorecard |
+| `.github/workflows` | CI, security, release, edge (development build), translation, scorecard |

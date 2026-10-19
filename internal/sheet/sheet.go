@@ -38,14 +38,14 @@ type Cell struct {
 
 // Options configures reading.
 type Options struct {
-	Header   string // column header of the company names (default "Company Name")
+	Header   string // column header of the company names (default "Customer Name")
 	IDHeader string // column header of the customer ids (default "Customer ID")
 	Legacy   bool   // allow .xls
 }
 
 func (o Options) header() string {
 	if o.Header == "" {
-		return "Company Name"
+		return "Customer Name"
 	}
 	return o.Header
 }
@@ -113,9 +113,15 @@ func Read(b []byte, ext string, opt Options) ([]Row, []string, error) {
 	return nil, nil, fmt.Errorf("unsupported spreadsheet format %q", ext)
 }
 
-func same(a, b string) bool {
-	return strings.EqualFold(strings.Join(strings.Fields(a), " "), strings.Join(strings.Fields(b), " "))
+// normHeader folds case and spacing and drops a trailing colon or
+// asterisk, so "Customer Name", "customer  name" and "Customer Name:" match.
+func normHeader(s string) string {
+	s = strings.Join(strings.Fields(s), " ")
+	s = strings.TrimRight(s, ":* ")
+	return strings.ToLower(s)
 }
+
+func same(a, b string) bool { return normHeader(a) != "" && normHeader(a) == normHeader(b) }
 
 // Extract finds the company-name header among cells and returns the
 // non-empty cells below it, from top to bottom.
@@ -171,7 +177,55 @@ func fromSheets(names []string, cells [][]Cell, opt Options) ([]Row, error) {
 			return rows, nil
 		}
 	}
-	return nil, fmt.Errorf("no sheet has a %q header cell", opt.header())
+	return nil, headerError(opt.header(), cells)
+}
+
+// headerError says which header was missing and lists the text cells of
+// the first rows, which are usually the column headings, so the user can
+// see what to set as header.
+func headerError(want string, sheets [][]Cell) error {
+	const maxRows, maxHints, maxLen = 3, 12, 40
+	seen := map[string]bool{}
+	var hints []string
+	for _, cells := range sheets {
+		sorted := append([]Cell(nil), cells...)
+		sort.SliceStable(sorted, func(i, j int) bool {
+			if sorted[i].Row != sorted[j].Row {
+				return sorted[i].Row < sorted[j].Row
+			}
+			return sorted[i].Col < sorted[j].Col
+		})
+		rows, last := 0, -1
+		for _, c := range sorted {
+			if c.Row != last {
+				if rows == maxRows {
+					break
+				}
+				rows, last = rows+1, c.Row
+			}
+			v := strings.Join(strings.Fields(c.Val), " ")
+			if v == "" || seen[v] || len(hints) == maxHints {
+				continue
+			}
+			if _, err := strconv.ParseFloat(v, 64); err == nil {
+				continue
+			}
+			if r := []rune(v); len(r) > maxLen {
+				v = string(r[:maxLen]) + "..."
+			}
+			seen[v] = true
+			hints = append(hints, strconv.Quote(v))
+		}
+		if len(hints) > 0 {
+			break
+		}
+	}
+	msg := fmt.Sprintf("no sheet has a %q header cell (the heading above the company names)", want)
+	if len(hints) == 0 {
+		return errors.New(msg)
+	}
+	return fmt.Errorf("%s.\nHeadings found at the top of the sheet: %s\nSave the right one once, for example:  numb-form config set header %s",
+		msg, strings.Join(hints, ", "), hints[len(hints)-1])
 }
 
 // Ref builds an A1-style reference from 1-based column and row.

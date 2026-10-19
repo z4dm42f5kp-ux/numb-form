@@ -76,7 +76,7 @@ func XLSX(t testing.TB, ids, names []string) []byte {
 		return len(shared) - 1
 	}
 	var rows strings.Builder
-	hdr := []string{"Customer ID", "Company Name", "Country Created", "Currency", "Report created"}
+	hdr := []string{"Customer ID", "Customer Name", "Country Created", "Currency", "Report created"}
 	rows.WriteString(`<row r="2">`)
 	for i, h := range hdr {
 		fmt.Fprintf(&rows, `<c r="%c2" t="s"><v>%d</v></c>`, 'B'+i, idx(h))

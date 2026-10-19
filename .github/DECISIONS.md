@@ -71,3 +71,14 @@ settings under #6 remain for the maintainer.
 * Fast PR gate (lint, unit tests on 3 OSes, govulncheck); BSD VMs, long
   fuzzing and containers on `main` and nightly; skip Go jobs for
   docs-only changes.
+
+## Development builds (edge)
+
+Releases are created by hand in the GitHub web page, which is too slow
+while the tool changes daily.
+`edge.yml` rebuilds the archives after every push to `main` (after the
+tests and govulncheck pass) and replaces the files of the `edge`
+pre-release, signed and attested like a stable release.
+It is never marked latest, so `releases/latest` keeps meaning stable.
+Archives are uploaded before the checksums, so a download during an
+update fails the checksum check rather than installing a mismatched file.
