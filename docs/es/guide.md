@@ -121,7 +121,15 @@ A partir de entonces, numb-form copias GWG en su carpeta **Downloads** y solo fu
 
 ## Reinstalar o actualizar
 
-Cierre cada ventana numb-form primero. Luego abre Windows PowerShell y pega una de estas dos líneas. Los ajustes guardados (su nombre, la partida, el modo) se mantienen.
+La manera fácil: abrir Windows PowerShell y tipo
+
+```
+numb-form update
+```
+
+Se descarga la versión más reciente, lo comprueba, reemplaza el programa e imprime la nueva versión, por ejemplo `Updated to numb-form v0.1.2 (stable)`. Los ajustes guardados (su nombre, la partida, el modo) se mantienen. Se mantiene en la versión que tiene: la versión de desarrollo mantiene la actualización a la nueva construcción de desarrollo, la versión estable a la nueva versión estable. Para cambiar, escriba `numb-form update edge` (desarrollo) o `numb-form update stable`.
+
+Versiones 0.1.1 y mayores no tienen `numb-form update`. Para aquellos, o si `numb-form update` no puede conectarse, use una de las dos líneas siguientes. No escriba ellos: Abra esta página en su navegador, haga clic en el icono de copia en el borde derecho de la caja gris, y haga clic con el botón derecho en la ventana PowerShell para pegar. Cierre cada ventana numb-form primero.
 
 **Stable version** (la nueva versión publicada; use esto para el trabajo real):
 
@@ -136,6 +144,8 @@ Cierre cada ventana numb-form primero. Luego abre Windows PowerShell y pega una 
 ```
 
 Ambos imprimir la versión que instalaron, por ejemplo `v0.1.1` (estable) o `edge-3f976cc` (desarrollo), y terminar con `OK, reinstalled`. Abra una nueva ventana PowerShell después.
+
+Si PowerShell responde `Unexpected token` o `Missing ...` en rojo, la línea fue cambiada mientras se copia (normalmente se perdió un personaje): copiarlo de nuevo con el icono de copia.
 
 Si la línea de desarrollo dice `CHECKSUM MISMATCH`, se estaba subiendo una nueva construcción en ese momento: esperar cinco minutos y ejecutarla una vez más. Si sucede de nuevo, o con la línea estable, deténgase y dígale a quien se ocupa de la herramienta.
 
@@ -163,7 +173,7 @@ Si la línea de desarrollo dice `CHECKSUM MISMATCH`, se estaba subiendo una nuev
 : Una carrera se detiene después de 25 minutos por seguridad. Comience de nuevo; las empresas ya hechas son saltadas.
 
 **Version 0.1.0 does not start inside GWG**
-: Actualizar ejecutando la línea de instalación desde el paso 1 otra vez, o utilizar `numb-form -root "H:\GWG"`.
+: Actualizar (ver [Reinstalar o actualizar](#reinstall-or-update)), o utilizar `numb-form -root "H:\GWG"`.
 
 **Running scripts o programas está bloqueado por su empresa**
 : Pídale a su departamento de TI que permita `%LOCALAPPDATA%\Programs\numb-form\numb-form.exe`.

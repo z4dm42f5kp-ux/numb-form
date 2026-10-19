@@ -53,7 +53,7 @@ Si una descarga falla con `404`, todavía no se ha publicado ninguna versión; c
 
 ### Reinstalación o actualización en Windows
 
-Cierre cada ventana numb-form, luego ejecute uno de estos en Windows PowerShell. Reemplazan los programas, mantienen su configuración e imprimen la versión instalada.
+Desde la versión 0.1.2 en, `numb-form update` hace esto por sí mismo (ver [usage](usage.md)); funciona igual en cada sistema. Para versiones anteriores, o si no puede conectarse, cierre cada ventana numb-form, ejecute una de estas en Windows PowerShell. Reemplazan los programas, mantienen su configuración e imprimen la versión instalada.
 
 Stable release:
 

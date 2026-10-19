@@ -41,6 +41,14 @@ Los buscadores en línea envían sólo nombres de empresa y el sitio web de la e
 * Las claves de API vienen sólo del medio ambiente, se envían sólo a su propio servicio, y nunca se registran o almacenan.
 * Los datos nunca se toman de una entidad madre, subsidiaria o similarmente nombrada.
 
+`numb-form update` es el único comando que descarga programas. Se ejecuta sólo cuando el usuario lo escribe, y nunca durante una ejecución de formularios.
+
+* Downloads viene sólo de `github.com` y `*.githubusercontent.com`, sobre HTTPS, incluyendo cada redireccion.
+* El archivo debe coincidir con su línea en el `SHA256SUMS` de la versión; esta es la misma confianza que los comandos de instalación (la firma Sigstore y la procedencia de la construcción no son revisados por el programa; compruebe a mano como se describe en [docs/install.md](install.md) si es necesario).
+* El archivo (en la mayoría de 64 MB) se mantiene en memoria; sólo `numb-form` y `numb-commit` en su nivel superior son tomados de él.
+* El nuevo `numb-form` debe comenzar y reportar su versión antes de que se sustituya cualquier cosa; en cualquier fallo los programas instalados permanecen como estaban y los archivos escenificados son eliminados.
+* Se rechaza con `-offline`, con `online = no` (que un administrador puede establecer en la configuración del sistema), y para las construcciones de origen.
+
 ## Cadena de suministro
 
 **No hay módulos Go de terceros.** Los programas utilizan sólo la biblioteca estándar Go. `go.mod` no tiene líneas `require`, y `scripts/check-deps.sh` falla la construcción si aparece una dependencia, `go.sum` o `vendor/`, o si se utiliza cualquier importación no estándar. Con nada que descargar, no hay nada que alucinar, tiposquat o manipular.

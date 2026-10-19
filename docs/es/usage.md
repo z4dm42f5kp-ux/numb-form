@@ -13,6 +13,7 @@ numb-form [-f conf] [-offline] [-root dir] [-downloads dir] [-timeout duration]
 numb-form [-f conf] check-template template [sample]
 numb-form [-f conf] config [init | set key value]
 numb-form keys
+numb-form [-f conf] update [stable | edge]
 numb-commit [-f conf] [-run dir] [-downloads dir]
 ```
 
@@ -84,6 +85,9 @@ Cuando no se encuentra representante, el campo dice:
 
 `keys`
 : Explica las claves de API gratuitas opcionales.
+
+`update` [`stable` ← `edge`]
+: Reemplazar el `numb-form` instalado y `numb-commit` con la nueva versión estable o la nueva construcción de desarrollo `edge`, como lo hacen los comandos de instalación: el archivo y `SHA256SUMS` se descargan sobre HTTPS de GitHub solamente, la suma de comprobación debe coincidir, y el nuevo `numb-form` debe comenzar antes de que todo sea reemplazado. Sin un argumento se utiliza el canal de la construcción de ejecución. Se mantienen los ajustes. Refusado con `-offline`, con `online = no`, y para construcciones de origen. En Windows el viejo programa es renombrado a `numb-form.old.exe` y eliminado al siguiente inicio.
 
 ## OPTIONS
 

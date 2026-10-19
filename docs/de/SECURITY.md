@@ -41,6 +41,14 @@ Online-Lookups senden nur Firmennamen und die Unternehmenswebsite, die der Benut
 * API-Schlüssel kommen nur aus der Umgebung, werden nur an ihren eigenen Dienst gesendet und werden niemals protokolliert oder gespeichert.
 * Daten werden niemals von einem Mutterunternehmen, einer Tochtergesellschaft oder einer ähnlich benannten Einheit übernommen.
 
+`numb-form update` ist der einzige Befehl, der Programme herunterlädt. Es wird nur ausgeführt, wenn der Benutzer es eingibt, und niemals während eines Formularlaufs.
+
+* Downloads kommt nur von `github.com` und `*.githubusercontent.com` über HTTPS, einschließlich jeder Weiterleitung.
+* Das Archiv muss mit seiner Zeile im `SHA256SUMS` des Releases übereinstimmen; dies ist das gleiche Vertrauen wie die Installationsbefehle (die Sigstore-Signatur und die Build-Herkunft werden nicht vom Programm überprüft; überprüfen Sie sie von Hand, wie in [docs/install.md](install.md) beschrieben, falls erforderlich).
+* Das Archiv (höchstens 64 MB) wird im Speicher gespeichert; nur `numb-form` und `numb-commit` auf seiner obersten Ebene werden daraus entnommen.
+* Das neue `numb-form` muss seine Version starten und melden, bevor etwas ersetzt wird; bei einem Fehler bleiben die installierten Programme so, wie sie waren, und die inszenierten Dateien werden entfernt.
+* Es wird mit `-offline`, mit `online = no` (die ein Administrator in der Systemkonfiguration festlegen kann) und für Builds von der Quelle abgelehnt.
+
 ## Lieferkette
 
 **Keine Module von Drittanbietern Go.** Die Programme verwenden nur die Go-Standardbibliothek. `go.mod` hat keine `require`-Linien, und `scripts/check-deps.sh` schlägt den Build fehl, wenn eine Abhängigkeit, `go.sum` oder `vendor/` angezeigt wird oder wenn ein Nicht-Standard-Import verwendet wird. Da es nichts zum download gibt, gibt es nichts zu halluzinieren, typosquat oder zu manipulieren.

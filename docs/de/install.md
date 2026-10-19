@@ -53,7 +53,7 @@ Wenn ein Download mit `404` fehlschlägt, wurde noch kein Release veröffentlich
 
 ### Neuinstallation oder Aktualisierung unter Windows
 
-Schließen Sie jedes numb-form-Fenster und führen Sie dann eines davon in Windows PowerShell aus. Sie ersetzen die Programme, behalten Ihre Einstellungen bei und drucken die installierte Version.
+Ab Version 0.1.2 macht `numb-form update` dies selbst (siehe [usage](usage.md)); es funktioniert auf jedem System gleich. Bei älteren Versionen oder wenn es keine Verbindung herstellen kann, schließen Sie jedes numb-form-Fenster und führen Sie eines dieser Fenster in Windows PowerShell aus. Sie ersetzen die Programme, behalten Ihre Einstellungen bei und drucken die installierte Version.
 
 Stabile Freigabe:
 
