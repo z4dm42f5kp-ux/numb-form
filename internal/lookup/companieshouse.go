@@ -36,6 +36,7 @@ func companiesHouse(ctx context.Context, c *Client, key string, q Query) (Result
 			continue
 		}
 		src := Source{
+			ID:   "companies-house",
 			Name: "Companies House " + it.CompanyNumber + " (" + it.Title + ", " + it.CompanyStatus + ")",
 			URL:  "https://find-and-update.company-information.service.gov.uk/company/" + url.PathEscape(it.CompanyNumber),
 			Kind: KindGovernment,

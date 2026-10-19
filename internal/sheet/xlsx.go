@@ -1,51 +1,24 @@
-// Package xlsx reads company names from an .xlsx workbook. It never
-// writes: the file is opened read-only and only parsed in memory.
-package xlsx
+package sheet
 
 import (
 	"archive/zip"
+	"bytes"
 	"encoding/xml"
 	"errors"
 	"fmt"
 	"io"
 	"path"
-	"sort"
 	"strconv"
 	"strings"
 )
 
-// maxPart caps how many decompressed bytes are read from one workbook
-// part, as a guard against zip bombs.
-const maxPart = 256 << 20
-
-// Row is one company taken from the workbook.
-type Row struct {
-	Sheet      string
-	Cell       string // e.g. "C3"
-	Name       string // literal cell text, trimmed of surrounding spaces
-	CustomerID string // may be empty; never used for matching
-}
-
-// HeaderCompany is the header text that marks the company column.
-const HeaderCompany = "company name"
-
-// HeaderCustomer is the header text that marks the customer id column.
-const HeaderCustomer = "customer id"
-
-type cell struct {
-	col, row int
-	ref      string
-	val      string
-}
-
-// ReadCompanies opens the workbook at p and returns the companies listed
-// below the "Company Name" header, from top to bottom.
-func ReadCompanies(p string) ([]Row, []string, error) {
-	zr, err := zip.OpenReader(p)
+// readXLSX parses an .xlsx or .xlsm workbook held in memory. Macros in
+// .xlsm files are never run; only cell values are read.
+func readXLSX(b []byte, opt Options) ([]Row, []string, error) {
+	zr, err := zip.NewReader(bytes.NewReader(b), int64(len(b)))
 	if err != nil {
 		return nil, nil, fmt.Errorf("open workbook: %w", err)
 	}
-	defer zr.Close()
 	files := map[string]*zip.File{}
 	for _, f := range zr.File {
 		files[f.Name] = f
@@ -70,57 +43,13 @@ func ReadCompanies(p string) ([]Row, []string, error) {
 		if err != nil {
 			return nil, nil, fmt.Errorf("sheet %q: %w", sh.name, err)
 		}
-		rows, ok := extract(sh.name, cells)
+		rows, ok := Extract(sh.name, cells, opt)
 		if !ok {
 			continue
 		}
 		return rows, warnings, nil
 	}
-	return nil, warnings, errors.New(`no sheet has a "Company Name" header cell`)
-}
-
-func extract(sheet string, cells []cell) ([]Row, bool) {
-	sort.Slice(cells, func(i, j int) bool {
-		if cells[i].row != cells[j].row {
-			return cells[i].row < cells[j].row
-		}
-		return cells[i].col < cells[j].col
-	})
-	hdrRow, nameCol, idCol := -1, -1, -1
-	for _, c := range cells {
-		if strings.EqualFold(strings.Join(strings.Fields(c.val), " "), HeaderCompany) {
-			hdrRow, nameCol = c.row, c.col
-			break
-		}
-	}
-	if hdrRow < 0 {
-		return nil, false
-	}
-	for _, c := range cells {
-		if c.row == hdrRow && strings.EqualFold(strings.Join(strings.Fields(c.val), " "), HeaderCustomer) {
-			idCol = c.col
-		}
-	}
-	ids := map[int]string{}
-	if idCol >= 0 {
-		for _, c := range cells {
-			if c.col == idCol && c.row > hdrRow {
-				ids[c.row] = strings.TrimSpace(c.val)
-			}
-		}
-	}
-	var out []Row
-	for _, c := range cells {
-		if c.col != nameCol || c.row <= hdrRow {
-			continue
-		}
-		name := strings.TrimSpace(c.val)
-		if name == "" {
-			continue
-		}
-		out = append(out, Row{Sheet: sheet, Cell: c.ref, Name: name, CustomerID: ids[c.row]})
-	}
-	return out, true
+	return nil, warnings, fmt.Errorf("no sheet has a %q header cell", opt.header())
 }
 
 type sheetRef struct{ name, target string }
@@ -252,14 +181,14 @@ func readShared(f *zip.File) ([]string, error) {
 	return out, nil
 }
 
-func readCells(f *zip.File, shared []string) ([]cell, error) {
+func readCells(f *zip.File, shared []string) ([]Cell, error) {
 	b, err := readPart(f)
 	if err != nil {
 		return nil, err
 	}
 	dec := xml.NewDecoder(strings.NewReader(string(b)))
-	var cells []cell
-	var cur *cell
+	var cells []Cell
+	var cur *Cell
 	var typ string
 	var buf strings.Builder
 	inV, inIS, inT := false, false, false
@@ -306,7 +235,7 @@ func readCells(f *zip.File, shared []string) ([]cell, error) {
 				} else {
 					ref = colName(c) + strconv.Itoa(r)
 				}
-				cur = &cell{col: c, row: r, ref: ref}
+				cur = &Cell{Col: c, Row: r, Ref: ref}
 				buf.Reset()
 			case "v":
 				inV = cur != nil
@@ -333,7 +262,7 @@ func readCells(f *zip.File, shared []string) ([]cell, error) {
 							raw = ""
 						}
 					}
-					cur.val = raw
+					cur.Val = raw
 					cells = append(cells, *cur)
 				}
 				cur = nil

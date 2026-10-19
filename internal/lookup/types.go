@@ -38,6 +38,7 @@ func (k Kind) String() string {
 
 // Source tells where a value came from.
 type Source struct {
+	ID   string // companies-house, gleif, website or wikidata
 	Name string
 	URL  string
 	Kind Kind
@@ -224,9 +225,24 @@ func (r *Result) sortResult() {
 	r.Addresses = out
 }
 
-// Config holds optional free API keys.
+// Config holds optional free API keys and the enabled sources.
 type Config struct {
 	CompaniesHouseKey string
+	// Sources lists the enabled sources ("companies-house", "gleif",
+	// "website", "wikidata"); nil enables all.
+	Sources []string
+}
+
+func (c Config) enabled(s string) bool {
+	if c.Sources == nil {
+		return true
+	}
+	for _, x := range c.Sources {
+		if x == s {
+			return true
+		}
+	}
+	return false
 }
 
 // Registries queries every configured register concurrently.
@@ -235,11 +251,14 @@ func Registries(ctx context.Context, c *Client, cfg Config, q Query) Result {
 		name string
 		fn   func(context.Context) (Result, error)
 	}
-	jobs := []job{
-		{"GLEIF", func(ctx context.Context) (Result, error) { return gleif(ctx, c, q) }},
-		{"Wikidata", func(ctx context.Context) (Result, error) { return wikidata(ctx, c, q) }},
+	var jobs []job
+	if cfg.enabled("gleif") {
+		jobs = append(jobs, job{"GLEIF", func(ctx context.Context) (Result, error) { return gleif(ctx, c, q) }})
 	}
-	if cfg.CompaniesHouseKey != "" {
+	if cfg.enabled("wikidata") {
+		jobs = append(jobs, job{"Wikidata", func(ctx context.Context) (Result, error) { return wikidata(ctx, c, q) }})
+	}
+	if cfg.CompaniesHouseKey != "" && cfg.enabled("companies-house") {
 		jobs = append(jobs, job{"Companies House", func(ctx context.Context) (Result, error) {
 			return companiesHouse(ctx, c, cfg.CompaniesHouseKey, q)
 		}})

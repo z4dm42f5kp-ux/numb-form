@@ -27,6 +27,8 @@ spec:
       env:
         - name: TZ
           value: Europe/Berlin
+        - name: XDG_STATE_HOME # direct-mode logs
+          value: /downloads/numb-form-logs
         # - name: NUMBFORM_COMPANIES_HOUSE_KEY
         #   valueFrom: {secretKeyRef: {name: numb-form, key: companies-house}}
       securityContext:
@@ -40,7 +42,7 @@ spec:
       volumeMounts:
         - name: data
           mountPath: /data
-          readOnly: true
+          readOnly: false # direct mode writes here; set true for mode = review
         - name: downloads
           mountPath: /downloads
   volumes:

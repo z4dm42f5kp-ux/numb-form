@@ -262,7 +262,7 @@ func Website(ctx context.Context, c *Client, site string) Result {
 		if fu != nil {
 			page = fu.String()
 		}
-		src := Source{Name: "company legal notice " + page, URL: page, Kind: KindCompany}
+		src := Source{ID: "website", Name: "company legal notice " + page, URL: page, Kind: KindCompany}
 		res.Sources = append(res.Sources, src)
 		for _, person := range ExtractPeople(lines, src) {
 			res.addPerson(person)

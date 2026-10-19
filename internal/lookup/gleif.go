@@ -95,13 +95,13 @@ func gleif(ctx context.Context, c *Client, q Query) (Result, error) {
 		if e.Status != "" && e.Status != "ACTIVE" {
 			name += " [status " + e.Status + "]"
 		}
-		src := Source{Name: name, URL: "https://search.gleif.org/#/record/" + url.PathEscape(lei), Kind: KindRegulatory}
+		src := Source{ID: "gleif", Name: name, URL: "https://search.gleif.org/#/record/" + url.PathEscape(lei), Kind: KindRegulatory}
 		res.Sources = append(res.Sources, src)
 		if a := FormatAddress(e.HeadquartersAddress.AddressLines, e.HeadquartersAddress.PostalCode, e.HeadquartersAddress.City, e.HeadquartersAddress.Country); a != "" {
-			res.Addresses = append(res.Addresses, Address{Text: a, Source: Source{Name: src.Name + " headquarters address", URL: src.URL, Kind: src.Kind}})
+			res.Addresses = append(res.Addresses, Address{Text: a, Source: Source{ID: "gleif", Name: src.Name + " headquarters address", URL: src.URL, Kind: src.Kind}})
 		}
 		if a := FormatAddress(e.LegalAddress.AddressLines, e.LegalAddress.PostalCode, e.LegalAddress.City, e.LegalAddress.Country); a != "" {
-			res.Addresses = append(res.Addresses, Address{Text: a, Source: Source{Name: src.Name + " legal address", URL: src.URL, Kind: src.Kind}})
+			res.Addresses = append(res.Addresses, Address{Text: a, Source: Source{ID: "gleif", Name: src.Name + " legal address", URL: src.URL, Kind: src.Kind}})
 		}
 		if e.LegalForm.Other != nil && strings.TrimSpace(*e.LegalForm.Other) != "" {
 			res.FormHints = append(res.FormHints, strings.TrimSpace(*e.LegalForm.Other))

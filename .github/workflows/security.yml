@@ -2,10 +2,11 @@ name: security
 
 on:
   push:
-    branches: [main]
+    # main, and agent branches (tested on GitHub, never locally: #8)
+    branches: [main, "claude/**"]
   pull_request:
   schedule:
-    - cron: "17 4 * * 1" # weekly, to catch newly published vulnerabilities
+    - cron: "17 4 * * *" # nightly: new vulnerabilities, longer fuzzing
   workflow_dispatch:
 
 permissions: {}
@@ -66,13 +67,15 @@ jobs:
           jq -r '.Issues[]? | "::error file=\(.file | sub("^.*/numb-form/numb-form/"; "")),line=\(.line),title=gosec \(.rule_id)::\(.details) (\(.severity)/\(.confidence))"' gosec.json
           test "$(jq '.Issues | length' gosec.json)" -eq 0
       - name: Upload gosec results
-        if: always()
+        # Pull requests (including Dependabot's) have a read-only token.
+        if: always() && github.event_name != 'pull_request'
         uses: github/codeql-action/upload-sarif@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4.39.0
         with:
           sarif_file: gosec.sarif
           category: gosec
 
   codeql:
+    if: github.event_name != 'pull_request'
     strategy:
       fail-fast: false
       matrix:
@@ -105,6 +108,9 @@ jobs:
           category: codeql-${{ matrix.language }}
 
   fuzz:
+    # Every parser of untrusted input, including the legacy .xls reader,
+    # is fuzzed on main (2 minutes each) and nightly (10 minutes each).
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -113,7 +119,12 @@ jobs:
       matrix:
         target:
           - { pkg: ./internal/docx, name: FuzzFill }
-          - { pkg: ./internal/xlsx, name: FuzzReadCompanies }
+          - { pkg: ./internal/form, name: FuzzAllFormats }
+          - { pkg: ./internal/odt, name: FuzzScan }
+          - { pkg: ./internal/rtf, name: FuzzScan }
+          - { pkg: ./internal/sheet, name: FuzzRead }
+          - { pkg: ./internal/sheet, name: FuzzReadXLSX }
+          - { pkg: ./internal/config, name: FuzzApply }
           - { pkg: ./internal/textutil, name: FuzzMatchKeys }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -124,11 +135,15 @@ jobs:
           go-version: stable
           check-latest: true
           cache: false
-      - name: Fuzz for 2 minutes
+      - name: Fuzz
         env:
           PKG: ${{ matrix.target.pkg }}
           NAME: ${{ matrix.target.name }}
-        run: go test "$PKG" -run '^$' -fuzz "^${NAME}\$" -fuzztime 2m
+          EVENT: ${{ github.event_name }}
+        run: |
+          t=2m
+          [ "$EVENT" = schedule ] && t=10m
+          go test "$PKG" -run '^$' -fuzz "^${NAME}\$" -fuzztime "$t"
 
   workflows:
     # zizmor audits the workflows themselves (template injection,

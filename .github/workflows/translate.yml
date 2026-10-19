@@ -13,6 +13,11 @@ on:
       - docs/*.md
       - .github/translate/**
       - .github/workflows/translate.yml
+  pull_request:
+    # Tests dependency updates (Dependabot) before they are merged.
+    paths:
+      - .github/translate/**
+      - .github/workflows/translate.yml
   workflow_dispatch:
 
 permissions: {}
@@ -39,6 +44,7 @@ jobs:
       - name: Translate
         run: python -I .github/translate/translate.py
       - name: Commit translations
+        if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

@@ -1,0 +1,62 @@
+name: formats
+
+# Real-world format tests: templates and spreadsheets written by
+# LibreOffice (.odt, .fodt, .rtf, .docx, legacy .doc and .xls, .ods,
+# .fods) are filled and read by numb-form. Runs when format code changes,
+# on main and nightly.
+
+on:
+  push:
+    # main, and agent branches (tested on GitHub, never locally: #8)
+    branches: [main, "claude/**"]
+    paths:
+      - "internal/**"
+      - go.mod
+      - .github/workflows/formats.yml
+  pull_request:
+    paths:
+      - "internal/**"
+      - go.mod
+      - .github/workflows/formats.yml
+  schedule:
+    - cron: "53 3 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: formats-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  libreoffice:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+          check-latest: true
+          cache: false
+      - name: Install LibreOffice (Ubuntu packages)
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q --no-install-recommends libreoffice-writer-nogui libreoffice-calc-nogui \
+            || sudo apt-get install -y -q --no-install-recommends libreoffice-writer libreoffice-calc
+          soffice --version
+      - name: Format tests with LibreOffice
+        env:
+          NUMBFORM_TEST_SOFFICE: "1"
+        run: |
+          set +e
+          go test -count=1 -v ./internal/formats/ > test.log 2>&1
+          status=$?
+          cat test.log
+          if [ $status -ne 0 ]; then
+            grep -E -- '--- FAIL|panic:|\.go:[0-9]+:' test.log | head -30 | while IFS= read -r l; do echo "::error title=formats::$l"; done
+          fi
+          exit $status

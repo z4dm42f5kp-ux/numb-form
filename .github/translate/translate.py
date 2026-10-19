@@ -28,7 +28,8 @@ INDEX = ("https://raw.githubusercontent.com/argosopentech/argospm-index/"
          "ff90de60728f7c1338ff6b75974e4c89b2442d22/index.json")
 PINS = HERE / "models.sha256"
 LANGS = {"es": "Español", "de": "Deutsch"}
-SOURCES = ["README.md", "SECURITY.md", "docs/install.md", "docs/usage.md", "docs/containers.md"]
+SOURCES = ["README.md", "SECURITY.md", "docs/install.md", "docs/usage.md", "docs/configuration.md",
+           "docs/formats.md", "docs/containers.md"]
 NOTE = {
     "es": "> Traducción automática (Argos Translate) del [original en inglés]({src}). "
           "La versión en inglés es la que vale.",
@@ -99,6 +100,8 @@ GLOSSARY = sorted([
     "Authorized Representatives", "Legal form", "Headquarters / Address",
     "Impressum", "Aviso legal", "GLEIF", "Wikidata", "Companies House", "Argos Translate",
     "Sigstore", "cosign", "Docker", "Podman", "Kubernetes", "Command Prompt", "PowerShell",
+    "numb-form.conf", "LibreOffice", "OpenOffice", "Proton Docs", "Proton Sheets", "Proton Drive",
+    "Apple Pages", "Pages", "Numbers", "Microsoft 365", "needs review",
 ], key=len, reverse=True)
 PROTECT = re.compile("|".join(re.escape(g) for g in GLOSSARY) + r"|`[^`]*`|\[[^\]\s]*\.[A-Za-z0-9]+\]\([^)]*\)|\]\([^)]*\)|https?://\S+|\*\*|\[|\]|<[^>]+>")
 MARKER = re.compile(r"^(\s*(?:#{1,6}\s+|[-*+]\s+|\d+\.\s+|>\s*|:\s+)?)(.*)$")

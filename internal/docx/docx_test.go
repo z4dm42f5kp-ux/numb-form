@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"testing"
 
+	"github.com/z4dm42f5kp-ux/numb-form/internal/form"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/testfix"
 )
 
@@ -15,29 +16,29 @@ const (
 
 func TestFillAndReadBack(t *testing.T) {
 	tpl := testfix.Template(t)
-	vals := Values{
-		FieldName:      "Foo Co., Ltda",
-		FieldLegalForm: "Ltda",
-		FieldAddress:   "Calle 1 # 2-3, Bogotá & <Co>",
-		FieldRegistry:  "SHOULD NOT APPEAR",
-		FieldReps:      "Jane Doe (General Manager, Legal Representative)",
-		FieldDate:      "16/10/2026",
-		FieldPerson:    "Max Muster",
+	vals := form.Values{
+		form.FieldName:      "Foo Co., Ltda",
+		form.FieldLegalForm: "Ltda",
+		form.FieldAddress:   "Calle 1 # 2-3, Bogotá & <Co>",
+		form.FieldRegistry:  "SHOULD NOT APPEAR",
+		form.FieldReps:      "Jane Doe (General Manager, Legal Representative)",
+		form.FieldDate:      "16/10/2026",
+		form.FieldPerson:    "Max Muster",
 	}
-	out, warn, err := Fill(tpl, vals)
+	out, warn, err := fmtx.Fill(tpl, vals)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(warn) != 0 {
 		t.Fatalf("warnings: %v", warn)
 	}
-	got, err := ReadBack(out)
+	got, err := fmtx.ReadBack(out)
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, f := range AllFields {
+	for _, f := range form.AllFields {
 		want := vals[f]
-		if f == FieldRegistry {
+		if f == form.FieldRegistry {
 			want = ""
 		}
 		if got[f] != want {
@@ -48,20 +49,20 @@ func TestFillAndReadBack(t *testing.T) {
 		t.Fatal("registry number was written")
 	}
 	// Filling an already filled document must fail.
-	if _, _, err := Fill(out, vals); err == nil {
+	if _, _, err := fmtx.Fill(out, vals); err == nil {
 		t.Fatal("refilling a filled document succeeded")
 	}
 }
 
 func TestEmptyValuesKeepTemplate(t *testing.T) {
 	tpl := testfix.Template(t)
-	out, _, err := Fill(tpl, Values{})
+	out, _, err := fmtx.Fill(tpl, form.Values{})
 	if err != nil {
 		t.Fatal(err)
 	}
-	a, _ := ReadBack(tpl)
-	b, _ := ReadBack(out)
-	for _, f := range AllFields {
+	a, _ := fmtx.ReadBack(tpl)
+	b, _ := fmtx.ReadBack(out)
+	for _, f := range form.AllFields {
 		if a[f] != b[f] {
 			t.Fatalf("%s changed", f.Title())
 		}
@@ -76,7 +77,7 @@ func TestMissingSection(t *testing.T) {
 		_, _ = w.Write([]byte(e[1]))
 	}
 	_ = zw.Close()
-	if _, _, err := Fill(buf.Bytes(), Values{FieldLegalForm: "GmbH"}); err == nil {
+	if _, _, err := fmtx.Fill(buf.Bytes(), form.Values{form.FieldLegalForm: "GmbH"}); err == nil {
 		t.Fatal("expected error without section A heading")
 	}
 }
@@ -86,12 +87,14 @@ func FuzzFill(f *testing.F) {
 	f.Add("<&>\x00\x1b[31m", "]]>", "\u202e")
 	tpl := testfix.Template(f)
 	f.Fuzz(func(t *testing.T, a, b, c string) {
-		out, _, err := Fill(tpl, Values{FieldLegalForm: a, FieldAddress: b, FieldReps: c})
+		out, _, err := fmtx.Fill(tpl, form.Values{form.FieldLegalForm: a, form.FieldAddress: b, form.FieldReps: c})
 		if err != nil {
 			return
 		}
-		if _, err := ReadBack(out); err != nil {
+		if _, err := fmtx.ReadBack(out); err != nil {
 			t.Fatalf("filled output unreadable: %v", err)
 		}
 	})
 }
+
+var fmtx = Format{}
