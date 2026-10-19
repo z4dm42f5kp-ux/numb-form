@@ -139,7 +139,7 @@ func Plan(texts []string, vals Values) ([]Job, []string, error) {
 	var warnings []string
 	for _, f := range lay.Missing {
 		if f == FieldRegistry {
-			warnings = append(warnings, `label "Commercial Registry Number" not found (it is left blank anyway)`)
+			warnings = append(warnings, `label "Commercial Registry Number" not found; that field is not filled`)
 			continue
 		}
 		if strings.TrimSpace(vals[f]) != "" {
@@ -157,7 +157,7 @@ func Plan(texts []string, vals Values) ([]Job, []string, error) {
 			return nil, nil, fmt.Errorf("field %q is not empty in the template (%q)", f.Title(), textutil.OneLine(rest))
 		}
 		v := textutil.OneLine(vals[f])
-		if f == FieldRegistry || v == "" {
+		if v == "" {
 			continue
 		}
 		jobs = append(jobs, Job{Field: f, Index: idx, Value: v})

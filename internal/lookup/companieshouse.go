@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"net/url"
 	"strings"
-	"unicode"
 )
 
 var chAPI = "https://api.company-information.service.gov.uk"
@@ -76,22 +75,11 @@ func chName(s string) string {
 	if !ok {
 		return titleCase(s)
 	}
-	return strings.TrimSpace(strings.TrimSpace(first) + " " + titleCase(strings.TrimSpace(last)))
-}
-
-func titleCase(s string) string {
-	words := strings.Fields(strings.ToLower(s))
-	for i, w := range words {
-		r := []rune(w)
-		r[0] = unicode.ToUpper(r[0])
-		for j := 1; j < len(r); j++ {
-			if r[j-1] == '-' || r[j-1] == '\'' {
-				r[j] = unicode.ToUpper(r[j])
-			}
-		}
-		words[i] = string(r)
+	first = strings.TrimSpace(first)
+	if allUpper(first) {
+		first = titleCase(first)
 	}
-	return strings.Join(words, " ")
+	return strings.TrimSpace(first + " " + titleCase(strings.TrimSpace(last)))
 }
 
 func chRole(r string) string {

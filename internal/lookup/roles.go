@@ -64,21 +64,3 @@ func roleKey(s string) string {
 	}
 	return strings.Join(strings.Fields(b.String()), " ")
 }
-
-// TranslateRole returns the English name of a role and whether the role
-// was recognised.
-func TranslateRole(s string) (string, bool) {
-	k := roleKey(s)
-	if v, ok := roleMap[k]; ok {
-		return v, true
-	}
-	// Plural forms ("Geschäftsführer" is both), "-innen", "-es".
-	for _, suf := range []string{"innen", "en", "es", "s"} {
-		if strings.HasSuffix(k, suf) {
-			if v, ok := roleMap[strings.TrimSuffix(k, suf)]; ok {
-				return v, true
-			}
-		}
-	}
-	return strings.TrimSpace(s), false
-}

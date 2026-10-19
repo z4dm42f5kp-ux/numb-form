@@ -63,10 +63,6 @@ func (r *run) editField(vals form.Values) error {
 			continue
 		}
 		f := form.AllFields[n-1]
-		if f == form.FieldRegistry {
-			r.ui.Println("  The commercial registry number is always left blank.")
-			continue
-		}
 		v, err := r.ui.Ask(fmt.Sprintf("  New value for %s (empty = blank): ", f.Title()))
 		if err != nil {
 			return err

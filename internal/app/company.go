@@ -163,8 +163,8 @@ func (r *run) confirmLoop(c *runlog.Company, target string, vals form.Values) (f
 func sameValues(want, got form.Values) error {
 	for _, f := range form.AllFields {
 		w := strings.Join(strings.Fields(want[f]), " ")
-		if f == form.FieldRegistry {
-			w = ""
+		if f == form.FieldRegistry && got[f] == "" {
+			continue // the template has no registry label
 		}
 		if w != got[f] {
 			return fmt.Errorf("%s reads %q, want %q", f.Title(), got[f], w)

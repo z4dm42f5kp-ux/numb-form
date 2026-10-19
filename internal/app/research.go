@@ -26,49 +26,70 @@ func union(a, b []string) []string {
 	return out
 }
 
-// gather runs the online lookups allowed by the configuration.
+// gather looks the company up online in one pass: registers, its own
+// website (found automatically unless website = ask or never), official
+// numbers printed there, government gazettes and web search.
 func (r *run) gather(name string) (gathered, error) {
 	g := gathered{cfg: r.cfg}
 	if !r.online {
 		return g, nil
 	}
 	enabled := union(r.cfg.AddressSources, r.cfg.RepsSources)
+	if r.cfg.Website == "never" {
+		var keep []string
+		for _, s := range enabled {
+			if s != "website" {
+				keep = append(keep, s)
+			}
+		}
+		enabled = keep
+	}
 	if len(enabled) == 0 {
 		return g, nil // every source disabled in the configuration
 	}
 	lc := r.opt.Lookup
 	lc.Sources = enabled
-	r.ui.Println("  Looking up official sources…")
-	g.res = lookup.Registries(r.ctx, r.opt.Client, lc, lookup.NewQuery(name))
+	lc.Search = r.cfg.Search
+	lc.GuessDomains = r.cfg.GuessDomains
+	site := ""
+	if r.cfg.Website == "ask" && config.Allowed(enabled, "website") {
+		var err error
+		if site, err = r.askWebsite(nil); err != nil {
+			return g, err
+		}
+	}
+	r.ui.Println("  Searching registers, the company website, official gazettes and the web…")
+	g.res = lookup.Find(r.ctx, r.opt.Client, lc, name, site)
 	if err := r.ctx.Err(); err != nil {
 		return g, err
 	}
-	for _, n := range g.res.Notes {
-		r.ui.Printf("  · %s\n", ui.Safe(n))
+	if g.res.Website != "" {
+		r.ui.Printf("  Website: %s\n", ui.Safe(g.res.Website))
 	}
-	if config.Allowed(enabled, "website") && r.cfg.Website != "never" {
-		site := ""
-		if r.cfg.Website == "ask" {
-			var err error
-			if site, err = r.askWebsite(g.res.Websites); err != nil {
-				return g, err
-			}
-		} else if len(g.res.Websites) > 0 {
-			site = g.res.Websites[0]
+	for _, id := range g.res.IDs {
+		r.ui.Printf("  Official number on the website: %s %s\n", strings.ToUpper(id.Kind), ui.Safe(id.Value))
+	}
+	for _, n := range g.res.Register {
+		r.ui.Printf("  Register entry on the website: %s\n", ui.Safe(n.Text))
+	}
+	r.ui.Printf("  Found: %d address(es), %d representative(s) from %d source(s).\n", len(g.addresses()), len(g.people()), len(g.res.Sources))
+	for _, n := range g.res.Notes {
+		r.logf("lookup note for %q: %s", name, n)
+	}
+	if len(g.people()) == 0 && len(g.addresses()) == 0 {
+		for _, n := range g.res.Notes {
+			r.ui.Printf("  · %s\n", ui.Safe(n))
 		}
-		if site != "" {
-			r.ui.Println("  Reading the company's legal notice…")
-			w := lookup.Website(r.ctx, r.opt.Client, site)
-			for _, n := range w.Notes {
-				r.ui.Printf("  · %s\n", ui.Safe(n))
-			}
-			g.res.Merge(w)
-			for _, e := range w.Excerpts {
-				r.ui.Printf("\n  Excerpt from %s:\n", ui.Safe(e.Source.URL))
-				for _, l := range strings.Split(e.Text, "\n") {
-					r.ui.Printf("    | %s\n", ui.Safe(l))
-				}
-			}
+	}
+	if r.cfg.Confirm != "none" && len(g.res.Excerpts) > 0 {
+		e := g.res.Excerpts[0]
+		r.ui.Printf("\n  Excerpt from %s:\n", ui.Safe(e.Source.URL))
+		lines := strings.Split(e.Text, "\n")
+		if len(lines) > 15 {
+			lines = append(lines[:15], "…")
+		}
+		for _, l := range lines {
+			r.ui.Printf("    | %s\n", ui.Safe(l))
 		}
 	}
 	for _, s := range g.res.Sources {
@@ -144,13 +165,9 @@ func (r *run) askWebsite(suggest []string) (string, error) {
 	def := ""
 	if len(suggest) > 0 {
 		def = suggest[0]
-		r.ui.Printf("  Website suggested by Wikidata: %s\n", ui.Safe(def))
 	}
 	for {
-		p := "  Official company website to read its legal notice (Enter = suggestion, '-' = skip, or type an address): "
-		if def == "" {
-			p = "  Official company website to read its legal notice (type an address, Enter = skip): "
-		}
+		p := "  Company website (type an address, Enter = find it automatically): "
 		a, err := r.ui.Ask(p)
 		if err != nil {
 			return "", err

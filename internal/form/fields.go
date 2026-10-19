@@ -50,7 +50,7 @@ func (f Field) Title() string {
 }
 
 // Values maps fields to the text to insert. Missing or empty values leave
-// the field blank. FieldRegistry is always left blank.
+// the field blank.
 type Values map[Field]string
 
 // Filler fills one template format.
@@ -63,14 +63,12 @@ type Filler interface {
 
 // Check validates that a template has a fillable section A: every label
 // must be present and empty, and a trial fill of every field must pass
-// the self-check. Only the registry label may be missing (it is always
-// left blank anyway).
+// the self-check. Only the registry label may be missing (that field is
+// then not filled).
 func Check(f Filler, template []byte) ([]string, error) {
 	probe := Values{}
 	for _, fl := range AllFields {
-		if fl != FieldRegistry {
-			probe[fl] = "x"
-		}
+		probe[fl] = "x"
 	}
 	_, w, err := f.Fill(template, probe)
 	return w, err

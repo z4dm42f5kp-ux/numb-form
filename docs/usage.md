@@ -81,7 +81,7 @@ unchanged, and no formatting is added.
 | Name / Company Name of the Contracting Party | the literal spreadsheet cell |
 | Legal form | the suffix of the name, as written (`GmbH`, `S.A.`, `C.A. de C.V.`) |
 | Headquarters / Address | chosen from the candidates found |
-| Commercial Registry Number | always blank |
+| Commercial Registry Number | always `No commercial registry number was found online consult internal sources for further information`; it can be replaced with the number with *edit* |
 | Authorized Representatives | `Full Name (Role 1, Role 2), Full Name (Role)`, roles in English |
 | Date of the evaluation | today, `date_format` (default `DD/MM/YYYY`) |
 | Person Processing the Form | from the configuration or typed at the start |

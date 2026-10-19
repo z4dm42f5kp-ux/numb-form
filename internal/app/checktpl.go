@@ -43,6 +43,7 @@ func CheckTemplate(out io.Writer, cfg config.Config, tplPath, sample string) int
 		form.FieldName:      "Foo GmbH",
 		form.FieldLegalForm: "GmbH",
 		form.FieldAddress:   "Foo Street 64, 80333 München, Germany",
+		form.FieldRegistry:  RegistryText,
 		form.FieldReps:      "Jane Doe (Managing Director, Legal Representative), John Roe (Authorized Signatory (Prokurist)) " + CautionText,
 		form.FieldDate:      "26/09/2026",
 		form.FieldPerson:    "Max Muster",

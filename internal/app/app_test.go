@@ -160,7 +160,7 @@ func TestRunAndCommit(t *testing.T) {
 	}
 	check := form.Values{
 		form.FieldName: "Foo S.A.", form.FieldLegalForm: "S.A.", form.FieldAddress: "Asunción 5",
-		form.FieldRegistry: "", form.FieldReps: NoRepsText, form.FieldDate: "16/10/2026", form.FieldPerson: "Max Muster",
+		form.FieldRegistry: RegistryText, form.FieldReps: NoRepsText, form.FieldDate: "16/10/2026", form.FieldPerson: "Max Muster",
 	}
 	for f, v := range check {
 		if got[f] != v {

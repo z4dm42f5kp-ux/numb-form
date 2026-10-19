@@ -1,0 +1,38 @@
+name: live
+
+# Looks up a few well-known companies against the real services
+# (DuckDuckGo, GLEIF, Wikidata, EU VIES, BrasilAPI, company websites) to
+# check that parsing still matches what they serve. Only counts and
+# source names are reported, as annotations. Runs on agent branches that
+# change the lookups, and by hand; never on pull requests.
+
+on:
+  push:
+    branches: ["claude/**"]
+    paths: ["internal/lookup/**", "internal/match/**", ".github/workflows/live.yml"]
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: live-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+          cache: false
+      - name: Live lookups
+        env:
+          NUMB_FORM_LIVE: "1"
+        run: go test -count=1 -run '^TestLive$' -v -timeout 28m ./internal/lookup/

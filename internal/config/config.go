@@ -41,7 +41,9 @@ type Config struct {
 	RepsMinTrust    string // register | website | any
 	RepsFallback    string // no-reps-text | blank
 	Caution         string // auto | always | never
-	Website         string // ask | wikidata | never
+	Website         string // auto | ask | never
+	Search          string // duckduckgo | none
+	GuessDomains    bool   // also try addresses such as companyname.de
 
 	Soffice          string // path to LibreOffice/OpenOffice soffice; empty = search
 	PagesConverter   string // auto | pages-app | libreoffice
@@ -55,7 +57,7 @@ type Config struct {
 }
 
 // Sources understood in *_sources keys, most authoritative first.
-var Sources = []string{"companies-house", "gleif", "website", "wikidata"}
+var Sources = []string{"companies-house", "vies", "brasil-cnpj", "official", "gleif", "website", "search", "wikidata"}
 
 // MaxTimeout is the hard upper bound for a run.
 const MaxTimeout = 25 * time.Minute
@@ -81,7 +83,9 @@ func Defaults() Config {
 		RepsMinTrust:     "any",
 		RepsFallback:     "no-reps-text",
 		Caution:          "auto",
-		Website:          "ask",
+		Website:          "auto",
+		Search:           "duckduckgo",
+		GuessDomains:     true,
 		PagesConverter:   "auto",
 		NumbersConverter: "auto",
 		LegacyOutput:     "docx",
@@ -117,8 +121,11 @@ func (c *Config) Validate() error {
 	if c.Confirm == "none" && c.AddressFallback == "ask" {
 		c.AddressFallback = "blank"
 	}
+	if c.Website == "wikidata" {
+		c.Website = "auto" // older name of the same setting
+	}
 	if c.Confirm == "none" && c.Website == "ask" {
-		c.Website = "wikidata"
+		c.Website = "auto"
 	}
 	if c.Timeout <= 0 || c.Timeout > MaxTimeout {
 		return fmt.Errorf("timeout must be between 1s and 25m")
