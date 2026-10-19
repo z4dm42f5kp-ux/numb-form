@@ -12,13 +12,22 @@ Nur das neueste Release wird unterstützt.
 
 numb-form verarbeitet Kundendokumente, daher sind die Designregeln streng.
 
-* Der eigentliche Arbeitsordner wird niemals von **numb-form** geschrieben. Der gesamte Baum wird zuerst in Downloads kopiert und jede Änderung wird in der Kopie vorgenommen.
-* **numb-commit** fügt nur neue Ordner hinzu. Es überschreibt oder löscht niemals, lehnt Ordner ab, die in der Zwischenzeit erschienen sind, kopiert einen temporären Namen, überprüft jede Datei mit SHA-256 und benannt dann um.
+* **numb-form** fügt immer nur hinzu: einen neuen Ordner pro neuer Firma, mit einem ausgefüllten Formular darin. Es ändert oder löscht niemals eine vorhandene Datei oder einen vorhandenen Ordner und entfernt nur Ordner, die es selbst in derselben Ausführung erstellt hat (bei Ablehnung oder Fehler).
+* Bei `mode = review` wird der eigentliche Arbeitsordner überhaupt nicht geschrieben: Der gesamte Baum wird zuerst in Downloads kopiert und jede Änderung wird in der Kopie vorgenommen.
+* **numb-commit** (Review-Modus) fügt nur neue Ordner hinzu. Es überschreibt oder löscht niemals, lehnt Ordner ab, die in der Zwischenzeit erschienen sind, kopiert einen temporären Namen, überprüft jede Datei mit SHA-256 und benannt dann um.
 * Die Tabelle in `3. Übersichten` wird schreibgeschützt geöffnet und niemals geschrieben. Seine SHA-256 Prüfsumme wird vor der Kopie, nach der Kopie und am Ende des Laufs verglichen; eine Differenz stoppt den Lauf.
 * Dokumente werden nicht re-serialisiert. Das XML wird nur nach Byte-Offsets gescannt und Werte werden in die ursprünglichen Bytes gespleißt; alle anderen Teile des `.docx` werden Byte für Byte kopiert. Nach jedem Ausfüllen wird das Ergebnis erneut analysiert und Absatz für Absatz mit der Vorlage verglichen. Werte werden XML-escaped und von Zeichen entfernt, die in XML nicht erlaubt sind. Vorlagen mit Makros werden abgelehnt.
 * Keine Formatierung wird jemals hinzugefügt. Werte werden dem eigenen Textlauf des Labels oder einer Kopie der vorhandenen Eigenschaften dieses Runs hinzugefügt, wenn dem Label ein Tab folgt.
-* Jedes Dokument wird einer Person gezeigt, von der Festplatte zurückgelesen und muss akzeptiert werden. Die Programme weigern sich, ohne ein interaktives Terminal zu laufen.
-* Ein Lauf stoppt sicher nach höchstens 25 Minuten. Es schreibt höchstens 100 MB Dokumente neben der Kopie und hinterlässt keinen Cache oder temporäre Dateien: Netzwerkdaten bleiben im Speicher und temporäre Dateien werden umbenannt oder entfernt.
+* Jedes Dokument wird nach dem Schreiben von der Festplatte zurückgelesen. Mit `confirm = each` (Standard) sieht und akzeptiert eine Person es, und die Programme weigern sich, ohne ein interaktives Terminal zu laufen. Bei `confirm = none` muss das Zurücklesen genau den beabsichtigten Werten entsprechen, Near-Ordner-Namensübereinstimmungen werden nie automatisch entschieden und es werden nur die Quellen und das Vertrauensniveau in der Konfiguration verwendet.
+* Ein Lauf stoppt sicher nach höchstens 25 Minuten. Es schreibt höchstens 100 MB Dokumente neben der Kopie und hinterlässt keinen Cache oder temporäre Dateien: Netzwerkdaten bleiben im Speicher, temporäre Dateien werden umbenannt oder entfernt, und Konverter laufen in einem privaten temporären Ordner mit einem Wegwerf-Office-Profil, danach gelöscht.
+
+## Konfiguration und Formate
+
+* Der Konfigurationsparser weist unbekannte Schlüssel und ungültige Werte zurück.
+* Schlüssel, die erweitern, was numb-form akzeptiert (`legacy_formats`), werden nur in der Systemdatei geehrt. Unter Unix wird diese Datei ignoriert, es sei denn, sie gehört zu root und ist nicht von einer Gruppe oder anderen beschreibbar; unter Windows befindet sie sich unter Programmdateien.
+* Legacy-Binärformate (.doc, .xls) sind standardmäßig deaktiviert, und Läufe, die sie verwenden, sind immer vollständig offline. Der .xls-Reader (Compound-Datei und BIFF8) ist numb-forms eigener, Bounds-Checks jeder Offset und Kette und wird kontinuierlich Fuzzed.
+* .doc, .pages und .numbers werden von Office-Software bereits auf dem Computer (LibreOffice, Apache OpenOffice, Apple Pages oder Numbers) mit festen Argumenten konvertiert; Dateinamen werden als Argumente übergeben, niemals als Skripttext. Das Schreiben von .pages ist experimentell und standardmäßig ausgeschaltet.
+* Vorlagen mit Makros werden abgelehnt; makrofähige Tabellenkalkulationen (.xlsm) werden nur für Zellenwerte gelesen.
 
 ## Netz
 
@@ -58,7 +67,7 @@ Online-Lookups senden nur Firmennamen und die Unternehmenswebsite, die der Benut
 
 ## Pipeline für Sicherheitstests
 
-Jede Push- und Pull-Anforderung läuft:
+Pull-Anfragen führen ein schnelles Gate aus (Formatierung, Tierarzt, Statikcheck, Tests unter Linux, macOS und Windows, govulncheck, gosec, zizmor, der Verlaufsscan und die Überprüfung der Abhängigkeit). Pushes zu `main` und Agentenzweige, und einen nächtlichen Zeitplan, führen Sie alles aus:
 
 | Überprüfung | Werkzeug |
 | --- | --- |
@@ -67,7 +76,8 @@ Jede Push- und Pull-Anforderung läuft:
 | Bekannte Sicherheitslücken im Code und in eingebauten Binärdateien für jedes Ziel-Betriebssystem | govulncheck |
 | Security linting, gemeldet zum Code-Scannen | Gosec |
 | Semantische Analyse von Go und der Workflows | CodeQL (`security-extended`, `security-and-quality`) |
-| Fuzzing des Dokumentenfüllers, des Tabellenkalkulationslesers und des Namensmatchers | Go native fuzzing, 2 Minuten pro Ziel |
+| Fuzzing jedes Template-Füllers und Scanners (docx, odt, rtf), jedes Tabellenkalkulationslesegeräts (xlsx, ods, csv, legacy xls), des Konfigurationsparsers und des Namensmatchers | Go native fuzzing, 2 minuten pro ziel auf haupt, 10 nächtliche. |
+| Vorlagen und Tabellenkalkulationen, geschrieben von real LibreOffice (odt, fodt, rtf, docx, doc, xls, ods, fods) | Formate Workflow |
 | Workflow-Sicherheit (Injection, Anmeldeinformationen, Berechtigungen, Pins) | Zizmor, pedantisch |
 | Kundendateien oder Anmeldeinformationen aus Versehen | Historienscan |
 | Tests mit dem Renndetektor unter Linux, macOS und Windows, mit dem ältesten und neuesten Go | `go test -race` |
@@ -75,7 +85,7 @@ Jede Push- und Pull-Anforderung läuft:
 | Container-Image baut und weigert sich, ohne Terminal zu laufen | Docker, Podman |
 | Neue Abhängigkeiten in Pull Requests | Überprüfung der Abhängigkeit |
 
-Die Schwachstellen- und Analysejobs laufen ebenfalls wöchentlich, und OpenSSF Scorecard überprüft die Praktiken des Repositorys.
+OpenSSF Scorecard überprüft die Praktiken des Repository. Pull-Anfragen, einschließlich Dependabots, benötigen niemals Schreibberechtigungen: Ergebnisse, die sie erfordern, werden nur von `main` hochgeladen.
 
 Workflows beginnen ohne Berechtigungen und gewähren jedem Job nur das, was er braucht; Checkouts behalten keine Anmeldeinformationen.
 

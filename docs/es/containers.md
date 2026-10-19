@@ -6,10 +6,10 @@ La imagen contiene sólo los dos binarios estáticos, un paquete de CA y la base
 
 Se necesitan dos volúmenes:
 
-* `/data`: la carpeta *sobre* la carpeta de trabajo. numb-form sólo lo lee, así que montarlo solo. numb-commit escribe las carpetas aceptadas en ella.
-* `/downloads`: donde va la copia de revisión, registros y manifiesto.
+* `/data`: la carpeta *sobre* la carpeta de trabajo. En el modo directo predeterminado numb-form escribe las nuevas carpetas en él. En modo de revisión numb-form sólo lo lee, por lo que puede ser montado sólo lectura, y numb-commit más tarde escribe las carpetas aceptadas en él.
+* `/downloads`: registros y manifiestos (modo directo, vía `log_dir`) o la copia de revisión (modo de revisión).
 
-Every document must be confirmed, so containers always run interactively (`-it`). Run numb-commit the same way you ran numb-form, with the same mounts, because the manifest records container paths.
+Con `confirm = each` (el predeterminado) cada documento debe ser confirmado, por lo que el contenedor se ejecuta de forma interactiva (`-it`). Un archivo de configuración se transmite con `-f`, por ejemplo desde un tercer volumen. En modo de revisión, ejecute numb-commit de la misma manera que corrió numb-form, con las mismas monturas, porque las rutas de contenedores de registros manifiestos.
 
 Establecer `TZ` para que la fecha de evaluación use la hora local.
 
@@ -32,13 +32,13 @@ git clone --depth 1 https://github.com/z4dm42f5kp-ux/numb-form.git && cd numb-fo
 En Linux, macOS y BSD, comenzó en la carpeta sobre la carpeta de trabajo:
 
 ```
-mkdir -p "$HOME/Downloads" && docker run --rm -it --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges -e TZ=Europe/Berlin -v "$PWD:/data:ro" -v "$HOME/Downloads:/downloads" ghcr.io/z4dm42f5kp-ux/numb-form:latest && docker run --rm -it --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges -v "$PWD:/data" -v "$HOME/Downloads:/downloads" --entrypoint /numb-commit ghcr.io/z4dm42f5kp-ux/numb-form:latest
+mkdir -p "$HOME/Downloads/numb-form-logs" && docker run --rm -it --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges -e TZ=Europe/Berlin -e XDG_STATE_HOME=/downloads/numb-form-logs -v "$PWD:/data" -v "$HOME/Downloads:/downloads" ghcr.io/z4dm42f5kp-ux/numb-form:latest
 ```
 
-En Windows con Docker Desktop, en Command Prompt:
+En Windows con Docker Desktop, en Windows PowerShell reemplazar `%cd%` con `${PWD}` y `%USERPROFILE%` con `$env:USERPROFILE`. En Command Prompt:
 
 ```
-docker run --rm -it --read-only --cap-drop ALL --security-opt no-new-privileges -e TZ=Europe/Berlin -v "%cd%:/data:ro" -v "%USERPROFILE%\Downloads:/downloads" ghcr.io/z4dm42f5kp-ux/numb-form:latest && docker run --rm -it --read-only --cap-drop ALL --security-opt no-new-privileges -v "%cd%:/data" -v "%USERPROFILE%\Downloads:/downloads" --entrypoint /numb-commit ghcr.io/z4dm42f5kp-ux/numb-form:latest
+docker run --rm -it --read-only --cap-drop ALL --security-opt no-new-privileges -e TZ=Europe/Berlin -e XDG_STATE_HOME=/downloads/numb-form-logs -v "%cd%:/data" -v "%USERPROFILE%\Downloads:/downloads" ghcr.io/z4dm42f5kp-ux/numb-form:latest
 ```
 
 ## Podman
@@ -46,8 +46,18 @@ docker run --rm -it --read-only --cap-drop ALL --security-opt no-new-privileges 
 Rootless; `--userns=keep-id` mantiene su propia propiedad de archivos y `:Z` relabels los volúmenes en sistemas SELinux como Fedora:
 
 ```
-mkdir -p "$HOME/Downloads" && podman run --rm -it --userns=keep-id --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges -e TZ=Europe/Berlin -v "$PWD:/data:ro,Z" -v "$HOME/Downloads:/downloads:Z" ghcr.io/z4dm42f5kp-ux/numb-form:latest && podman run --rm -it --userns=keep-id --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges -v "$PWD:/data:Z" -v "$HOME/Downloads:/downloads:Z" --entrypoint /numb-commit ghcr.io/z4dm42f5kp-ux/numb-form:latest
+mkdir -p "$HOME/Downloads/numb-form-logs" && podman run --rm -it --userns=keep-id --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges -e TZ=Europe/Berlin -e XDG_STATE_HOME=/downloads/numb-form-logs -v "$PWD:/data:Z" -v "$HOME/Downloads:/downloads:Z" ghcr.io/z4dm42f5kp-ux/numb-form:latest
 ```
+
+## Modo de revisión en un contenedor
+
+Montar la carpeta de trabajo sólo para ejecutar, leer-escribir para el commit, y pasar `mode = review` en un archivo de configuración:
+
+```
+mkdir -p "$HOME/Downloads" && printf 'mode = review\n' > "$HOME/Downloads/review.conf" && docker run --rm -it --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges -e TZ=Europe/Berlin -v "$PWD:/data:ro" -v "$HOME/Downloads:/downloads" ghcr.io/z4dm42f5kp-ux/numb-form:latest -f /downloads/review.conf && docker run --rm -it --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges -v "$PWD:/data" -v "$HOME/Downloads:/downloads" --entrypoint /numb-commit ghcr.io/z4dm42f5kp-ux/numb-form:latest
+```
+
+Podman toma las mismas opciones más `--userns=keep-id` y `:Z`.
 
 ## Kubernetes
 
@@ -57,7 +67,7 @@ mkdir -p "$HOME/Downloads" && podman run --rm -it --userns=keep-id --user "$(id 
 kubectl apply -f k8s/pvc.yaml && kubectl apply -f k8s/numb-form-pod.yaml && kubectl wait --for=condition=Ready pod/numb-form --timeout=120s && kubectl attach -it numb-form && kubectl delete pod numb-form
 ```
 
-Revisa la copia en el volumen `numb-form-downloads`, y luego compromete:
+En modo de revisión, revise la copia en el volumen `numb-form-downloads`, y luego comprometa:
 
 ```
 kubectl apply -f k8s/numb-commit-pod.yaml && kubectl wait --for=condition=Ready pod/numb-commit --timeout=120s && kubectl attach -it numb-commit && kubectl delete pod numb-commit

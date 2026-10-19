@@ -12,13 +12,22 @@ Sólo se admite la última versión.
 
 numb-form maneja documentos de cliente, por lo que las reglas de diseño son estrictas.
 
-* The real working folder is never written by **numb-form**. The whole tree is copied to Downloads first and every change is made in the copy.
-* **numb-commit** only adds new folders. It never overwrites or deletes, refuses folders that appeared in the meantime, copies to a temporary name, verifies every file with SHA-256 and then renames.
+* **numb-form** only ever adds: a new folder per new company, with one filled form in it. It never changes or deletes an existing file or folder, and it removes only folders it created itself in the same run (on rejection or error).
+* Con `mode = review`, la carpeta de trabajo real no está escrita en absoluto: todo el árbol es copiado a Downloads primero y cada cambio se hace en la copia.
+* **numb-commit** (review mode) only adds new folders. It never overwrites or deletes, refuses folders that appeared in the meantime, copies to a temporary name, verifies every file with SHA-256 and then renames.
 * La hoja de cálculo en `3. Übersichten` se abre sólo lectura y nunca se escribe. Su suma de comprobación SHA-256 se compara antes de la copia, después de la copia y al final de la carrera; una diferencia para la ejecución.
 * Los documentos no son reserializados. El XML solo se escanea para los offsets de byte y los valores se introducen en los bytes originales; todas las otras partes del `.docx` son copiadas por byte para byte. Después de cada llenado el resultado se analiza de nuevo y se compara con el párrafo de plantilla por párrafo. Los valores son compatibles con XML y no se admiten caracteres en XML. Se rechazan las plantillas con macros.
 * Nunca se añade ningún formato. Los valores se unen a la propia edición de texto de la etiqueta, o una copia de las propiedades existentes de esa carrera cuando la etiqueta es seguida por una pestaña.
-* Cada documento se muestra a una persona, se lee de nuevo del disco, y debe ser aceptado. Los programas se niegan a funcionar sin un terminal interactivo.
-* Una carrera se detiene seguro después de 25 minutos. Escribe en la mayoría de 100 MB de documentos además de la copia, y no deja ningún caché o archivos temporales: los datos de red se quedan en memoria, y los archivos temporales se renombran o eliminan.
+* Cada documento se lee de nuevo del disco después de escribir. Con `confirm = each` (por defecto) una persona lo ve y lo acepta, y los programas se niegan a funcionar sin un terminal interactivo. Con `confirm = none` el read-back debe igualar exactamente los valores previstos, los partidos cercanos al nombre de carpeta nunca se deciden automáticamente, y sólo se utilizan las fuentes y el nivel de confianza en la configuración.
+* Una carrera se detiene seguro después de 25 minutos. Escribe a la mayoría de 100 MB de documentos además de la copia, y no deja ningún caché o archivos temporales: los datos de red se quedan en memoria, los archivos temporales se renombran o eliminan, y los convertidores se ejecutan en una carpeta temporal privada con un perfil de oficina desechable, eliminados después.
+
+## Configuración y formatos
+
+* El analizador de configuración rechaza claves desconocidas y valores inválidos.
+* Las claves que ensanchan lo que numb-form acepta (`legacy_formats`) se honran sólo en el archivo del sistema. En Unix ese archivo es ignorado a menos que pertenezca a root y no es obra de grupo u otros; en Windows vive bajo Archivos del programa.
+* Los formatos binarios Legacy (.doc, .xls) están apagados por defecto, y las carreras que los usan siempre están completamente fuera de línea. El lector de .xls (archivo completo y BIFF8) es el propio numb-form controla cada offset y cadena, y se fusiona continuamente.
+* .doc, .pages y .numbers son convertidos por software de oficina ya en el equipo (LibreOffice, Apache OpenOffice, Apple Pages o Numbers), con argumentos fijos; nombres de archivos se transmiten como argumentos, nunca como texto de script. Escribir .pages es experimental y apagado por defecto.
+* Se rechazan las plantillas con macros; se leen hojas de cálculo (.xlsm) macróficas para valores celulares solamente.
 
 ## Red
 
@@ -58,7 +67,7 @@ Los buscadores en línea envían sólo nombres de empresa y el sitio web de la e
 
 ## Gasoducto de pruebas de seguridad
 
-Cada petición de empuje y tire corre:
+Pull requests run a fast gate (formatting, vet, staticcheck, tests en Linux, macOS y Windows, govulncheck, gosec, zizmor, the history scan and dependncy review). Empuja a `main` y ramas de agente, y un horario nocturno, ejecutar todo:
 
 | Check | Herramienta |
 | --- | --- |
@@ -67,7 +76,8 @@ Cada petición de empuje y tire corre:
 | vulnerabilidades conocidas en código y en binarios construidos, para cada OS objetivo | Govulncheck |
 | Forro de seguridad, reportado a escaneo de código | Gosec |
 | Análisis semántico de Go y de los flujos de trabajo | CodeQL (`security-extended`, `security-and-quality`) |
-| Fuzzing del llenador de documentos, lector de hojas de cálculo y matcher de nombre | Ir a fuzzing nativo, 2 minutos por objetivo |
+| Fuzzing of every template filler and scanner (docx, odt, rtf), cada lector de hojas de cálculo (xlsx, ods, csv, xls legado), el parser de configuración y el matcher de nombre | Ir a fuzzing nativo, 2 minutos por objetivo en principal, 10 noches |
+| Plantillas y hojas de cálculo escritas por LibreOffice real (odt, fodt, rtf, docx, doc, xls, ods, fods) | formatos de trabajo |
 | Seguridad del flujo de trabajo (inyección, credenciales, permisos, pins) | zizmor, pedantic |
 | Archivos de cliente o credenciales cometidas por error | historia escaneada |
 | Pruebas con el detector de carreras en Linux, macOS y Windows, con el más antiguo y nuevo Go | `go test -race` |
@@ -75,7 +85,7 @@ Cada petición de empuje y tire corre:
 | Container image construye y se niega a funcionar sin un terminal | Docker, podman |
 | Nuevas dependencias en las solicitudes de exención | examen de la dependencia |
 
-Los trabajos de vulnerabilidad y análisis también funcionan semanalmente, y OpenSSF Scorecard revisa las prácticas del repositorio.
+OpenSSF Scorecard revisa las prácticas del repositorio. Pull requests, including Dependabot's, never need write permissions: results that require them are uploaded only from `main`.
 
 Los flujos de trabajo comienzan sin permisos y conceden cada trabajo sólo lo que necesita; los cheques no guardan credenciales.
 
