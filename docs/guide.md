@@ -19,7 +19,7 @@ GWG
 ```
 
 numb-form goes through the Excel list from top to bottom.
-For every company that has **no folder yet**, it:
+For every company that does not have a folder yet, it:
 
 1. creates a folder with the company's name,
 2. puts a copy of the form in it, named
