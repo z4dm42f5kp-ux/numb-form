@@ -1,6 +1,7 @@
 package config
 
 import (
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -95,4 +96,34 @@ func FuzzApply(f *testing.F) {
 		_, _ = c.Apply(b, "fuzz", false)
 		_ = c.Validate()
 	})
+}
+
+func TestSetUserValue(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", d)
+	t.Setenv("HOME", d)
+	t.Setenv("APPDATA", d)
+	if _, err := SetUserValue("person", "Erika Mustermann"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := SetUserValue("mode", "review"); err != nil {
+		t.Fatal(err)
+	}
+	p, err := SetUserValue("person", "Max Muster")
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, _ := os.ReadFile(p)
+	if strings.Count(string(b), "person =") != 1 || !strings.Contains(string(b), "person = Max Muster") || !strings.Contains(string(b), "mode = review") {
+		t.Fatalf("file:\n%s", b)
+	}
+	c, _, err := Load("")
+	if err != nil || c.Person != "Max Muster" || c.Mode != "review" {
+		t.Fatalf("load %+v %v", c, err)
+	}
+	for _, bad := range [][2]string{{"mode", "maybe"}, {"colour", "red"}, {"legacy_formats", "yes"}} {
+		if _, err := SetUserValue(bad[0], bad[1]); err == nil {
+			t.Errorf("%v accepted", bad)
+		}
+	}
 }

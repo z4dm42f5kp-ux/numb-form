@@ -145,3 +145,17 @@ func TestODTAndCSV(t *testing.T) {
 		t.Fatalf("got %v, %v", got, err)
 	}
 }
+
+// Starting inside the working folder works as well as starting above it.
+func TestStartInsideWorkingFolder(t *testing.T) {
+	_, root, _ := setup(t)
+	cfg := direct(t)
+	cfg.Confirm, cfg.Person = "none", "P"
+	var out bytes.Buffer
+	if code := Run(Options{Parent: root, Offline: true, AllowNonTTY: true, Config: cfg, In: strings.NewReader(""), Out: &out, Now: fixedNow}); code != ExitOK {
+		t.Fatalf("exit %d\n%s", code, out.String())
+	}
+	if !strings.Contains(out.String(), "Working folder: "+root) {
+		t.Fatalf("wrong working folder:\n%s", out.String())
+	}
+}

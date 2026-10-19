@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/z4dm42f5kp-ux/numb-form/internal/app"
@@ -19,7 +20,7 @@ func main() {
 
 const usage = `usage: numb-form [-f conf] [-offline] [-root dir] [-downloads dir] [-timeout d]
        numb-form [-f conf] check-template template [sample]
-       numb-form [-f conf] config [init]
+       numb-form [-f conf] config [init | set key value]
        numb-form keys
 
 `
@@ -63,6 +64,8 @@ func realMain() int {
 		return app.ShowConfig(os.Stdout, cfg, notes)
 	case cmd == "config" && len(rest) == 1 && rest[0] == "init":
 		return app.InitConfig(os.Stdout)
+	case cmd == "config" && len(rest) >= 3 && rest[0] == "set":
+		return app.SetConfig(os.Stdout, rest[1], strings.Join(rest[2:], " "))
 	case cmd == "check-template" && len(rest) == 1:
 		return app.CheckTemplate(os.Stdout, cfg, rest[0], "")
 	case cmd == "check-template" && len(rest) == 2:

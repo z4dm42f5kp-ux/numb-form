@@ -107,3 +107,14 @@ func InitConfig(out io.Writer) int {
 	fmt.Fprintln(out, "Wrote", p)
 	return ExitOK
 }
+
+// SetConfig saves one setting in the per-user configuration file.
+func SetConfig(out io.Writer, key, value string) int {
+	p, err := config.SetUserValue(key, value)
+	if err != nil {
+		fmt.Fprintln(out, "config set:", err)
+		return ExitUsage
+	}
+	fmt.Fprintf(out, "Saved %s = %s in %s\n", key, value, p)
+	return ExitOK
+}
