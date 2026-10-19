@@ -32,6 +32,12 @@ numb-form funktioniert ohne Konfigurationsdatei; die Standardwerte unten sind da
 
 Jede Zeile ist `key = value`. Zeilen, die mit `#` beginnen, sind Kommentare, und ` #` beginnt einen Kommentar nach einem Wert. Werte können mit `"` angegeben werden. Unbekannte Schlüssel und ungültige Werte sind Fehler, so dass Tippfehler sofort gefunden werden.
 
+Speichern Sie eine einzelne Einstellung, ohne die Datei zu bearbeiten:
+
+```
+numb-form config set person "Erika Mustermann"
+```
+
 Erstellen Sie eine kommentierte Pro-Benutzer-Datei mit jedem Standard und zeigen Sie die effektiven Einstellungen an:
 
 ```

@@ -29,7 +29,7 @@ git clone --depth 1 https://github.com/z4dm42f5kp-ux/numb-form.git && cd numb-fo
 
 ## Docker
 
-Unter Linux, macOS und den BSDs, gestartet im Ordner über dem Arbeitsordner:
+Unter Linux, macOS und den BSDs wurde innerhalb des Arbeitsordners (oder des Ordners darüber) begonnen:
 
 ```
 mkdir -p "$HOME/Downloads/numb-form-logs" && docker run --rm -it --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges -e TZ=Europe/Berlin -e XDG_STATE_HOME=/downloads/numb-form-logs -v "$PWD:/data" -v "$HOME/Downloads:/downloads" ghcr.io/z4dm42f5kp-ux/numb-form:latest
@@ -61,7 +61,7 @@ Podman nimmt die gleichen Optionen sowie `--userns=keep-id` und `:Z`.
 
 ## Kubernetes
 
-[`k8s/`](../../k8s) hat Beispielvolumenansprüche und zwei interaktive Pods. Füllen Sie `numb-form-data` mit dem Ordner über dem Arbeitsordner aus, dann:
+[`k8s/`](../../k8s) hat Beispielvolumenansprüche und zwei interaktive Pods. Füllen Sie `numb-form-data` mit dem Arbeitsordner (oder dem Ordner darüber), dann:
 
 ```
 kubectl apply -f k8s/pvc.yaml && kubectl apply -f k8s/numb-form-pod.yaml && kubectl wait --for=condition=Ready pod/numb-form --timeout=120s && kubectl attach -it numb-form && kubectl delete pod numb-form

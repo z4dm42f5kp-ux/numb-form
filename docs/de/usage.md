@@ -11,14 +11,16 @@
 ```
 numb-form [-f conf] [-offline] [-root dir] [-downloads dir] [-timeout duration]
 numb-form [-f conf] check-template template [sample]
-numb-form [-f conf] config [init]
+numb-form [-f conf] config [init | set key value]
 numb-form keys
 numb-commit [-f conf] [-run dir] [-downloads dir]
 ```
 
 ## DESCRIPTION
 
-**numb-form** wird im Ordner *über* dem Arbeitsordner gestartet. Der Arbeitsordner ist der einzelne Ordner, der sich dort befindet. Wenn es mehrere gibt, wird derjenige verwendet, der einen Übersichtsordner enthält; andernfalls wird der Benutzer gefragt.
+**numb-form** wird innerhalb des Arbeitsordners, des Ordners, der die Vorlage enthält, und des Übersichtsordners (z. B. `GWG`) gestartet. Es kann auch eine Ebene darüber gestartet werden: Der Arbeitsordner ist dann der einzelne Ordner, der sich dort befindet, oder derjenige, der einen Übersichtsordner enthält, oder der Benutzer wird gefragt. `-root` benennt den Arbeitsordner explizit.
+
+Büropersonal: siehe [step-by-step guide](guide.md).
 
 Der Arbeitsordner muss Folgendes enthalten:
 
@@ -76,6 +78,9 @@ Wenn kein Vertreter gefunden wird, lautet das Feld:
 
 `config init`
 : Schreiben Sie eine kommentierte Konfigurationsdatei pro Benutzer mit jedem Standard.
+
+`config set key value`
+: Speichern Sie eine Einstellung in der Konfigurationsdatei pro Benutzer, z. B. `numb-form config set person "Erika Mustermann"`. Der Wert wird überprüft, bevor er gespeichert wird.
 
 `keys`
 : Erklären Sie die optionalen kostenlosen API-Schlüssel.
@@ -138,7 +143,7 @@ Kein Cache oder temporäre Dateien bleiben zurück. Netzwerkantworten werden nur
 
 ## EXIT STATUS
 
-0 zum Erfolg, 1 zum Fehler, 2 zu einem Nutzungs- oder Konfigurationsfehler und 3 beim Stoppen durch das Zeitlimit, durch Strg + C oder durch den Benutzer.
+0 auf Erfolg, 1 auf Fehler, 2 auf einen Nutzungs- oder Konfigurationsfehler und 3 wenn durch das Zeitlimit, durch Ctrl+C oder durch den Benutzer gestoppt.
 
 ## EXAMPLES
 
@@ -151,13 +156,13 @@ numb-form check-template "Appendix A - Risk Assesment.docx" sample.docx
 Füllen Sie die Formulare direkt im Arbeitsordner aus:
 
 ```
-cd /path/to/folder-above && numb-form
+cd /path/to/GWG && numb-form
 ```
 
 Überprüfen Sie zuerst, dann Commit (numb-commit wartet auf Bestätigung):
 
 ```
-cd /path/to/folder-above && numb-form -f review.conf && numb-commit
+cd /path/to/GWG && numb-form -f review.conf && numb-commit
 ```
 
 wobei `review.conf` `mode = review` enthält.
@@ -165,7 +170,7 @@ wobei `review.conf` `mode = review` enthält.
 Laufen ohne Netzwerkzugang:
 
 ```
-cd /path/to/folder-above && numb-form -offline
+cd /path/to/GWG && numb-form -offline
 ```
 
 ## SEE ALSO

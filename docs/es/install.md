@@ -2,6 +2,8 @@
 
 > Traducción automática (Argos Translate) del [original en inglés](../install.md). La versión en inglés es la que vale.
 
+¿No es un programador? La guía [step-by-step](guide.md) tiene la línea de instalación para Windows y explica qué hacer después de la instalación.
+
 numb-form es dos programas estáticos, `numb-form` y `numb-commit`, sin dependencias. Cada sistema recibe los mismos programas y el mismo comportamiento.
 
 Hay dos maneras de instalarlos:
@@ -31,7 +33,7 @@ Use `darwin_amd64` en Intel Macs. Los binarios no son notarizados por Apple; el 
 
 ### Windows 10 y 11
 
-Los comandos de ambos proyectiles siguen. Utilice el que coincida con la ventana que tiene abierto: Windows PowerShell (azul, rápido `PS C:\>`) o Command Prompt (negro, rápido `C:\>`). Se instalan en `%LOCALAPPDATA%\Programs\numb-form` y se la añaden a su propio `PATH`; no se necesitan derechos de administrador. Utilice `arm64` en lugar de `amd64` en dispositivos ARM.
+Los comandos de ambos proyectiles siguen. Use el que coincida con la ventana que tiene abierto: Windows PowerShell (azul, rápido `PS C:\>`) o Command Prompt (negro, rápido `C:\>`). Se instalan en `%LOCALAPPDATA%\Programs\numb-form` y se la añaden a su propio `PATH`; no se necesitan derechos de administrador. Utilice `arm64` en lugar de `amd64` en dispositivos ARM.
 
 Windows PowerShell 5.1 no tiene `&&`. Por lo tanto, los comandos PowerShell se detienen en el primer error con `$ErrorActionPreference = 'Stop'`, que tiene el mismo efecto.
 
@@ -168,3 +170,13 @@ El registro Companies House del Reino Unido necesita una llave gratuita. Todas l
 ## Containers
 
 Ver [containers.md](containers.md) para Docker, Podman (sin raíces, sin derechos de administrador) y Kubernetes.
+
+## Después de instalar
+
+Guarda tu nombre una vez, y luego comienza numb-form dentro de la carpeta de trabajo:
+
+```
+numb-form config set person "Your Name" && cd /path/to/GWG && numb-form
+```
+
+La guía [step-by-step](guide.md) explica cada pregunta que hace.

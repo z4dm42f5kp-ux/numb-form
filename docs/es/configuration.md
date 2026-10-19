@@ -32,6 +32,12 @@ numb-form funciona sin un archivo de configuración; los defectos a continuació
 
 Cada línea es `key = value`. Las líneas que comienzan con `#` son comentarios, y ` #` comienza un comentario después de un valor. Los valores se pueden citar con `"`. Las claves desconocidas y los valores inválidos son errores, por lo que los errores de escritura se encuentran inmediatamente.
 
+Guardar un solo ajuste sin editar el archivo:
+
+```
+numb-form config set person "Erika Mustermann"
+```
+
 Cree un archivo por usuario comentado con cada defecto y muestre la configuración efectiva:
 
 ```

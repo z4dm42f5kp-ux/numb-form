@@ -8,6 +8,8 @@ Sie bestätigen jedes Dokument, es sei denn, Sie konfigurieren es unbeaufsichtig
 
 Español: [docs/es/README.md](../es/README.md) · Deutsch: [docs/de/README.md](README.md)
 
+**Neu hier? Lesen Sie die [Schritt-für-Schritt-Anleitung](guide.md).** Es braucht keine technischen Kenntnisse.
+
 * Installation: [docs/install.md](install.md)
 * Verwendung: [docs/usage.md](usage.md)
 * Konfigurieren: [docs/configuration.md](configuration.md)
@@ -16,20 +18,10 @@ Español: [docs/es/README.md](../es/README.md) · Deutsch: [docs/de/README.md](R
 * Sicherheit: [SECURITY.md](SECURITY.md)
 * KI-Agenten: [AGENTS.md](../../AGENTS.md)
 
-Starten Sie es im Ordner über dem Arbeitsordner:
+Starten Sie es im Arbeitsordner (derjenige, der `3. Übersichten` und die Vorlage enthält):
 
 ```
-cd /path/to/folder-above && numb-form
+cd /path/to/GWG && numb-form
 ```
 
-Unter Windows, in Command Prompt:
-
-```
-cd /d "S:\path\to\folder-above" && numb-form
-```
-
-In Windows PowerShell:
-
-```
-Set-Location 'S:\path\to\folder-above'; if ($?) { numb-form }
-```
+Öffnen Sie unter Windows den Ordner in File Explorer, geben Sie `powershell` in der Adressleiste ein, drücken Sie Enter und geben Sie dann `numb-form` ein.

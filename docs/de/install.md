@@ -2,6 +2,8 @@
 
 > Maschinelle Übersetzung (Argos Translate) des [englischen Originals](../install.md). Maßgeblich ist die englische Fassung.
 
+Kein Programmierer? Die [step-by-step-Anleitung](guide.md) hat die Installationszeile für Windows und erklärt, was nach der Installation zu tun ist.
+
 numb-form besteht aus zwei statischen Programmen, `numb-form` und `numb-commit`, ohne Abhängigkeiten. Jedes System erhält die gleichen Programme und das gleiche Verhalten.
 
 Es gibt zwei Möglichkeiten, sie zu installieren:
@@ -31,7 +33,7 @@ Verwenden Sie `darwin_amd64` auf Intel Macs. Die Binärdateien werden nicht von 
 
 ### Windows 10 und 11
 
-Befehle für beide Shells folgen. Verwenden Sie das Fenster, das zu dem geöffneten Fenster passt: Windows PowerShell (blau, prompt `PS C:\>`) oder Command Prompt (schwarz, prompt `C:\>`). Sie installieren in `%LOCALAPPDATA%\Programs\numb-form` und fügen es zu Ihrem eigenen `PATH` hinzu; Es sind keine Administratorrechte erforderlich. Verwenden Sie `arm64` anstelle von `amd64` auf ARM-Geräten.
+Befehle für beide Shells folgen. Verwenden Sie das Fenster, das Sie geöffnet haben: Windows PowerShell (blau, prompt `PS C:\>`) oder Command Prompt (schwarz, prompt `C:\>`). Sie installieren in `%LOCALAPPDATA%\Programs\numb-form` und fügen es zu Ihrem eigenen `PATH` hinzu; Es sind keine Administratorrechte erforderlich. Verwenden Sie `arm64` anstelle von `amd64` auf ARM-Geräten.
 
 Windows PowerShell 5.1 hat kein `&&`. Die PowerShell-Befehle stoppen daher beim ersten Fehler mit `$ErrorActionPreference = 'Stop'`, was den gleichen Effekt hat.
 
@@ -168,3 +170,13 @@ Das UK Companies House Register benötigt einen freien Schlüssel. Alle anderen 
 ## Container
 
 Siehe [containers.md](containers.md) für Docker, Podman (rootless, keine Administratorrechte) und Kubernetes.
+
+## Nach der Installation
+
+Speichern Sie Ihren Namen einmal und starten Sie dann numb-form im Arbeitsordner:
+
+```
+numb-form config set person "Your Name" && cd /path/to/GWG && numb-form
+```
+
+Die [Schritt-für-Schritt-Anleitung](guide.md) erklärt jede Frage, die sie stellt.

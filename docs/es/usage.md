@@ -11,14 +11,16 @@
 ```
 numb-form [-f conf] [-offline] [-root dir] [-downloads dir] [-timeout duration]
 numb-form [-f conf] check-template template [sample]
-numb-form [-f conf] config [init]
+numb-form [-f conf] config [init | set key value]
 numb-form keys
 numb-commit [-f conf] [-run dir] [-downloads dir]
 ```
 
 ## DESCRIPTION
 
-**numb-form** is started in the folder *above* the working folder. The working folder is the single folder found there. If there are several, the one containing an overview folder is used; otherwise the user is asked.
+**numb-form** is started inside the working folder, the folder that holds the template and the overview folder (for example `GWG`). It may also be started one level above it: the working folder is then the single folder found there, or the one containing an overview folder, or the user is asked. `-root` names the working folder explicitly.
+
+Personal de oficina: vea la guía [step-by-step](guide.md).
 
 La carpeta de trabajo debe contener:
 
@@ -76,6 +78,9 @@ Cuando no se encuentra representante, el campo dice:
 
 `config init`
 : Escriba un archivo de configuración por usuario comentado con cada defecto.
+
+`config set key value`
+: Guardar una configuración en el archivo de configuración por usuario, por ejemplo `numb-form config set person "Erika Mustermann"`. El valor se verifica antes de que se guarde.
 
 `keys`
 : Explica las claves de API gratuitas opcionales.
@@ -138,7 +143,7 @@ No hay caché ni archivos temporales detrás. Las respuestas de la red sólo se 
 
 ## EXIT STATUS
 
-0 sobre el éxito, 1 sobre el error, 2 sobre un error de uso o configuración, y 3 cuando se detiene por el límite de tiempo, por Ctrl+C o por el usuario.
+0 sobre el éxito, 1 sobre error, 2 sobre un error de uso o configuración, y 3 cuando se detiene por el límite de tiempo, por Ctrl+C o por el usuario.
 
 ## EXAMPLES
 
@@ -151,13 +156,13 @@ numb-form check-template "Appendix A - Risk Assesment.docx" sample.docx
 Llene los formularios directamente en la carpeta de trabajo:
 
 ```
-cd /path/to/folder-above && numb-form
+cd /path/to/GWG && numb-form
 ```
 
 Revisar primero, luego comprometer (numb-commit espera confirmación):
 
 ```
-cd /path/to/folder-above && numb-form -f review.conf && numb-commit
+cd /path/to/GWG && numb-form -f review.conf && numb-commit
 ```
 
 donde `review.conf` contiene `mode = review`.
@@ -165,7 +170,7 @@ donde `review.conf` contiene `mode = review`.
 Corre sin acceso a la red:
 
 ```
-cd /path/to/folder-above && numb-form -offline
+cd /path/to/GWG && numb-form -offline
 ```
 
 ## SEE ALSO

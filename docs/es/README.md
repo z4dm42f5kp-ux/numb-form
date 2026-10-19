@@ -8,6 +8,8 @@ Usted confirma cada documento, a menos que lo configura para funcionar desatendi
 
 Español: [docs/es/README.md](README.md) · Deutsch: [docs/de/README.md](../de/README.md)
 
+**Nuevo aquí? Lea la guía [step-by-step](guide.md).** No necesita conocimientos técnicos.
+
 * Instala: [docs/install.md](install.md)
 * Uso: [docs/usage.md](usage.md)
 * Configuración: [docs/configuration.md](configuration.md)
@@ -16,20 +18,10 @@ Español: [docs/es/README.md](README.md) · Deutsch: [docs/de/README.md](../de/R
 * Seguridad: [SECURITY.md](SECURITY.md)
 * Agentes de inteligencia artificial: [AGENTS.md](../../AGENTS.md)
 
-Comience en la carpeta por encima de la carpeta de trabajo:
+Comience dentro de la carpeta de trabajo (el que contiene `3. Übersichten` y la plantilla):
 
 ```
-cd /path/to/folder-above && numb-form
+cd /path/to/GWG && numb-form
 ```
 
-En Windows, en Command Prompt:
-
-```
-cd /d "S:\path\to\folder-above" && numb-form
-```
-
-En Windows PowerShell:
-
-```
-Set-Location 'S:\path\to\folder-above'; if ($?) { numb-form }
-```
+En Windows, abra la carpeta en File Explorer, escriba `powershell` en la barra de direcciones, presione Enter, escriba `numb-form`.
