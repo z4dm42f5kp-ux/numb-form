@@ -51,7 +51,7 @@ You do not need administrator rights.
 If it says `CHECKSUM MISMATCH`, the download was damaged or changed:
 do not continue, and tell whoever looks after the tool.
 
-To update numb-form later, run the same line again.
+To update numb-form later, see [Reinstall or update](#reinstall-or-update).
 
 ## 2. Save your name (once)
 
@@ -156,6 +156,34 @@ Look through the new folders there.
 When everything is right, type `numb-commit`: it copies the new folders
 into the real GWG folder after asking you once more.
 Switch back with `numb-form config set mode direct`.
+
+## Reinstall or update
+
+Close every numb-form window first.
+Then open Windows PowerShell and paste one of these two lines.
+Your saved settings (your name, the heading, the mode) are kept.
+
+**Stable version** (the newest published release; use this for real work):
+
+```
+& { $ErrorActionPreference = 'Stop'; if (Get-Process numb-form, numb-commit -ErrorAction SilentlyContinue) { throw 'Close every numb-form window first, then run this again' }; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $u = 'https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download'; $z = 'numb-form_windows_amd64.zip'; $d = Join-Path $env:LOCALAPPDATA 'Programs\numb-form'; New-Item -ItemType Directory -Force $d | Out-Null; Push-Location $d; try { Invoke-WebRequest -UseBasicParsing "$u/$z" -OutFile $z; Invoke-WebRequest -UseBasicParsing "$u/SHA256SUMS" -OutFile SHA256SUMS; $h = (Get-FileHash $z -Algorithm SHA256).Hash.ToLower(); if (-not (Select-String -Path SHA256SUMS -SimpleMatch "$h  $z" -Quiet)) { throw 'CHECKSUM MISMATCH' }; Remove-Item -Force -ErrorAction SilentlyContinue numb-form.exe, numb-commit.exe; Expand-Archive -Force $z -DestinationPath $d } finally { Remove-Item -ErrorAction SilentlyContinue $z, SHA256SUMS; Pop-Location }; $p = [Environment]::GetEnvironmentVariable('Path', 'User'); if (-not $p) { $p = '' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';') + ';' + $d).TrimStart(';'), 'User') }; & (Join-Path $d 'numb-form.exe') -version; 'OK, reinstalled. Your settings are kept. Open a new PowerShell window' }
+```
+
+**Development version** (the newest changes, rebuilt automatically after
+every update on GitHub; use this to try a fix right away):
+
+```
+& { $ErrorActionPreference = 'Stop'; if (Get-Process numb-form, numb-commit -ErrorAction SilentlyContinue) { throw 'Close every numb-form window first, then run this again' }; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $u = 'https://github.com/z4dm42f5kp-ux/numb-form/releases/download/edge'; $z = 'numb-form_windows_amd64.zip'; $d = Join-Path $env:LOCALAPPDATA 'Programs\numb-form'; New-Item -ItemType Directory -Force $d | Out-Null; Push-Location $d; try { Invoke-WebRequest -UseBasicParsing "$u/$z" -OutFile $z; Invoke-WebRequest -UseBasicParsing "$u/SHA256SUMS" -OutFile SHA256SUMS; $h = (Get-FileHash $z -Algorithm SHA256).Hash.ToLower(); if (-not (Select-String -Path SHA256SUMS -SimpleMatch "$h  $z" -Quiet)) { throw 'CHECKSUM MISMATCH' }; Remove-Item -Force -ErrorAction SilentlyContinue numb-form.exe, numb-commit.exe; Expand-Archive -Force $z -DestinationPath $d } finally { Remove-Item -ErrorAction SilentlyContinue $z, SHA256SUMS; Pop-Location }; $p = [Environment]::GetEnvironmentVariable('Path', 'User'); if (-not $p) { $p = '' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';') + ';' + $d).TrimStart(';'), 'User') }; & (Join-Path $d 'numb-form.exe') -version; 'OK, reinstalled. Your settings are kept. Open a new PowerShell window' }
+```
+
+Both print the version they installed, for example `v0.1.1` (stable) or
+`edge-3f976cc` (development), and end with `OK, reinstalled`.
+Open a new PowerShell window afterwards.
+
+If the development line says `CHECKSUM MISMATCH`, a new build was being
+uploaded at that moment: wait five minutes and run it once more.
+If it happens again, or with the stable line, stop and tell whoever looks
+after the tool.
 
 ## When something goes wrong
 
