@@ -75,8 +75,10 @@ build from source as described below.
 
 ### Reinstalling or updating on Windows
 
-Close every numb-form window, then run one of these in Windows
-PowerShell.
+From version 0.1.2 on, `numb-form update` does this by itself (see
+[usage](usage.md)); it works the same on every system.
+For older versions, or if it cannot connect, close every numb-form
+window, then run one of these in Windows PowerShell.
 They replace the programs, keep your settings and print the installed
 version.
 

@@ -11,6 +11,7 @@ numb-form [-f conf] [-offline] [-root dir] [-downloads dir] [-timeout duration]
 numb-form [-f conf] check-template template [sample]
 numb-form [-f conf] config [init | set key value]
 numb-form keys
+numb-form [-f conf] update [stable | edge]
 numb-commit [-f conf] [-run dir] [-downloads dir]
 ```
 
@@ -133,6 +134,18 @@ Afterwards it offers to delete the review copy; the logs are kept.
 
 `keys`
 : Explain the optional free API keys.
+
+`update` [`stable` | `edge`]
+: Replace the installed `numb-form` and `numb-commit` with the newest
+  stable release or the newest `edge` development build, as the install
+  commands do: the archive and `SHA256SUMS` are downloaded over HTTPS from
+  GitHub only, the checksum must match, and the new `numb-form` must start
+  before anything is replaced.
+  Without an argument the channel of the running build is used.
+  Settings are kept.
+  Refused with `-offline`, with `online = no`, and for builds from source.
+  On Windows the old program is renamed to `numb-form.old.exe` and removed
+  at the next start.
 
 ## OPTIONS
 

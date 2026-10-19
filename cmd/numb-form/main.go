@@ -22,10 +22,12 @@ const usage = `usage: numb-form [-f conf] [-offline] [-root dir] [-downloads dir
        numb-form [-f conf] check-template template [sample]
        numb-form [-f conf] config [init | set key value]
        numb-form keys
+       numb-form [-f conf] update [stable | edge]
 
 `
 
 func realMain() int {
+	app.CleanupOldPrograms()
 	fs := flag.NewFlagSet("numb-form", flag.ContinueOnError)
 	conf := fs.String("f", "", "configuration file read after the system and per-user files")
 	root := fs.String("root", "", "working folder (default: the current folder if it is one, else the single folder inside it)")
@@ -66,6 +68,10 @@ func realMain() int {
 		return app.InitConfig(os.Stdout)
 	case cmd == "config" && len(rest) >= 3 && rest[0] == "set":
 		return app.SetConfig(os.Stdout, rest[1], strings.Join(rest[2:], " "))
+	case cmd == "update" && len(rest) == 0:
+		return app.Update(os.Stdout, cfg, *offline, "")
+	case cmd == "update" && len(rest) == 1 && (rest[0] == "stable" || rest[0] == "edge"):
+		return app.Update(os.Stdout, cfg, *offline, rest[0])
 	case cmd == "check-template" && len(rest) == 1:
 		return app.CheckTemplate(os.Stdout, cfg, rest[0], "")
 	case cmd == "check-template" && len(rest) == 2:

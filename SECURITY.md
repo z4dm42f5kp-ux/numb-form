@@ -91,6 +91,24 @@ Use `-offline` to send nothing.
   service, and are never logged or stored.
 * Data is never taken from a parent, subsidiary or similarly named entity.
 
+`numb-form update` is the only command that downloads programs.
+It is run only when the user types it, and never during a form run.
+
+* Downloads come only from `github.com` and `*.githubusercontent.com`,
+  over HTTPS, including every redirect.
+* The archive must match its line in the release's `SHA256SUMS`; this is
+  the same trust as the install commands (the Sigstore signature and the
+  build provenance are not checked by the program; check them by hand as
+  described in [docs/install.md](docs/install.md) if needed).
+* The archive (at most 64 MB) is held in memory; only `numb-form` and
+  `numb-commit` at its top level are taken from it.
+* The new `numb-form` must start and report its version before anything
+  is replaced; on any failure the installed programs stay as they were and
+  the staged files are removed.
+* It is refused with `-offline`, with `online = no` (which an
+  administrator can set in the system configuration), and for builds from
+  source.
+
 ## Supply chain
 
 **No third-party Go modules.**

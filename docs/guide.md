@@ -159,9 +159,29 @@ Switch back with `numb-form config set mode direct`.
 
 ## Reinstall or update
 
-Close every numb-form window first.
-Then open Windows PowerShell and paste one of these two lines.
+The easy way: open Windows PowerShell and type
+
+```
+numb-form update
+```
+
+It downloads the newest version, checks it, replaces the program and
+prints the new version, for example
+`Updated to numb-form v0.1.2 (stable)`.
 Your saved settings (your name, the heading, the mode) are kept.
+It stays on the version you have: the development version keeps updating
+to the newest development build, the stable version to the newest stable
+release.
+To switch, type `numb-form update edge` (development) or
+`numb-form update stable`.
+
+Versions 0.1.1 and older do not have `numb-form update`.
+For those, or if `numb-form update` cannot connect, use one of the two
+lines below.
+Do not type them: open this page in your browser, click the copy icon at
+the right edge of the grey box, and right-click in the PowerShell window
+to paste.
+Close every numb-form window first.
 
 **Stable version** (the newest published release; use this for real work):
 
@@ -179,6 +199,10 @@ every update on GitHub; use this to try a fix right away):
 Both print the version they installed, for example `v0.1.1` (stable) or
 `edge-3f976cc` (development), and end with `OK, reinstalled`.
 Open a new PowerShell window afterwards.
+
+If PowerShell answers `Unexpected token` or `Missing ...` in red, the
+line was changed while copying (usually a character was lost): copy it
+again with the copy icon.
 
 If the development line says `CHECKSUM MISMATCH`, a new build was being
 uploaded at that moment: wait five minutes and run it once more.
@@ -223,7 +247,7 @@ after the tool.
   Start it again; companies already done are skipped.
 
 **Version 0.1.0 does not start inside GWG**
-: Update by running the install line from step 1 again, or use
+: Update (see [Reinstall or update](#reinstall-or-update)), or use
   `numb-form -root "H:\GWG"`.
 
 **Running scripts or programs is blocked by your company**
