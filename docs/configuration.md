@@ -87,7 +87,7 @@ numb-form config init && numb-form config
   Case, accents and punctuation are ignored, and umlauts match both
   spellings, so `Übersicht` matches `3. Übersichten` and `Uebersicht`.
 
-`header = Company Name`, `id_header = Customer ID`
+`header = Customer Name`, `id_header = Customer ID`
 : Spreadsheet column headers.
 
 `template_name = Appendix A - Risk Assesment`

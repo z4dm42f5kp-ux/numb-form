@@ -181,11 +181,14 @@ Switch back with `numb-form config set mode direct`.
 : `3. Übersichten` must contain exactly one Excel file.
   Move the others elsewhere.
 
-**`no sheet has a "Company Name" header cell`**
-: numb-form looks for a cell that says `Company Name` and takes the names
+**`no sheet has a "Customer Name" header cell`**
+: numb-form looks for the heading `Customer Name` and takes the names
   below it.
+  The message lists the headings it did find.
   If your list uses another heading, for example `Firmenname`, save it
   once with `numb-form config set header "Firmenname"`.
+  Versions 0.1.1 and older look for `Company Name` instead; there, run
+  `numb-form config set header "Customer Name"` once.
 
 **`Time limit of 25m0s reached`**
 : A run stops after 25 minutes for safety.

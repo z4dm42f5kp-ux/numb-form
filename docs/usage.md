@@ -48,7 +48,7 @@ A run proceeds as follows:
    this step happens in the copy.
    With `mode = direct` (the default), the working folder itself is used
    and the log goes to the per-user state folder.
-4. Company names are read from the column headed `Company Name`, from
+4. Company names are read from the column headed `Customer Name`, from
    top to bottom.
    All other columns are ignored, including `Report created`.
    The spreadsheet is never written to; its SHA-256 checksum is checked

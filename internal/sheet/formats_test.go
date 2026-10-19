@@ -1,6 +1,7 @@
 package sheet
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/z4dm42f5kp-ux/numb-form/internal/testfix"
@@ -66,6 +67,35 @@ func TestCustomHeader(t *testing.T) {
 	rows, _, err := Read(csv, ".csv", Options{Header: "Firmenname", IDHeader: "Kunde"})
 	if err != nil || len(rows) != 1 || rows[0].Name != "Foo GmbH" || rows[0].CustomerID != "D1" {
 		t.Fatalf("rows %+v err %v", rows, err)
+	}
+}
+
+func TestHeaderVariants(t *testing.T) {
+	for _, h := range []string{"customer name", "Customer  Name:", " CUSTOMER NAME "} {
+		rows, _, err := Read([]byte("Customer ID;"+h+"\nD1;Foo GmbH\n"), ".csv", Options{})
+		if err != nil || len(rows) != 1 || rows[0].Name != "Foo GmbH" || rows[0].CustomerID != "D1" {
+			t.Errorf("header %q: rows %+v err %v", h, rows, err)
+		}
+	}
+}
+
+func TestHeaderErrorListsHeadings(t *testing.T) {
+	_, _, err := Read([]byte("Kundenliste 2026\nKunde;Firmenname;Ort\nD1;Foo GmbH;Berlin\n1;2;3\n"), ".csv", Options{})
+	if err == nil {
+		t.Fatal("expected an error")
+	}
+	msg := err.Error()
+	for _, want := range []string{`"Customer Name"`, `"Kundenliste 2026"`, `"Firmenname"`, `"Kunde"`, "numb-form config set header"} {
+		if !strings.Contains(msg, want) {
+			t.Errorf("error lacks %s:\n%s", want, msg)
+		}
+	}
+	if strings.Contains(msg, `"1"`) {
+		t.Errorf("numbers listed as headings:\n%s", msg)
+	}
+	_, _, err = Read([]byte("Kunde\u202e;x\x1b[2J\n"), ".csv", Options{})
+	if err == nil || strings.ContainsAny(err.Error(), "\u202e\x1b") {
+		t.Errorf("control characters not escaped: %q", err)
 	}
 }
 

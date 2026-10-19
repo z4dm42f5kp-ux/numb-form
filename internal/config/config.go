@@ -68,7 +68,7 @@ func Defaults() Config {
 		Confirm:          "each",
 		Online:           true,
 		OverviewDir:      "Übersicht",
-		Header:           "Company Name",
+		Header:           "Customer Name",
 		IDHeader:         "Customer ID",
 		TemplateName:     "Appendix A - Risk Assesment",
 		DateFormat:       "DD/MM/YYYY",
