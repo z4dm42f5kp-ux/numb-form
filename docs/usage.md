@@ -9,17 +9,21 @@
 ```
 numb-form [-f conf] [-offline] [-root dir] [-downloads dir] [-timeout duration]
 numb-form [-f conf] check-template template [sample]
-numb-form [-f conf] config [init]
+numb-form [-f conf] config [init | set key value]
 numb-form keys
 numb-commit [-f conf] [-run dir] [-downloads dir]
 ```
 
 ## DESCRIPTION
 
-**numb-form** is started in the folder *above* the working folder.
-The working folder is the single folder found there.
-If there are several, the one containing an overview folder is used;
-otherwise the user is asked.
+**numb-form** is started inside the working folder, the folder that
+holds the template and the overview folder (for example `GWG`).
+It may also be started one level above it: the working folder is then
+the single folder found there, or the one containing an overview folder,
+or the user is asked.
+`-root` names the working folder explicitly.
+
+Office staff: see the [step-by-step guide](guide.md).
 
 The working folder must contain:
 
@@ -122,6 +126,11 @@ Afterwards it offers to delete the review copy; the logs are kept.
 `config init`
 : Write a commented per-user configuration file with every default.
 
+`config set key value`
+: Save one setting in the per-user configuration file, for example
+  `numb-form config set person "Erika Mustermann"`.
+  The value is checked before it is saved.
+
 `keys`
 : Explain the optional free API keys.
 
@@ -202,13 +211,13 @@ numb-form check-template "Appendix A - Risk Assesment.docx" sample.docx
 Fill the forms directly in the working folder:
 
 ```
-cd /path/to/folder-above && numb-form
+cd /path/to/GWG && numb-form
 ```
 
 Review first, then commit (numb-commit waits for confirmation):
 
 ```
-cd /path/to/folder-above && numb-form -f review.conf && numb-commit
+cd /path/to/GWG && numb-form -f review.conf && numb-commit
 ```
 
 where `review.conf` contains `mode = review`.
@@ -216,7 +225,7 @@ where `review.conf` contains `mode = review`.
 Run without any network access:
 
 ```
-cd /path/to/folder-above && numb-form -offline
+cd /path/to/GWG && numb-form -offline
 ```
 
 ## SEE ALSO

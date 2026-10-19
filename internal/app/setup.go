@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/z4dm42f5kp-ux/numb-form/internal/config"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/formats"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/fsutil"
 )
@@ -63,13 +64,18 @@ func (r *run) pickRoot() (string, error) {
 	if err != nil {
 		return "", err
 	}
+	// Started inside the working folder itself (it holds the template and
+	// the overview folder): use it.
+	if isWorkingFolder(parent, r.cfg) {
+		return parent, nil
+	}
 	dirs, err := subdirs(parent)
 	if err != nil {
 		return "", err
 	}
 	switch len(dirs) {
 	case 0:
-		return "", fmt.Errorf("no folder found inside %s; start numb-form in the folder above the working folder", parent)
+		return "", fmt.Errorf("%s is not a working folder (no template and %q folder found); start numb-form inside the working folder", parent, r.cfg.OverviewDir)
 	case 1:
 		return dirs[0], nil
 	}
@@ -130,4 +136,14 @@ func (r *run) askPerson() (string, error) {
 			return a, nil
 		}
 	}
+}
+
+// isWorkingFolder reports whether dir holds the template at its top level
+// and an overview folder below it.
+func isWorkingFolder(dir string, cfg config.Config) bool {
+	if _, err := findTemplate(dir, cfg.TemplateName); err != nil {
+		return false
+	}
+	_, err := findOverview(dir, cfg.OverviewDir)
+	return err == nil
 }

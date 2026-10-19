@@ -18,8 +18,8 @@ Read [docs/usage.md](docs/usage.md) and
 A person must confirm every document.
 Your job is to operate the terminal, not to make their decisions.
 
-1. Start in the folder *above* the working folder, in a real terminal
-   (PTY).
+1. Start inside the working folder (the one holding the template and
+   the overview folder), in a real terminal (PTY).
    Never use `-allow-non-tty` for real data: it exists for tests.
 2. Relay every prompt to the person word for word, including the
    candidates and their sources.
@@ -39,7 +39,7 @@ Your job is to operate the terminal, not to make their decisions.
 Typical session:
 
 ```
-cd "/path/to/folder-above" && numb-form
+cd "/path/to/working-folder" && numb-form
 ```
 
 ## Rules that must never be broken
