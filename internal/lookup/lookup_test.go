@@ -88,7 +88,7 @@ func TestChName(t *testing.T) {
 func TestRegistriesWithMockServers(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/gleif/lei-records", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Query().Get("filter[fulltext]") != "Foo GmbH" {
+		if r.URL.Query().Get("filter[fulltext]") != "Foo" {
 			t.Errorf("gleif query %q", r.URL.RawQuery)
 		}
 		_, _ = w.Write([]byte(`{"data":[

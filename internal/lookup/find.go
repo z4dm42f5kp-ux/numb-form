@@ -337,7 +337,7 @@ func firstVerified(ctx context.Context, c *Client, q Query, cands []string, type
 				return
 			}
 			defer func() { <-sem }()
-			r := ReadSite(ctx, c, cands[i], q)
+			r := ReadSite(ctx, c, cands[i], q, typed)
 			results[i] = &r
 		}(i)
 	}

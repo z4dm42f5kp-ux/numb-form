@@ -240,8 +240,10 @@ func structuredData(page string) (legalName, address string) {
 type SiteResult struct {
 	Result
 	Home     string // the home page that was read
-	Verified bool   // a page names the company
+	Verified bool   // the site belongs to the company (see operator)
 	Pages    int
+
+	mentioned bool // some page names the company, perhaps only in passing
 
 	legal, other []Person // people from legal notices and the home page, and from other pages
 }
@@ -312,8 +314,9 @@ type pageLink struct {
 
 // ReadSite reads a company website: the home page and up to four pages
 // that carry its legal identity (legal notice, about, contact, privacy).
-// Verified is set when one of them names the company.
-func ReadSite(ctx context.Context, c *Client, site string, q Query) SiteResult {
+// Verified is set when the company runs the site. typed marks a site the
+// user typed: its findings are kept even when unverified.
+func ReadSite(ctx context.Context, c *Client, site string, q Query, typed bool) SiteResult {
 	var out SiteResult
 	base, ok := NormalizeWebsite(site)
 	if !ok {
@@ -400,10 +403,53 @@ func ReadSite(ctx context.Context, c *Client, site string, q Query) SiteResult {
 	for _, p := range people {
 		out.addPerson(p)
 	}
-	if !out.Verified {
-		out.Notes = append(out.Notes, "website "+final.Host+": no page names "+q.Name)
+	if !out.Verified && out.mentioned && domainIsName(final, q) {
+		out.Verified = true
+	}
+	if !out.Verified && !typed {
+		if out.mentioned {
+			out.Notes = append(out.Notes, "website "+final.Host+": names "+q.Name+" only in passing; not taken as its website")
+		} else {
+			out.Notes = append(out.Notes, "website "+final.Host+": no page names "+q.Name)
+		}
+		out.Result = Result{Notes: out.Notes}
+		out.legal, out.other = nil, nil
 	}
 	return out
+}
+
+// domainIsName reports whether the site's domain is the company's name,
+// such as foobar.de for "Foo Bar GmbH".
+func domainIsName(u *url.URL, q Query) bool {
+	label := strings.SplitN(hostKey(u), ".", 2)[0]
+	for _, s := range slugs(q) {
+		if label == s {
+			return true
+		}
+	}
+	return false
+}
+
+// operator reports whether the company runs the site: on a legal notice
+// or home page, it is the first legal entity named, or it appears in the
+// copyright line.
+func operator(lines []string, q Query) bool {
+	first := true
+	for _, l := range lines {
+		if strings.Contains(l, "©") || strings.Contains(strings.ToLower(l), "copyright") {
+			if Mentions(normWords(l), q) {
+				return true
+			}
+			continue
+		}
+		if _, ok := entityHeading(l); ok && first {
+			first = false
+			if Mentions(normWords(l), q) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func inLinks(links map[string]int, p string) bool {
@@ -418,7 +464,10 @@ func (s *SiteResult) read(q Query, pageURL, body, what string, legal bool) {
 	all := HTMLText(body)
 	named := Mentions(normWords(strings.Join(all, "\n")), q)
 	if named {
-		s.Verified = true
+		s.mentioned = true
+		if legal && operator(all, q) {
+			s.Verified = true
+		}
 	}
 	lines := companyLines(all, q)
 	joined := strings.Join(lines, "\n")
@@ -531,6 +580,6 @@ func Website(ctx context.Context, c *Client, site string, q ...Query) Result {
 	if len(q) > 0 {
 		qq = q[0]
 	}
-	r := ReadSite(ctx, c, site, qq)
+	r := ReadSite(ctx, c, site, qq, true)
 	return r.Result
 }
