@@ -11,7 +11,8 @@ numb-form [-f conf] [-offline] [-root dir] [-downloads dir] [-timeout duration]
 numb-form [-f conf] check-template template [sample]
 numb-form [-f conf] config [init | set key value]
 numb-form keys
-numb-form [-f conf] update [stable | edge]
+numb-form [-f conf] update [stable | rolling | v1.2.3]
+numb-form rollback
 numb-commit [-f conf] [-run dir] [-downloads dir]
 ```
 
@@ -104,8 +105,20 @@ Candidates come from, in order of authority:
 3. the company's own website: its legal notice (Impressum, Aviso legal,
    Mentions légales, Legal notice) first, then about, contact and privacy
    pages;
-4. Wikidata, and the snippets of web search results (community data, not
-   verified; snippets are read only when nothing else named anyone).
+4. community data, shown unverified with the caution text: company-data
+   directories that republish register data (northdata, firmenwissen,
+   Moneyhouse, Racius, Empresite, cnpj.biz, OpenCorporates, Dun &
+   Bradstreet and similar; at most three pages per company), the
+   snippets of web search results, OpenStreetMap (for an address) and
+   Wikidata.
+
+When representatives confirmed by an official source, or an address from
+a register or the company's website, are still missing, numb-form runs
+one more search for the representatives (with the local word, such as
+*Geschäftsführer* or *representante legal*) and one for the address, and
+reads the directory pages they find.
+A person named by two different kinds of source (for example the
+company's website and a directory) counts as verified.
 
 The website is found automatically: from Wikidata, from a DuckDuckGo
 search for the exact name, and from addresses such as `foobar.de` or
@@ -128,10 +141,21 @@ example `HRB 12345` or `FN 123456 a`) are shown before the form is
 written; the number can be typed into *Commercial Registry Number* with
 *edit*.
 
-DuckDuckGo is asked at most a few times per company, a few seconds
-apart.
-If it asks for a human check, searching pauses for a minute and the
-other sources are used meanwhile.
+Searching uses keyless engines in turn: DuckDuckGo, then Mojeek, Yahoo
+and Brave Search (`search` in the configuration).
+Each is asked at most a few times per company, a few seconds apart.
+An engine that refuses (a human check, a rate limit) rests for a minute
+and the next one is asked.
+
+When Google Chrome is installed (or, without it, Chromium or Microsoft
+Edge), numb-form starts it invisibly, without a window (headless), for
+two things: reading company websites whose content is built by
+JavaScript or that turn programs away, at most three pages per site;
+and searching when every engine refuses.
+Each start uses a new, empty profile in the temporary folder that is
+deleted right after; the user's own browser, history and sign-ins are
+never used.
+`browser = none` turns this off.
 
 Which sources feed which field, the least trusted source accepted for
 representatives and the fallbacks are set in the configuration.
@@ -175,6 +199,13 @@ Afterwards it offers to delete the review copy; the logs are kept.
 `keys`
 : Explain the optional free API keys.
 
+`rollback`
+: Switch back to the version that the last `update` replaced.
+  The version rolled back from is kept in its place, so a second
+  `rollback` returns to it.
+  Without a kept version, install a release by number instead:
+  `numb-form update v0.1.1`.
+
 `man` [*topic*] [`en` | `es` | `de`]
 : Show this manual in the terminal, one screen at a time (Enter: next
   screen; q and Enter: quit).
@@ -189,10 +220,14 @@ Afterwards it offers to delete the review copy; the logs are kept.
   Windows PowerShell keeps `man` for its own help: there, type
   `numb-form man`.
 
-`update` [`stable` | `edge`]
-: Replace the installed `numb-form` and `numb-commit` with the newest
-  stable release or the newest `edge` development build, as the install
-  commands do: the archive and `SHA256SUMS` are downloaded over HTTPS from
+`update` [`stable` | `rolling` | *v1.2.3*]
+: Replace the installed `numb-form` and `numb-commit`:
+  **stable** with the latest stable release, **rolling** with the
+  current rolling build of `main` (rebuilt after every change; `edge` is
+  accepted as an older name), or *v1.2.3* with exactly that release.
+  The version replaced is kept next to the programs as
+  `numb-form.previous` and `numb-commit.previous` for `rollback`.
+  It works as the install commands do: the archive and `SHA256SUMS` are downloaded over HTTPS from
   GitHub only, the checksum must match, and the new `numb-form` must start
   before anything is replaced.
   Without an argument the channel of the running build is used.

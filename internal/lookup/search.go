@@ -3,19 +3,11 @@ package lookup
 import (
 	"context"
 	"errors"
-	"html"
+	"fmt"
 	"math/rand"
-	"net/url"
-	"regexp"
 	"strings"
 	"sync"
 	"time"
-)
-
-// DuckDuckGo's HTML-only pages, which need no JavaScript and no account.
-var (
-	ddgHTML = "https://html.duckduckgo.com/html/"
-	ddgLite = "https://lite.duckduckgo.com/lite/"
 )
 
 // Hit is one search result.
@@ -25,194 +17,178 @@ type Hit struct {
 	Snippet string
 }
 
-// ErrSearchBlocked means the search engine asked for a human check.
-var ErrSearchBlocked = errors.New("DuckDuckGo asked for a human check (too many searches); search skipped")
+// ErrSearchBlocked means a search engine refused to answer (a human
+// check, "unusual traffic", or a rate limit).
+var ErrSearchBlocked = errors.New("the search engine asked for a human check")
 
-// searchGap spaces out searches, as a person typing would; up to
-// searchJitter is added at random.
+// Engines lists the supported search engines in their default order.
+var Engines = []string{"duckduckgo", "mojeek", "yahoo", "brave"}
+
+// engine is one keyless search engine.
+type engine struct {
+	// fetch asks the engine and returns its result page.
+	fetch func(ctx context.Context, c *Client, query, region string) ([]byte, error)
+	// parse reads the results from a page.
+	parse func(page string) ([]Hit, error)
+	// page is the address of a result page, for the headless browser.
+	page func(query, region string) string
+}
+
+var engines = map[string]engine{
+	"duckduckgo": {fetchDDG, ParseDDG, ddgPage},
+	"mojeek":     {fetchGet(mojeekPage), ParseMojeek, mojeekPage},
+	"yahoo":      {fetchGet(yahooPage), ParseYahoo, yahooPage},
+	"brave":      {fetchGet(bravePage), ParseBrave, bravePage},
+}
+
+// searchGap spaces out searches on one engine, as a person typing would;
+// up to searchJitter is added at random. pauseAfterBlock rests an engine
+// that refused.
 var (
-	searchGap    = 3 * time.Second
-	searchJitter = 2 * time.Second
+	searchGap       = 3 * time.Second
+	searchJitter    = 2 * time.Second
+	pauseAfterBlock = time.Minute
 )
 
 var (
-	searchMu   sync.Mutex
-	lastSearch time.Time
+	searchMu    sync.Mutex
+	lastSearch  = map[string]time.Time{}
+	pausedUntil = map[string]time.Time{}
 )
 
-func waitTurn(ctx context.Context) error {
+func paused(name string) bool {
 	searchMu.Lock()
 	defer searchMu.Unlock()
+	return time.Now().Before(pausedUntil[name])
+}
+
+func pause(name string) {
+	searchMu.Lock()
+	pausedUntil[name] = time.Now().Add(pauseAfterBlock)
+	searchMu.Unlock()
+}
+
+// waitTurn waits until the engine may be asked again.
+func waitTurn(ctx context.Context, name string) error {
+	searchMu.Lock()
 	gap := searchGap
 	if searchJitter > 0 {
 		gap += time.Duration(rand.Int63n(int64(searchJitter))) // #nosec G404 -- pacing, not security.
 	}
-	if d := gap - time.Since(lastSearch); d > 0 {
-		t := time.NewTimer(d)
-		defer t.Stop()
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-t.C:
-		}
+	d := gap - time.Since(lastSearch[name])
+	lastSearch[name] = time.Now().Add(max(d, 0))
+	searchMu.Unlock()
+	if d <= 0 {
+		return nil
 	}
-	lastSearch = time.Now()
-	return nil
+	t := time.NewTimer(d)
+	defer t.Stop()
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-t.C:
+		return nil
+	}
 }
 
-var (
-	reResultBlock = regexp.MustCompile(`(?is)<div[^>]+class="[^"]*\bresult\b[^"]*"[^>]*>`)
-	reAnchor      = regexp.MustCompile(`(?is)<a\b([^>]*)>(.*?)</a\s*>`)
-	reAttrHref    = regexp.MustCompile(`(?is)\bhref\s*=\s*["']([^"']+)["']`)
-	reAttrClass   = regexp.MustCompile(`(?is)\bclass\s*=\s*["']([^"']*)["']`)
-	reLiteSnippet = regexp.MustCompile(`(?is)<td[^>]+class=["'][^"']*result-snippet[^"']*["'][^>]*>(.*?)</td>`)
-)
-
-// resultURL turns a result link into the target address: DuckDuckGo
-// links either directly or through /l/?uddg=<target>.
-func resultURL(href string) string {
-	href = strings.TrimSpace(html.UnescapeString(href))
-	if strings.HasPrefix(href, "//") {
-		href = "https:" + href
-	}
-	u, err := url.Parse(href)
-	if err != nil {
-		return ""
-	}
-	if strings.HasSuffix(u.Hostname(), "duckduckgo.com") {
-		if t := u.Query().Get("uddg"); t != "" && strings.HasPrefix(u.Path, "/l/") {
-			return resultURL(t)
+// refused reports whether an engine's answer means "not now".
+func refused(err error) bool {
+	var se *StatusError
+	if errors.As(err, &se) {
+		switch se.Code {
+		case 202, 403, 429, 503, 999:
+			return true
 		}
-		return "" // ads (y.js) and internal links
 	}
-	if u.Scheme != "https" && u.Scheme != "http" {
-		return ""
-	}
-	return u.String()
+	return errors.Is(err, ErrSearchBlocked)
 }
 
-func plain(s string) string { return strings.Join(HTMLText(s), " ") }
-
-// ParseDDG reads results from DuckDuckGo's HTML or lite result page.
-func ParseDDG(page string) ([]Hit, error) {
+// blockedPage recognises human-check pages that come with status 200.
+func blockedPage(page string) bool {
 	low := strings.ToLower(page)
-	if strings.Contains(low, "anomaly-modal") || strings.Contains(low, "challenge-form") || strings.Contains(low, "/anomaly.js") {
-		return nil, ErrSearchBlocked
+	for _, m := range []string{"captcha", "unusual traffic", "automated queries", "are you a robot", "not a robot", "anomaly-modal", "challenge-form", "/anomaly.js"} {
+		if strings.Contains(low, m) {
+			return true
+		}
 	}
-	var hits []Hit
-	seen := map[string]bool{}
-	add := func(h Hit) {
-		if h.URL == "" || seen[h.URL] {
-			return
-		}
-		seen[h.URL] = true
-		hits = append(hits, h)
-	}
-	// HTML version: one <div class="result ..."> per result.
-	locs := reResultBlock.FindAllStringIndex(page, -1)
-	for i, loc := range locs {
-		end := len(page)
-		if i+1 < len(locs) {
-			end = locs[i+1][0]
-		}
-		head := page[loc[0]:loc[1]]
-		if strings.Contains(head, "result--ad") {
-			continue
-		}
-		var h Hit
-		for _, a := range reAnchor.FindAllStringSubmatch(page[loc[0]:end], -1) {
-			cls := ""
-			if m := reAttrClass.FindStringSubmatch(a[1]); m != nil {
-				cls = m[1]
-			}
-			href := ""
-			if m := reAttrHref.FindStringSubmatch(a[1]); m != nil {
-				href = m[1]
-			}
-			switch {
-			case strings.Contains(cls, "result__a"):
-				h.URL, h.Title = resultURL(href), plain(a[2])
-			case strings.Contains(cls, "result__snippet"):
-				h.Snippet = plain(a[2])
-				if h.URL == "" {
-					h.URL = resultURL(href)
-				}
-			}
-		}
-		add(h)
-	}
-	if len(hits) > 0 {
-		return hits, nil
-	}
-	// Lite version: <a class="result-link"> followed by a snippet cell.
-	anchors := reAnchor.FindAllStringSubmatchIndex(page, -1)
-	for i, a := range anchors {
-		attrs := page[a[2]:a[3]]
-		m := reAttrClass.FindStringSubmatch(attrs)
-		if m == nil || !strings.Contains(m[1], "result-link") {
-			continue
-		}
-		hm := reAttrHref.FindStringSubmatch(attrs)
-		if hm == nil {
-			continue
-		}
-		h := Hit{URL: resultURL(hm[1]), Title: plain(page[a[4]:a[5]])}
-		end := len(page)
-		if i+1 < len(anchors) {
-			end = anchors[i+1][0]
-		}
-		if sm := reLiteSnippet.FindStringSubmatch(page[a[1]:end]); sm != nil {
-			h.Snippet = plain(sm[1])
-		}
-		add(h)
-	}
-	return hits, nil
+	return false
 }
 
-// Search asks DuckDuckGo. region is a DuckDuckGo region such as "de-de"
-// or "wt-wt" (no region). It tries the HTML page first and the lite page
-// if that fails.
-func Search(ctx context.Context, c *Client, query, region string) ([]Hit, error) {
+// Search asks the configured engines in order (nil means Engines) and
+// returns the results of the first one that answers with results. An
+// engine that refuses is rested for a minute and the next one is asked.
+// When every engine refuses and a browser is set on the client, the
+// engines are asked once more through the invisible browser. It also
+// returns the name of the engine that answered.
+func Search(ctx context.Context, c *Client, query, region string) ([]Hit, string, error) {
 	if region == "" {
 		region = "wt-wt"
 	}
-	var firstErr error
-	for _, endpoint := range []string{ddgHTML, ddgLite} {
-		if err := waitTurn(ctx); err != nil {
-			return nil, err
-		}
-		body, _, _, err := c.postForm(ctx, endpoint, url.Values{"q": {query}, "kl": {region}, "b": {""}}, map[string]string{"Accept": "text/html", "Referer": endpoint})
-		var se *StatusError
-		if err != nil && !(errors.As(err, &se) && se.Code == 202) {
-			if firstErr == nil {
-				firstErr = err
+	names := c.engines
+	if names == nil {
+		names = Engines
+	}
+	var errs []string
+	allRefused := true
+	for _, name := range names {
+		e, ok := engines[name]
+		if !ok || paused(name) {
+			if ok {
+				errs = append(errs, name+": resting after a refusal")
 			}
 			continue
 		}
-		hits, perr := ParseDDG(string(body))
-		if perr == nil && err == nil {
-			return hits, nil
+		if err := waitTurn(ctx, name); err != nil {
+			return nil, "", err
 		}
-		if firstErr == nil {
-			firstErr = perr
-			if firstErr == nil {
-				firstErr = ErrSearchBlocked
+		page, err := e.fetch(ctx, c, query, region)
+		var hits []Hit
+		if err == nil {
+			hits, err = e.parse(string(page))
+			if err == nil && len(hits) == 0 && blockedPage(string(page)) {
+				err = ErrSearchBlocked
+			}
+		}
+		if err != nil {
+			if refused(err) {
+				pause(name)
+			} else {
+				allRefused = false
+			}
+			errs = append(errs, name+": "+sanitizeErr(err))
+			continue
+		}
+		allRefused = false
+		if len(hits) > 0 {
+			return hits, name, nil
+		}
+	}
+	if allRefused && c.browser != nil {
+		for _, name := range names {
+			e, ok := engines[name]
+			if !ok {
+				continue
+			}
+			page, err := c.browser.Fetch(ctx, e.page(query, region))
+			if err != nil {
+				errs = append(errs, name+" in "+c.browser.Name+": "+sanitizeErr(err))
+				continue
+			}
+			if hits, err := e.parse(string(page)); err == nil && len(hits) > 0 {
+				return hits, name + " (through " + c.browser.Name + ")", nil
 			}
 		}
 	}
-	return nil, firstErr
+	if len(errs) == 0 {
+		return nil, "", nil // every engine answered: no results
+	}
+	return nil, "", fmt.Errorf("%s", strings.Join(errs, "; "))
 }
 
-// ddgRegion picks a DuckDuckGo region for a country code.
-func ddgRegion(country string) string {
-	r := map[string]string{
-		"DE": "de-de", "AT": "at-de", "CH": "ch-de", "ES": "es-es", "PT": "pt-pt", "BR": "br-pt", "MX": "mx-es",
-		"AR": "ar-es", "CO": "co-es", "CL": "cl-es", "PE": "pe-es", "VE": "ve-es", "US": "us-en", "GB": "uk-en",
-		"IE": "ie-en", "ZA": "za-en", "FR": "fr-fr", "BE": "be-fr", "NL": "nl-nl", "IT": "it-it", "PL": "pl-pl",
-		"IN": "in-en", "CA": "ca-en", "AU": "au-en", "NZ": "nz-en", "SG": "sg-en", "MY": "my-en",
-	}[country]
-	if r == "" {
-		return "wt-wt"
+// fetchGet asks an engine whose result page is a plain GET request.
+func fetchGet(page func(query, region string) string) func(context.Context, *Client, string, string) ([]byte, error) {
+	return func(ctx context.Context, c *Client, query, region string) ([]byte, error) {
+		b, _, _, err := c.get(ctx, page(query, region), map[string]string{"Accept": "text/html"})
+		return b, err
 	}
-	return r
 }

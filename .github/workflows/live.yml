@@ -21,7 +21,7 @@ concurrency:
 jobs:
   live:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     permissions:
       contents: read
     steps:
@@ -35,4 +35,4 @@ jobs:
       - name: Live lookups
         env:
           NUMB_FORM_LIVE: "1"
-        run: go test -count=1 -run '^TestLive$' -v -timeout 28m ./internal/lookup/
+        run: go test -count=1 -run '^TestLive$' -v -timeout 40m ./internal/lookup/

@@ -116,18 +116,21 @@ numb-form config init && numb-form config
 
 Sources are `companies-house`, `vies`, `brasil-cnpj`, `official`
 (government gazettes and registers found by search), `gleif`, `website`,
-`search` (web search, also used to find the website) and `wikidata`.
+`directory` (company-data websites that republish register data, such as
+northdata, Moneyhouse, Racius or OpenCorporates), `search` (web search
+snippets; search also finds the website), `osm` (OpenStreetMap, for an
+address) and `wikidata`.
 Lists are separated by spaces or commas; their order is the order of
 preference.
 
-`address_sources = companies-house vies brasil-cnpj official gleif website search wikidata`
+`address_sources = companies-house vies brasil-cnpj official gleif website directory search osm wikidata`
 : Sources for *Headquarters / Address*.
 
 `address_fallback = ask` | `blank`
 : When no address is found. With `confirm = none`, `ask` acts as
   `blank`.
 
-`reps_sources = companies-house vies brasil-cnpj official gleif website search wikidata`
+`reps_sources = companies-house vies brasil-cnpj official gleif website directory search osm wikidata`
 : Sources for *Authorized Representatives*.
 
 `reps_min_trust = any` | `website` | `register`
@@ -152,13 +155,22 @@ preference.
   With `confirm = none`, `ask` acts as `auto`.
   The older value `wikidata` means `auto`.
 
-`search = duckduckgo` | `none`
-: Web search used to find websites, government gazette entries and, as a
-  last resort, representatives in result snippets.
+`search = duckduckgo mojeek yahoo brave` | `none`
+: Web search engines used to find websites, government gazette entries
+  and, as a last resort, representatives in result snippets, in order of
+  preference: when one refuses, it rests for a minute and the next one is
+  asked.
   Only the company name is sent, with words such as `impressum` or
   `site:boe.es`.
   **none** turns searching off; registers and guessed addresses are still
   used.
+
+`browser = auto` | `none` | *path*
+: The browser started invisibly (headless, no window) for websites built
+  with JavaScript and for searching when every engine refuses.
+  **auto**: Google Chrome; without it, Chromium or Microsoft Edge.
+  A *path* names another Chromium-based browser.
+  Every start uses a new, empty profile that is deleted right after.
 
 `guess_domains = yes` | `no`
 : Also try addresses built from the name, such as `foobar.de` or

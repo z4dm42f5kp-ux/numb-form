@@ -72,7 +72,7 @@ settings under #6 remain for the maintainer.
   fuzzing and containers on `main` and nightly; skip Go jobs for
   docs-only changes.
 
-## Development builds (edge)
+## Rolling builds (release tag edge)
 
 Releases are created by hand in the GitHub web page, which is too slow
 while the tool changes daily.
@@ -82,3 +82,16 @@ pre-release, signed and attested like a stable release.
 It is never marked latest, so `releases/latest` keeps meaning stable.
 Archives are uploaded before the checksums, so a download during an
 update fails the checksum check rather than installing a mismatched file.
+
+## More search engines and an invisible browser (#13)
+
+DuckDuckGo refuses programs after a few searches from busy networks.
+Mojeek, Yahoo and Brave Search are asked in turn, each resting a minute
+after a refusal.
+Go cannot run JavaScript, so websites built by scripts and searches that
+every engine refuses are loaded in the locally installed Google Chrome
+(else Chromium or Edge), started headless with `--dump-dom` and a
+throwaway profile. No browser library or protocol client is needed, so
+the program stays standard-library only.
+`numb-form update stable` and `update rolling` name the two channels;
+`edge` stays accepted and is still the release tag of the rolling build.

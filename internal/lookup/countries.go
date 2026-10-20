@@ -1,6 +1,8 @@
 package lookup
 
-import "strings"
+import (
+	"strings"
+)
 
 var countries = map[string]string{
 	"AD": "Andorra", "AE": "United Arab Emirates", "AR": "Argentina", "AT": "Austria", "AU": "Australia",

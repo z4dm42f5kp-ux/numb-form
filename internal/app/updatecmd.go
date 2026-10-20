@@ -28,6 +28,7 @@ func Update(out io.Writer, cfg config.Config, offline bool, channel string) int 
 	if channel == "" {
 		channel = update.DefaultChannel(Version)
 	}
+	channel, _ = update.Channel(channel)
 	exe, err := os.Executable()
 	if err == nil {
 		exe, err = filepath.EvalSymlinks(exe)
@@ -70,4 +71,27 @@ func CleanupOldPrograms() {
 	if exe, err := os.Executable(); err == nil {
 		update.Cleanup(filepath.Dir(exe))
 	}
+}
+
+// Rollback switches back to the version the last update replaced.
+func Rollback(out io.Writer) int {
+	exe, err := os.Executable()
+	if err == nil {
+		exe, err = filepath.EvalSymlinks(exe)
+	}
+	if err != nil {
+		fmt.Fprintln(out, "rollback:", err)
+		return ExitError
+	}
+	v, err := update.Rollback(context.Background(), update.Options{Dir: filepath.Dir(exe), GOOS: runtime.GOOS})
+	if err != nil {
+		fmt.Fprintln(out, "rollback:", err)
+		return ExitError
+	}
+	fmt.Fprintf(out, "Rolled back to numb-form %s (from %s). Your settings are kept.\nTo return to %s: numb-form rollback\n", v, Version, Version)
+	if manual.Installed() {
+		cmd := exec.Command(filepath.Join(filepath.Dir(exe), "numb-form"), "man", "-install") // #nosec G204 -- the program just restored.
+		_ = cmd.Run()
+	}
+	return ExitOK
 }

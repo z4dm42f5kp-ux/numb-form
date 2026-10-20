@@ -2,170 +2,11 @@ package lookup
 
 import (
 	"regexp"
-	"sort"
 	"strings"
 	"unicode"
 
 	"github.com/z4dm42f5kp-ux/numb-form/internal/textutil"
 )
-
-// roleLabels maps labels found on legal notices and in registers to an
-// English role. Labels are written folded (lower case, no accents, words
-// separated by single spaces, hyphens as spaces). An empty role marks a
-// label that names people who are NOT authorized representatives, so the
-// text after it is skipped.
-var roleLabels = map[string]string{
-	// German (Germany, Austria, Switzerland).
-	"geschaftsfuhrer": "Managing Director", "geschaftsfuhrerin": "Managing Director", "geschaftsfuhrerinnen": "Managing Director",
-	"geschaftsfuhrer in": "Managing Director", "geschaftsfuhrer innen": "Managing Director", "geschaeftsfuehrer": "Managing Director",
-	"geschaeftsfuehrerin": "Managing Director", "geschaftsfuhrung": "Managing Director", "geschaeftsfuehrung": "Managing Director",
-	"geschaftsfuhrende gesellschafter": "Managing Partner", "geschaftsfuhrender gesellschafter": "Managing Partner",
-	"geschaftsfuhrende gesellschafterin": "Managing Partner", "geschaftsfuhrende gesellschafter innen": "Managing Partner",
-	"kaufmannischer geschaftsfuhrer": "Managing Director (Commercial)", "technischer geschaftsfuhrer": "Managing Director (Technical)",
-	"hauptgeschaftsfuhrer": "Chief Executive", "alleiniger geschaftsfuhrer": "Sole Managing Director",
-	"vertretungsberechtigter geschaftsfuhrer": "Managing Director", "vertretungsberechtigte geschaftsfuhrer": "Managing Director",
-	"vertretungsberechtigte geschaftsfuhrerin": "Managing Director", "vertretungsberechtigte geschaftsfuhrung": "Managing Director",
-	"vertretungsberechtigt": "Legal Representative", "vertretungsberechtigte": "Legal Representative", "vertretungsberechtigter": "Legal Representative",
-	"vertretungsberechtigte person": "Legal Representative", "vertretungsberechtigte personen": "Legal Representative",
-	"vertretungsberechtigter vorstand": "Member of the Management Board", "vertreten durch": "Legal Representative",
-	"gesetzlich vertreten durch": "Legal Representative", "gesetzliche vertreter": "Legal Representative", "gesetzlicher vertreter": "Legal Representative",
-	"vorstand": "Member of the Management Board", "vorstande": "Member of the Management Board", "der vorstand": "Member of the Management Board",
-	"vorstandsmitglied": "Member of the Management Board", "vorstandsmitglieder": "Member of the Management Board",
-	"mitglieder des vorstands": "Member of the Management Board", "mitglied des vorstands": "Member of the Management Board",
-	"vorstandsvorsitzender": "Chairman of the Management Board", "vorstandsvorsitzende": "Chairwoman of the Management Board",
-	"vorsitzender des vorstands": "Chairman of the Management Board", "vorsitzende des vorstands": "Chairwoman of the Management Board",
-	"vorsitzender des vorstandes": "Chairman of the Management Board", "vorstandssprecher": "Spokesperson of the Management Board",
-	"sprecher des vorstands": "Spokesperson of the Management Board", "prokurist": "Authorized Signatory (Prokurist)",
-	"prokuristin": "Authorized Signatory (Prokurist)", "prokuristen": "Authorized Signatory (Prokurist)", "prokura": "Authorized Signatory (Prokurist)",
-	"gesamtprokura": "Authorized Signatory (Prokurist)", "einzelprokura": "Authorized Signatory (Prokurist)",
-	"inhaber": "Owner", "inhaberin": "Owner", "inhaber in": "Owner", "komplementar": "General Partner", "komplementarin": "General Partner",
-	"personlich haftende gesellschafterin": "General Partner", "personlich haftender gesellschafter": "General Partner",
-	"liquidator": "Liquidator", "liquidatorin": "Liquidator", "liquidatoren": "Liquidator",
-	"geschaftsleitung": "Member of the Executive Management", "geschaftsleiter": "Executive Manager", "geschaftsleiterin": "Executive Manager",
-	"mitglied der geschaftsleitung": "Member of the Executive Management", "mitglieder der geschaftsleitung": "Member of the Executive Management",
-	"verwaltungsrat": "Member of the Board of Directors", "verwaltungsrate": "Member of the Board of Directors",
-	"mitglied des verwaltungsrates": "Member of the Board of Directors", "mitglieder des verwaltungsrates": "Member of the Board of Directors",
-	"prasident des verwaltungsrates": "Chairman of the Board of Directors", "prasident des verwaltungsrats": "Chairman of the Board of Directors",
-	"verwaltungsratsprasident": "Chairman of the Board of Directors", "verwaltungsratsprasidentin": "Chairwoman of the Board of Directors",
-	"delegierter des verwaltungsrates": "Delegate of the Board of Directors", "direktor": "Director", "direktorin": "Director",
-	"zeichnungsberechtigt": "Authorized Signatory", "zeichnungsberechtigte": "Authorized Signatory", "zeichnungsberechtigter": "Authorized Signatory",
-	// German labels that name other people.
-	"aufsichtsrat": "", "aufsichtsrate": "", "aufsichtsratsvorsitzender": "", "aufsichtsratsvorsitzende": "",
-	"vorsitzender des aufsichtsrats": "", "vorsitzende des aufsichtsrats": "", "vorsitzender des aufsichtsrates": "",
-	"vorsitzende des aufsichtsrates": "", "beirat": "", "datenschutzbeauftragter": "", "datenschutzbeauftragte": "",
-	"verantwortlich": "", "verantwortlicher": "", "inhaltlich verantwortlich": "", "redaktion": "", "redaktionell verantwortlich": "",
-	"ansprechpartner": "", "ansprechpartnerin": "", "webmaster": "", "konzept": "", "gestaltung": "", "bildnachweis": "", "fotos": "",
-	// English.
-	"managing director": "Managing Director", "managing directors": "Managing Director", "director": "Director", "directors": "Director",
-	"board of directors": "Member of the Board of Directors", "executive director": "Executive Director", "executive directors": "Executive Director",
-	"sole director": "Sole Director", "chief executive officer": "Chief Executive Officer", "ceo": "Chief Executive Officer",
-	"chief financial officer": "Chief Financial Officer", "cfo": "Chief Financial Officer", "chief operating officer": "Chief Operating Officer",
-	"coo": "Chief Operating Officer", "president": "President", "vice president": "Vice President", "chairman": "Chairman",
-	"chairwoman": "Chairwoman", "chairperson": "Chairperson", "chairman of the board": "Chairman of the Board",
-	"company secretary": "Company Secretary", "secretary": "Secretary", "treasurer": "Treasurer", "general manager": "General Manager",
-	"managing partner": "Managing Partner", "managing partners": "Managing Partner", "general partner": "General Partner",
-	"owner": "Owner", "owners": "Owner", "proprietor": "Owner", "sole proprietor": "Owner", "legal representative": "Legal Representative",
-	"legal representatives": "Legal Representative", "authorized representative": "Authorized Representative",
-	"authorized representatives": "Authorized Representative", "authorised representative": "Authorized Representative",
-	"authorised representatives": "Authorized Representative", "authorized signatory": "Authorized Signatory",
-	"authorised signatory": "Authorized Signatory", "authorized officer": "Authorized Officer", "represented by": "Legal Representative",
-	"legally represented by": "Legal Representative", "management": "Management", "management board": "Member of the Management Board",
-	"executive board": "Member of the Executive Board", "board of management": "Member of the Management Board",
-	"managing board": "Member of the Management Board", "officers": "Officer", "manager": "Manager", "managers": "Manager",
-	"managing member": "Managing Member", "member manager": "Managing Member", "trustee": "Trustee", "trustees": "Trustee",
-	// English labels that name other people.
-	"data protection officer": "", "dpo": "", "editor": "", "responsible for content": "", "responsible for the content": "",
-	"contact": "", "contact person": "", "photo credits": "", "registered agent": "", "non executive director": "",
-	"non executive directors": "", "supervisory board": "", "chairman of the supervisory board": "", "founder": "", "founders": "",
-	// Spanish.
-	"representante legal": "Legal Representative", "representantes legales": "Legal Representative", "representante": "Legal Representative",
-	"representante legal suplente": "Alternate Legal Representative", "suplente del representante legal": "Alternate Legal Representative",
-	"representado por": "Legal Representative", "representada por": "Legal Representative", "representada legalmente por": "Legal Representative",
-	"gerente": "Manager", "gerentes": "Manager", "gerente general": "General Manager", "gerente legal": "Legal Manager",
-	"administrador": "Administrator", "administradora": "Administrator", "administradores": "Administrator",
-	"administrador unico": "Sole Administrator", "administradora unica": "Sole Administrator", "adm unico": "Sole Administrator",
-	"administrador solidario": "Joint and Several Administrator", "administradores solidarios": "Joint and Several Administrator",
-	"adm solid": "Joint and Several Administrator", "administrador mancomunado": "Joint Administrator",
-	"administradores mancomunados": "Joint Administrator", "adm mancom": "Joint Administrator",
-	"consejero delegado": "Chief Executive Officer (Managing Director)", "consejera delegada": "Chief Executive Officer (Managing Director)",
-	"consejeros delegados": "Chief Executive Officer (Managing Director)", "cons del": "Chief Executive Officer (Managing Director)",
-	"consejero": "Member of the Board of Directors", "consejera": "Member of the Board of Directors", "consejeros": "Member of the Board of Directors",
-	"consejo de administracion": "Member of the Board of Directors", "presidente": "President", "presidenta": "President",
-	"presidente del consejo": "Chairman of the Board", "presidente del consejo de administracion": "Chairman of the Board",
-	"presidente del directorio": "Chairman of the Board", "presidente de la junta directiva": "Chairman of the Board",
-	"presidente ejecutivo": "Executive President", "vicepresidente": "Vice President", "vicepresidenta": "Vice President",
-	"directorio": "Member of the Board of Directors", "director general": "General Director", "directora general": "General Director",
-	"director ejecutivo": "Executive Director", "directora ejecutiva": "Executive Director", "director gerente": "Managing Director",
-	"apoderado": "Attorney-in-fact", "apoderada": "Attorney-in-fact", "apoderados": "Attorney-in-fact", "apoderado general": "General Attorney-in-fact",
-	"apoderado legal": "Legal Attorney-in-fact", "apoderado mancomunado": "Joint Attorney-in-fact", "apoderado solidario": "Joint and Several Attorney-in-fact",
-	"apo manc": "Joint Attorney-in-fact", "apo sol": "Joint and Several Attorney-in-fact", "socio gerente": "Managing Partner",
-	"socios gerentes": "Managing Partner", "socio administrador": "Managing Partner", "socia administradora": "Managing Partner",
-	"vocal": "Board Member", "vocales": "Board Member", "secretario": "Secretary", "secretario del consejo": "Secretary of the Board",
-	"tesorero": "Treasurer", "tesorera": "Treasurer", "titular": "Owner", "propietario": "Owner", "propietaria": "Owner",
-	"liquidador": "Liquidator", "liquidadora": "Liquidator", "responsable legal": "Legal Representative",
-	// Spanish labels that name other people.
-	"comisario": "", "comisarios": "", "auditor": "", "auditores": "", "contacto": "", "delegado de proteccion de datos": "",
-	// Portuguese.
-	"socio administrador s": "Managing Partner", "socios administradores": "Managing Partner", "socio gerente s": "Managing Partner",
-	"socia gerente": "Managing Partner", "gerencia": "Management", "diretor": "Director", "diretora": "Director", "diretores": "Director",
-	"diretor presidente": "Chief Executive Officer", "diretora presidente": "Chief Executive Officer", "diretor geral": "General Director",
-	"diretora geral": "General Director", "diretor executivo": "Executive Director", "diretora executiva": "Executive Director",
-	"diretor superintendente": "Superintendent Director", "diretoria": "Member of the Executive Board",
-	"presidente do conselho de administracao": "Chairman of the Board", "conselho de administracao": "Member of the Board of Directors",
-	"membro do conselho de administracao": "Member of the Board of Directors", "vogal": "Board Member", "vogais": "Board Member",
-	"procurador": "Attorney-in-fact", "procuradora": "Attorney-in-fact", "procuradores": "Attorney-in-fact",
-	"responsavel legal": "Legal Representative", "empresario": "Owner", "representado legalmente por": "Legal Representative",
-	"encarregado de dados": "", "encarregado": "",
-	// French.
-	"president directeur general": "Chairman and Chief Executive Officer", "pdg": "Chairman and Chief Executive Officer",
-	"directeur general": "Chief Executive Officer", "directrice generale": "Chief Executive Officer",
-	"directeur general delegue": "Deputy Chief Executive Officer", "directrice generale deleguee": "Deputy Chief Executive Officer",
-	"gerant": "Manager", "gerante": "Manager", "gerants": "Manager", "co gerant": "Co-Manager", "cogerant": "Co-Manager",
-	"administrateur": "Director", "administrateurs": "Director", "president du conseil d administration": "Chairman of the Board",
-	"representant legal": "Legal Representative", "represente par": "Legal Representative", "representee par": "Legal Representative",
-	"directeur de la publication": "Publication Director (Legal Representative)", "directrice de la publication": "Publication Director (Legal Representative)",
-	"responsable de la publication": "Publication Director (Legal Representative)", "mandataire social": "Corporate Officer",
-	"hebergeur": "", "delegue a la protection des donnees": "",
-	// Italian.
-	"amministratore delegato": "Chief Executive Officer (Managing Director)", "amministratore unico": "Sole Director",
-	"amministratori": "Director", "amministratore": "Director", "legale rappresentante": "Legal Representative",
-	"rappresentante legale": "Legal Representative", "presidente del consiglio di amministrazione": "Chairman of the Board",
-	"consiglio di amministrazione": "Member of the Board of Directors", "direttore generale": "General Director",
-	"procuratore": "Attorney-in-fact", "procuratori": "Attorney-in-fact",
-	// Dutch.
-	"directeur": "Director", "directie": "Management", "bestuurder": "Director", "bestuurders": "Director", "bestuur": "Board Member",
-	"algemeen directeur": "General Director", "statutair directeur": "Statutory Director", "statutair bestuurder": "Statutory Director",
-	"vertegenwoordigd door": "Legal Representative", "gevolmachtigde": "Authorized Signatory", "eigenaar": "Owner",
-	// Polish, Czech, Slovak.
-	"prezes zarzadu": "President of the Management Board", "wiceprezes zarzadu": "Vice President of the Management Board",
-	"czlonek zarzadu": "Member of the Management Board", "czlonkowie zarzadu": "Member of the Management Board",
-	"zarzad": "Member of the Management Board", "prokurent": "Authorized Signatory (Prokurist)", "wlasciciel": "Owner",
-	"jednatel": "Managing Director", "jednatele": "Managing Director", "jednatelka": "Managing Director", "konatel": "Managing Director",
-	"statutarni organ": "Statutory Body", "predseda predstavenstva": "Chairman of the Board of Directors",
-	"clen predstavenstva": "Member of the Board of Directors", "prokurista": "Authorized Signatory (Prokurist)",
-	// Nordic.
-	"verkstallande direktor": "Chief Executive Officer", "vd": "Chief Executive Officer", "styrelseordforande": "Chairman of the Board",
-	"administrerende direktor": "Chief Executive Officer", "daglig leder": "Chief Executive Officer", "toimitusjohtaja": "Chief Executive Officer",
-}
-
-// labelIndex maps the first word of each label to the label word lists
-// that start with it, longest first.
-var labelIndex = map[string][][]string{}
-
-func init() {
-	for l := range roleLabels {
-		w := strings.Fields(l)
-		labelIndex[w[0]] = append(labelIndex[w[0]], w)
-	}
-	for k := range labelIndex {
-		sort.Slice(labelIndex[k], func(i, j int) bool {
-			if len(labelIndex[k][i]) != len(labelIndex[k][j]) {
-				return len(labelIndex[k][i]) > len(labelIndex[k][j])
-			}
-			return strings.Join(labelIndex[k][i], " ") < strings.Join(labelIndex[k][j], " ")
-		})
-	}
-}
 
 // token is one word of a line with its position in the original text.
 type token struct {
@@ -259,152 +100,10 @@ func findLabels(line string) []labelHit {
 	return hits
 }
 
-// weakLabel lists one-word labels that are also ordinary words; they
-// count only when followed by a colon or alone on their line.
-var weakLabel = map[string]bool{
-	"director": true, "directors": true, "manager": true, "managers": true, "president": true, "secretary": true,
-	"treasurer": true, "chairman": true, "chairwoman": true, "chairperson": true, "chair": true, "owner": true, "owners": true,
-	"officers": true, "management": true, "trustee": true, "trustees": true, "proprietor": true, "ceo": true, "cfo": true, "coo": true,
-	"gerente": true, "gerentes": true, "administrador": true, "administradora": true, "administradores": true, "presidente": true,
-	"presidenta": true, "representante": true, "titular": true, "propietario": true, "consejero": true, "consejera": true,
-	"consejeros": true, "vocal": true, "secretario": true, "tesorero": true, "diretor": true, "diretora": true, "diretores": true,
-	"gerencia": true, "directeur": true, "gerant": true, "administrateur": true, "amministratore": true, "bestuur": true,
-	"bestuurder": true, "directie": true, "direktor": true, "direktorin": true, "inhaber": true, "inhaberin": true, "eigenaar": true,
-	"zarzad": true, "prokura": true, "directorio": true, "diretoria": true, "procurador": true, "apoderado": true, "liquidator": true,
-	"liquidador": true,
-}
-
-// byLabel reports whether a label ends with "by" in some language, so
-// the names follow without a colon.
-func byLabel(last string) bool {
-	switch last {
-	case "durch", "by", "por", "par", "door", "da":
-		return true
-	}
-	return false
-}
-
 // stopValue ends a list of names: the next field of a legal notice.
 var stopValue = regexp.MustCompile(`(?i)\s*(?:\||•|·|\.\s+(?:datos\s+registrales|ceses|dimisiones|revocaciones|nombramientos|reelecciones|cambio|modificaciones|otros\s+conceptos|constituci[oó]n|ampliaci[oó]n|reducci[oó]n|declaraci[oó]n|sociedad\s+unipersonal|disoluci[oó]n|extinci[oó]n|fusi[oó]n|escisi[oó]n|transformaci[oó]n|situaci[oó]n\s+concursal|emisi[oó]n|cancelaciones|traslado|objeto\s+social)\b|\b(?:tel|telefon|telephone|phone|fon|fax|e-?mail|mail|web|www|internet|sitz|registergericht|amtsgericht|handelsregister|registernummer|register|hrb|hra|ust|umsatzsteuer|steuernummer|firmenbuch|fn|uid|domicilio|direcci[oó]n|cif|nif|nit|rfc|rut|ruc|cuit|cnpj|cpf|inscrita|registro|capital|endere[cç]o|sede|si[eè]ge|siret|siren|rcs|tva|vat|company\s+number|registered|address|anschrift|adresse|aufsichtsbeh[oö]rde)\b).*$`)
 
 var splitNames = regexp.MustCompile(`(?i)\s*(?:,|;|/|&|\+|\bund\b|\band\b|\by\b|\be\b|\bet\b|\bsowie\b|\ben\b|\boraz\b)\s*`)
-
-var honorific = regexp.MustCompile(`(?i)^(?:(?:herrn?|frau|mr|mrs|ms|miss|mx|sr|sra|srta|don|dona|doña|d|dña|dna|m|mme|mlle|sig|sig\.ra|dott|dott\.ssa|ing|dipl\.?-?\s*(?:ing|kfm|kff|vw|oec|inf|wirt\.?-?ing)\.?(?:\s*\(fh\))?|mag|lic|licda|lcdo|lcda|arq|abog|eng|ir|drs|mba|ll\.?m|m\.?sc|b\.?sc|b\.?a|m\.?a)\.?\s+)+`)
-
-var titleKeep = regexp.MustCompile(`^(?:(?:Dr|Prof|Dra|PhD)\.?\s+)+`)
-
-var nameStop = map[string]bool{
-	"gmbh": true, "ag": true, "kg": true, "ltd": true, "inc": true, "llc": true, "sa": true, "ltda": true, "mbh": true, "co": true,
-	"sl": true, "slu": true, "sau": true, "sas": true, "srl": true, "sociedad": true, "limited": true, "corp": true, "bv": true,
-	"nv": true, "lda": true, "spa": true, "sarl": true, "plc": true, "eireli": true, "cia": true, "compania": true, "companhia": true,
-	"strasse": true, "str": true, "street": true, "calle": true, "avenida": true, "av": true, "rua": true, "road": true,
-	"gesellschaft": true, "company": true, "holding": true, "group": true, "gruppe": true, "grupo": true, "www": true,
-	"the": true, "der": true, "die": true, "das": true, "el": true, "los": true, "las": true, "le": true, "les": true,
-	"und": true, "and": true, "oder": true, "or": true, "with": true, "mit": true, "con": true, "com": true, "de": false,
-	"management": true, "board": true, "team": true, "directors": true, "vorstand": true, "geschaftsfuhrung": true,
-	"impressum": true, "imprint": true, "kontakt": true, "contact": true, "datenschutz": true, "privacy": true,
-	"deutschland": true, "germany": true, "austria": true, "osterreich": true, "schweiz": true, "switzerland": true, "mexico": true,
-	"brasil": true, "brazil": true, "espana": true, "spain": true, "portugal": true, "colombia": true, "argentina": true,
-	"herr": true, "frau": true, "seit": true, "since": true, "desde": true, "bis": true, "until": true,
-}
-
-var particles = map[string]bool{"von": true, "van": true, "de": true, "del": true, "der": true, "da": true, "das": true, "dos": true, "di": true, "zu": true, "la": true, "le": true, "y": true, "e": true, "ten": true, "ter": true, "den": true, "vom": true, "zum": true}
-
-// titleCase turns "PEREZ GARCIA JUAN" into "Perez Garcia Juan".
-func titleCase(s string) string {
-	words := strings.Fields(s)
-	for i, w := range words {
-		lw := strings.ToLower(w)
-		if particles[textutil.Fold(lw)] && i > 0 {
-			words[i] = lw
-			continue
-		}
-		parts := strings.Split(lw, "-")
-		for j, p := range parts {
-			r := []rune(p)
-			if len(r) > 0 {
-				r[0] = unicode.ToUpper(r[0])
-			}
-			// O'Neil, D'Angelo.
-			for k := 1; k+1 < len(r); k++ {
-				if r[k] == '\'' || r[k] == '’' {
-					r[k+1] = unicode.ToUpper(r[k+1])
-				}
-			}
-			parts[j] = string(r)
-		}
-		words[i] = strings.Join(parts, "-")
-	}
-	return strings.Join(words, " ")
-}
-
-func allUpper(s string) bool {
-	hasLetter := false
-	for _, r := range s {
-		if unicode.IsLetter(r) {
-			hasLetter = true
-			if !unicode.IsUpper(r) {
-				return false
-			}
-		}
-	}
-	return hasLetter
-}
-
-// cleanName strips honorifics and checks that s looks like a person's
-// name: 2-6 words, capitalised, letters, hyphens, apostrophes and dots.
-func cleanName(s string) (string, bool) {
-	s = strings.Trim(textutil.OneLine(s), " .:,;-–—*")
-	title := ""
-	if m := titleKeep.FindString(s); m != "" {
-		title, s = strings.Join(strings.Fields(m), " ")+" ", strings.TrimSpace(s[len(m):])
-	}
-	s = strings.TrimSpace(honorific.ReplaceAllString(s, ""))
-	if m := titleKeep.FindString(s); m != "" && title == "" {
-		title, s = strings.Join(strings.Fields(m), " ")+" ", strings.TrimSpace(s[len(m):])
-	}
-	if len(s) > 70 {
-		return "", false
-	}
-	if allUpper(s) {
-		s = titleCase(s)
-	}
-	words := strings.Fields(s)
-	if len(words) < 2 || len(words) > 6 {
-		return "", false
-	}
-	long := 0
-	for _, w := range words {
-		fw := textutil.Fold(strings.Trim(w, "."))
-		if nameStop[fw] {
-			return "", false
-		}
-		r := []rune(w)
-		if !unicode.IsUpper(r[0]) {
-			if particles[fw] {
-				continue
-			}
-			return "", false
-		}
-		letters := 0
-		for _, c := range r {
-			switch {
-			case unicode.IsLetter(c):
-				letters++
-			case c == '-' || c == '\'' || c == '’' || c == '.':
-			default:
-				return "", false
-			}
-		}
-		if letters >= 2 {
-			long++
-		}
-	}
-	if long < 2 {
-		return "", false
-	}
-	return title + strings.Join(words, " "), true
-}
 
 var reNonWord = regexp.MustCompile(`[^\p{L}\p{N}]+`)
 
@@ -476,12 +175,45 @@ func resigned(before string) bool {
 	return reResigned.MatchString(before)
 }
 
+// reNameRole splits "Max Mustermann (Geschäftsführer)", "Jane Doe – CEO"
+// and "Juan Pérez, Gerente General" into a name and a role.
+var reNameRole = regexp.MustCompile(`^\s*(.{4,60}?)\s*(?:\(([^()]{2,50})\)|[,–—|]\s*([^,–—|()]{2,50})|\s-\s+([^,–—|()]{2,50}))\s*$`)
+
+// nameThenRole reads a short line that gives a name followed by a role
+// that is a known representative role.
+func nameThenRole(line string, src Source) (Person, bool) {
+	if len(line) > 110 {
+		return Person{}, false
+	}
+	m := reNameRole.FindStringSubmatch(line)
+	if m == nil {
+		return Person{}, false
+	}
+	role := strings.TrimSpace(m[2] + m[3] + m[4])
+	k := strings.Join(strings.Fields(reNonWord.ReplaceAllString(textutil.Fold(role), " ")), " ")
+	r, known := roleLabels[k]
+	if !known || r == "" {
+		return Person{}, false
+	}
+	n, ok := cleanName(m[1])
+	if !ok {
+		return Person{}, false
+	}
+	return Person{Name: n, Roles: []string{r}, Sources: []Source{src}}, true
+}
+
 // ExtractPeople finds authorized representatives named in the lines of
-// a legal notice, register extract or gazette entry.
+// a legal notice, register extract, gazette entry or directory page.
 func ExtractPeople(lines []string, src Source) []Person {
 	var out []Person
 	for i, line := range lines {
 		hits := findLabels(line)
+		if len(hits) == 0 || (len(hits) == 1 && hits[0].start > 0) {
+			if p, ok := nameThenRole(line, src); ok && !resigned(line) {
+				out = append(out, p)
+				continue
+			}
+		}
 		for k, h := range hits {
 			if h.role == "" {
 				continue

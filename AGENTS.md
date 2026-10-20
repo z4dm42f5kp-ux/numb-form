@@ -124,10 +124,11 @@ cd "/path/to/working-folder" && numb-form
 | `internal/convert` | LibreOffice/OpenOffice and Apple Pages/Numbers conversion |
 | `internal/sheet` | read-only spreadsheet readers (xlsx, ods, csv, xls) |
 | `internal/match` | legal-form extraction and folder matching |
-| `internal/lookup` | GLEIF, Companies House, Wikidata, website legal notices |
+| `internal/lookup` | one-pass lookup: registers, search engines, invisible Chrome, websites, gazettes |
+| `internal/manual` | `numb-form man` and the Unix manual page |
 | `internal/fsutil` | Downloads folder, tree copy, safe names |
 | `internal/runlog` | log and manifest |
 | `internal/ui` | terminal prompts with the run deadline |
 | `internal/update` | `numb-form update`: checksummed self-update from GitHub releases |
 | `container/`, `k8s/` | image and Kubernetes manifests |
-| `.github/workflows` | CI, security, release, edge (development build), translation, scorecard |
+| `.github/workflows` | CI, security, release, edge (rolling build), live lookups, translation, scorecard |

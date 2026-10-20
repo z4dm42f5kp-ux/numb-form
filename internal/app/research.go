@@ -50,6 +50,7 @@ func (r *run) gather(name string) (gathered, error) {
 	lc := r.opt.Lookup
 	lc.Sources = enabled
 	lc.Search = r.cfg.Search
+	lc.Browser = r.cfg.Browser
 	lc.GuessDomains = r.cfg.GuessDomains
 	site := ""
 	if r.cfg.Website == "ask" && config.Allowed(enabled, "website") {
@@ -62,6 +63,15 @@ func (r *run) gather(name string) (gathered, error) {
 	g.res = lookup.Find(r.ctx, r.opt.Client, lc, name, site)
 	if err := r.ctx.Err(); err != nil {
 		return g, err
+	}
+	if !r.browserNoted {
+		r.browserNoted = true
+		switch name := r.opt.Client.BrowserName(); {
+		case name != "":
+			r.ui.Printf("  (%s is used invisibly for websites built with JavaScript and when search engines refuse.)\n", name)
+		case r.cfg.Browser != "none":
+			r.ui.Println("  (No Google Chrome found: websites built with JavaScript cannot be read.)")
+		}
 	}
 	if g.res.Website != "" {
 		r.ui.Printf("  Website: %s\n", ui.Safe(g.res.Website))

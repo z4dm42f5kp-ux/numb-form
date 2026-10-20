@@ -50,7 +50,8 @@ var (
 // the entry that names it.
 func officialPage(ctx context.Context, c *Client, q Query, pageURL string) (Result, error) {
 	var res Result
-	body, final, _, err := c.get(ctx, pageURL, map[string]string{"Accept": "text/html"})
+	budget := 1
+	body, final, err := c.page(ctx, pageURL, &budget)
 	if err != nil {
 		return res, err
 	}

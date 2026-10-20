@@ -23,7 +23,14 @@ func normWords(s string) string {
 			b.WriteByte(' ')
 		}
 	}
-	words := strings.Fields(b.String())
+	var words []string
+	for _, w := range strings.Fields(b.String()) {
+		switch w {
+		case "und", "and", "y", "e", "et", "u":
+			continue // "&" is dropped as punctuation, so its words are too
+		}
+		words = append(words, w)
+	}
 	var out []string
 	run := ""
 	for _, w := range words {

@@ -2,119 +2,13 @@ package lookup
 
 import (
 	"context"
-	"errors"
 	"net/url"
-	"strings"
 	"sync"
-	"time"
 )
 
-// notCompanySites are directories, social networks and data brokers.
-// They are never taken for the company's own website.
-var notCompanySites = []string{
-	"linkedin.", "facebook.", "instagram.", "twitter.", "x.com", "youtube.", "tiktok.", "pinterest.", "wikipedia.org",
-	"wikidata.org", "wikimedia.org", "northdata.", "dnb.com", "bloomberg.", "crunchbase.", "zoominfo.", "kompass.", "yelp.",
-	"opencorporates.", "companyhouse.de", "firmenwissen.", "moneyhouse.", "unternehmensregister.", "handelsregister.",
-	"google.", "bing.", "duckduckgo.", "amazon.", "ebay.", "glassdoor.", "indeed.", "xing.", "kununu.", "infobel.",
-	"cylex", "gelbeseiten.", "dasoertliche.", "11880.", "wlw.", "europages.", "tripadvisor.", "empresite.", "einforma.",
-	"axesor.", "infoempresa.", "cnpj.", "econodata.", "casadosdados.", "dateas.", "universidadperu.", "datosperu.",
-	"bizapedia.", "opengovus.", "corporationwiki.", "buzzfile.", "manta.", "dandb.", "emis.", "owler.", "rocketreach.",
-	"apollo.io", "signalhire.", "lusha.", "cbinsights.", "pitchbook.", "craft.co", "companiesmarketcap.", "marketscreener.",
-	"reuters.", "ft.com", "wsj.com", "forbes.", "github.", "medium.", "reddit.", "quora.", "trustpilot.", "glassdoor",
-	"firmania.", "brownbook.", "hotfrog.", "yellowpages.", "paginasamarillas.", "seccionamarilla.", "guiamais.",
-	"empresas.", "informa.", "creditreform.", "implisense.", "firmenabc.", "herold.at", "wko.at", "zefix.", "sogc.",
-	"boe.es", "sunbiz.org", "sec.gov", "boletinoficial.", "gov.", "gob.", ".gov", ".gob", "admin.ch", "europa.eu",
-	"companieshouse", "company-information.service.gov.uk", "b2bhint.", "companiesdb.", "allbiz.", "cybo.", "waze.", "maps.",
-}
-
-func notCompanySite(host string) bool {
-	h := "." + strings.ToLower(host)
-	for _, s := range notCompanySites {
-		if strings.Contains(h, s) {
-			return true
-		}
-	}
-	return false
-}
-
-// official lists government websites whose pages are searched for the
-// company, by country. Their pages are read like a register entry.
-var official = map[string][]string{
-	"ES": {"boe.es"},                // Boletín Oficial del Registro Mercantil (BORME)
-	"PT": {"publicacoes.mj.pt"},     // Portal da Justiça, company publications
-	"AR": {"boletinoficial.gob.ar"}, // Boletín Oficial, second section (companies)
-	"US": {"sunbiz.org"},            // Florida Division of Corporations
-	"GB": {"find-and-update.company-information.service.gov.uk"},
-}
-
-// officialHost reports whether host belongs to a government register or
-// gazette listed above.
-func officialHost(host string) bool {
-	h := strings.TrimPrefix(strings.ToLower(host), "www.")
-	for _, list := range official {
-		for _, d := range list {
-			if h == d || strings.HasSuffix(h, "."+d) {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-// legalWords is the word people add to find a company's legal notice,
-// by country.
-func legalWords(country string) string {
-	switch country {
-	case "DE", "AT", "CH":
-		return "impressum"
-	case "ES", "MX", "AR", "CO", "PE", "CL", "EC", "VE", "UY", "PY", "BO", "GT", "CR", "PA", "DO", "HN", "SV", "NI":
-		return "aviso legal"
-	case "BR", "PT":
-		return "cnpj"
-	case "FR", "BE", "LU", "MA", "SN", "CI", "CM":
-		return "mentions légales"
-	}
-	return "legal notice"
-}
-
-func roleWords(country string) string {
-	switch country {
-	case "DE", "AT":
-		return "Geschäftsführer"
-	case "CH":
-		return "Verwaltungsrat Geschäftsführer"
-	case "ES", "MX", "AR", "CO", "PE", "CL", "EC", "VE", "UY", "PY", "BO", "GT", "CR", "PA", "DO", "HN", "SV", "NI":
-		return "representante legal gerente general"
-	case "BR":
-		return "sócio administrador"
-	case "PT":
-		return "gerente administrador"
-	case "FR", "BE", "LU":
-		return "président gérant"
-	}
-	return "managing director CEO"
-}
-
-// searchState stops searching for a while after DuckDuckGo asks for a
-// human check, so the rest of the run is not slowed down.
-var (
-	searchStateMu sync.Mutex
-	searchPaused  time.Time
-)
-
+// search runs one web search and records problems as notes.
 func search(ctx context.Context, c *Client, q, region string, notes *[]string) []Hit {
-	searchStateMu.Lock()
-	paused := time.Now().Before(searchPaused)
-	searchStateMu.Unlock()
-	if paused {
-		return nil
-	}
-	hits, err := Search(ctx, c, q, region)
-	if errors.Is(err, ErrSearchBlocked) {
-		searchStateMu.Lock()
-		searchPaused = time.Now().Add(time.Minute)
-		searchStateMu.Unlock()
-	}
+	hits, _, err := Search(ctx, c, q, region)
 	if err != nil {
 		*notes = append(*notes, "web search: "+sanitizeErr(err))
 	}
@@ -133,6 +27,7 @@ func Find(ctx context.Context, c *Client, cfg Config, name, site string) Result 
 		country = q.Countries[0]
 	}
 	region := ddgRegion(country)
+	c.configure(cfg)
 	useSearch := cfg.Search != "none" && cfg.enabled("search")
 
 	// 1. Registers and the first searches, at the same time.
@@ -250,134 +145,16 @@ func Find(ctx context.Context, c *Client, cfg Config, name, site string) Result 
 			}
 		}
 	}
+	// Snippets of the first searches often already name the managing
+	// directors and the address (directories, news, registers).
+	if cfg.enabled("search") {
+		all.merge(mineSnippets(hits, q))
+	}
 	all.merge(runJobs(ctx, jobs))
 
-	// 5. Last resort for representatives: search result snippets.
-	if useSearch && len(all.People) == 0 && cfg.enabled("search") {
-		var n []string
-		for _, h := range search(ctx, c, `"`+q.Name+`" `+roleWords(country), region, &n) {
-			if !Mentions(normWords(h.Title+" "+h.Snippet), q) {
-				continue
-			}
-			u, _ := url.Parse(h.URL)
-			host := ""
-			if u != nil {
-				host = u.Hostname()
-			}
-			src := Source{ID: "search", Name: "search result from " + host + " (not verified)", URL: h.URL, Kind: KindCommunity}
-			ps := ExtractPeople(snippetLines(h.Snippet), src)
-			for _, p := range ps {
-				all.addPerson(p)
-			}
-			if len(ps) > 0 {
-				all.Sources = append(all.Sources, src)
-			}
-		}
-		all.Notes = append(all.Notes, n...)
-	}
+	// 5. Fill what is still missing: directories, targeted searches,
+	// OpenStreetMap.
+	fillGaps(ctx, c, cfg, q, region, country, hits, useSearch, &all)
 	all.sortResult()
-	return all
-}
-
-// hasCompanySite reports whether search results include a site that may
-// be the company's own.
-func hasCompanySite(hits []Hit) bool {
-	for _, h := range hits {
-		if u, err := url.Parse(h.URL); err == nil && !notCompanySite(u.Hostname()) {
-			return true
-		}
-	}
-	return false
-}
-
-// snippetLines splits a search snippet at sentence ends so that labels
-// such as "Geschäftsführer:" start a line.
-func snippetLines(s string) []string {
-	s = strings.NewReplacer(" · ", "\n", " | ", "\n", "; ", "\n", " - ", "\n", "... ", "\n", "… ", "\n").Replace(s)
-	var out []string
-	for _, l := range strings.Split(s, "\n") {
-		if l = strings.TrimSpace(l); l != "" {
-			out = append(out, l)
-		}
-	}
-	return out
-}
-
-func itoa(n int) string {
-	if n == 0 {
-		return "0"
-	}
-	var b []byte
-	for n > 0 {
-		b = append([]byte{byte('0' + n%10)}, b...)
-		n /= 10
-	}
-	return string(b)
-}
-
-// firstVerified reads candidate websites, three at a time, and returns
-// the first (in candidate order) that names the company. A site the user
-// typed is accepted even when unverified.
-func firstVerified(ctx context.Context, c *Client, q Query, cands []string, typed bool) (SiteResult, bool) {
-	if len(cands) == 0 {
-		return SiteResult{}, false
-	}
-	ctx, cancel := context.WithTimeout(ctx, 45*time.Second)
-	defer cancel()
-	results := make([]*SiteResult, len(cands))
-	done := make([]chan struct{}, len(cands))
-	sem := make(chan struct{}, 3)
-	for i := range cands {
-		done[i] = make(chan struct{})
-		go func(i int) {
-			defer close(done[i])
-			select {
-			case sem <- struct{}{}:
-			case <-ctx.Done():
-				return
-			}
-			defer func() { <-sem }()
-			r := ReadSite(ctx, c, cands[i], q, typed)
-			results[i] = &r
-		}(i)
-	}
-	var notes []string
-	for i := range cands {
-		<-done[i]
-		r := results[i]
-		if r == nil {
-			continue
-		}
-		if r.Verified || typed {
-			cancel()
-			r.Notes = append(notes, r.Notes...)
-			return *r, r.Verified || typed
-		}
-		notes = append(notes, r.Notes...)
-	}
-	return SiteResult{Result: Result{Notes: notes}}, false
-}
-
-func runJobs(ctx context.Context, jobs []func(context.Context) (Result, error)) Result {
-	results := make([]Result, len(jobs))
-	var wg sync.WaitGroup
-	for i := range jobs {
-		wg.Add(1)
-		go func(i int) {
-			defer wg.Done()
-			jctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-			defer cancel()
-			r, err := jobs[i](jctx)
-			if err != nil {
-				r.Notes = append(r.Notes, sanitizeErr(err))
-			}
-			results[i] = r
-		}(i)
-	}
-	wg.Wait()
-	var all Result
-	for _, r := range results {
-		all.merge(r)
-	}
 	return all
 }
