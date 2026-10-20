@@ -31,7 +31,9 @@ func TestLive(t *testing.T) {
 		"Publix Super Markets, Inc.",
 	}
 	c := NewClient()
-	// Each search engine on its own, then the invisible browser.
+	// Each search engine on its own, then the invisible browser, reported
+	// as one warning (GitHub shows at most ten notices per step).
+	var probes []string
 	for _, e := range Engines {
 		c.engines = []string{e}
 		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
@@ -41,21 +43,22 @@ func TestLive(t *testing.T) {
 		if len(hits) > 0 {
 			first = hits[0].URL
 		}
-		fmt.Printf("::notice title=engine %s::hits=%d first=%s err=%v\n", e, len(hits), first, oneLine(err))
+		probes = append(probes, fmt.Sprintf("%s hits=%d first=%s err=%s", e, len(hits), first, oneLine(err)))
 	}
 	c.engines = nil
 	pausedUntil = map[string]time.Time{}
 	if b := FindBrowser("auto"); b == nil {
-		fmt.Println("::notice title=browser::none found")
+		probes = append(probes, "browser: none found")
 	} else {
 		ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 		dom, err := b.Fetch(ctx, "https://www.mercadona.es/")
 		page, _ := b.Fetch(ctx, ddgPage(`"Mercadona S.A."`, "es-es"))
 		hits, perr := ParseDDG(string(page))
 		cancel()
-		fmt.Printf("::notice title=browser %s::mercadona.es text=%d err=%v; DuckDuckGo through browser hits=%d err=%v\n",
-			b.Name, len(strings.Join(HTMLText(string(dom)), " ")), oneLine(err), len(hits), oneLine(perr))
+		probes = append(probes, fmt.Sprintf("%s: mercadona.es text=%d err=%s; DuckDuckGo through it hits=%d err=%s",
+			b.Name, len(strings.Join(HTMLText(string(dom)), " ")), oneLine(err), len(hits), oneLine(perr)))
 	}
+	fmt.Printf("::warning title=engines and browser::%s\n", strings.Join(probes, " | "))
 	for _, name := range companies {
 		ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 		start := time.Now()

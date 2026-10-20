@@ -12,6 +12,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"os"
 	"strings"
@@ -101,7 +102,11 @@ func NewClient() *Client {
 		IdleConnTimeout:       30 * time.Second,
 		ForceAttemptHTTP2:     true,
 	}
+	// Cookies are kept in memory for the run only (some search engines
+	// set one before answering); they are never written to disk.
+	jar, _ := cookiejar.New(nil)
 	return &Client{hc: &http.Client{
+		Jar:       jar,
 		Transport: tr,
 		Timeout:   25 * time.Second,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
