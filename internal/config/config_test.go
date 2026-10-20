@@ -40,8 +40,21 @@ func TestApply(t *testing.T) {
 	}
 }
 
+func TestSearchEngines(t *testing.T) {
+	c := Defaults()
+	if c.Search != "duckduckgo mojeek yahoo brave" || c.Browser != "auto" {
+		t.Fatalf("defaults %q %q", c.Search, c.Browser)
+	}
+	if _, err := c.Apply([]byte("search = mojeek, duckduckgo\nbrowser = none\n"), "u", false); err != nil || c.Search != "mojeek duckduckgo" || c.Browser != "none" {
+		t.Fatalf("%v %q %q", err, c.Search, c.Browser)
+	}
+	if _, err := c.Apply([]byte("search = none\n"), "u", false); err != nil || c.Search != "none" {
+		t.Fatalf("%v %q", err, c.Search)
+	}
+}
+
 func TestErrors(t *testing.T) {
-	for _, in := range []string{"nokey\n", "colour = red\n", "mode = maybe\n", "reps_sources = google\n", "timeout = soon\n"} {
+	for _, in := range []string{"nokey\n", "colour = red\n", "mode = maybe\n", "reps_sources = google\n", "timeout = soon\n", "search = google\n"} {
 		c := Defaults()
 		if _, err := c.Apply([]byte(in), "x", false); err == nil {
 			t.Errorf("%q accepted", in)

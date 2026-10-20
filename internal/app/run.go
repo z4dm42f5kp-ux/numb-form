@@ -61,21 +61,22 @@ type Options struct {
 }
 
 type run struct {
-	opt      Options
-	cfg      config.Config
-	ctx      context.Context
-	ui       *ui.UI
-	log      *runlog.Logger
-	man      *runlog.Manifest
-	runDir   string
-	srcRoot  string // the real working folder
-	workRoot string // where folders are created: the copy (review) or srcRoot (direct)
-	tpl      *formats.Template
-	ix       *match.Index
-	written  int64
-	person   string
-	date     string
-	online   bool
+	browserNoted bool // the browser note was shown
+	opt          Options
+	cfg          config.Config
+	ctx          context.Context
+	ui           *ui.UI
+	log          *runlog.Logger
+	man          *runlog.Manifest
+	runDir       string
+	srcRoot      string // the real working folder
+	workRoot     string // where folders are created: the copy (review) or srcRoot (direct)
+	tpl          *formats.Template
+	ix           *match.Index
+	written      int64
+	person       string
+	date         string
+	online       bool
 }
 
 var errAbort = errors.New("aborted by user")

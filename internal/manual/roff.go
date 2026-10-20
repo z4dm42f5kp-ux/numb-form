@@ -97,7 +97,7 @@ func Roff(docs fs.FS, version string, now time.Time) (string, error) {
 	b.WriteString(".SH NAME\nnumb-form, numb-commit \\- fill the risk assessment form for every new company\n")
 	b.WriteString(".SH SYNOPSIS\n.nf\nnumb-form [-f conf] [-offline] [-root dir] [-downloads dir] [-timeout d]\n" +
 		"numb-form [-f conf] check-template template [sample]\nnumb-form [-f conf] config [init | set key value]\n" +
-		"numb-form [-f conf] update [stable | edge]\nnumb-form man [topic] [en | es | de]\nnumb-form keys\n" +
+		"numb-form [-f conf] update [stable | rolling]\nnumb-form man [topic] [en | es | de]\nnumb-form keys\n" +
 		"numb-commit [-f conf] [-run dir] [-downloads dir]\n.fi\n")
 	for _, t := range Topics {
 		md, err := Source(docs, t, "en")

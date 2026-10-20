@@ -152,13 +152,22 @@ preference.
   With `confirm = none`, `ask` acts as `auto`.
   The older value `wikidata` means `auto`.
 
-`search = duckduckgo` | `none`
-: Web search used to find websites, government gazette entries and, as a
-  last resort, representatives in result snippets.
+`search = duckduckgo mojeek yahoo brave` | `none`
+: Web search engines used to find websites, government gazette entries
+  and, as a last resort, representatives in result snippets, in order of
+  preference: when one refuses, it rests for a minute and the next one is
+  asked.
   Only the company name is sent, with words such as `impressum` or
   `site:boe.es`.
   **none** turns searching off; registers and guessed addresses are still
   used.
+
+`browser = auto` | `none` | *path*
+: The browser started invisibly (headless, no window) for websites built
+  with JavaScript and for searching when every engine refuses.
+  **auto**: Google Chrome; without it, Chromium or Microsoft Edge.
+  A *path* names another Chromium-based browser.
+  Every start uses a new, empty profile that is deleted right after.
 
 `guess_domains = yes` | `no`
 : Also try addresses built from the name, such as `foobar.de` or

@@ -31,10 +31,35 @@ func TestLive(t *testing.T) {
 		"Publix Super Markets, Inc.",
 	}
 	c := NewClient()
+	// Each search engine on its own, then the invisible browser.
+	for _, e := range Engines {
+		c.engines = []string{e}
+		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+		hits, _, err := Search(ctx, c, `"Alfred Kärcher SE & Co. KG"`, "de-de")
+		cancel()
+		first := ""
+		if len(hits) > 0 {
+			first = hits[0].URL
+		}
+		fmt.Printf("::notice title=engine %s::hits=%d first=%s err=%v\n", e, len(hits), first, oneLine(err))
+	}
+	c.engines = nil
+	pausedUntil = map[string]time.Time{}
+	if b := FindBrowser("auto"); b == nil {
+		fmt.Println("::notice title=browser::none found")
+	} else {
+		ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
+		dom, err := b.Fetch(ctx, "https://www.mercadona.es/")
+		page, _ := b.Fetch(ctx, ddgPage(`"Mercadona S.A."`, "es-es"))
+		hits, perr := ParseDDG(string(page))
+		cancel()
+		fmt.Printf("::notice title=browser %s::mercadona.es text=%d err=%v; DuckDuckGo through browser hits=%d err=%v\n",
+			b.Name, len(strings.Join(HTMLText(string(dom)), " ")), oneLine(err), len(hits), oneLine(perr))
+	}
 	for _, name := range companies {
-		ctx, cancel := context.WithTimeout(context.Background(), 150*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 		start := time.Now()
-		res := Find(ctx, c, Config{Search: "duckduckgo", GuessDomains: true}, name, "")
+		res := Find(ctx, c, Config{Browser: "auto", GuessDomains: true}, name, "")
 		cancel()
 		ids := map[string]int{}
 		for _, s := range res.Sources {
@@ -73,4 +98,15 @@ func TestLive(t *testing.T) {
 		msg = strings.NewReplacer("\n", " ", "\r", " ", "%", "%25").Replace(msg)
 		fmt.Printf("::notice title=%s::%s\n", strings.NewReplacer(",", " ", ":", " ").Replace(name), msg)
 	}
+}
+
+func oneLine(err error) string {
+	if err == nil {
+		return "none"
+	}
+	s := strings.NewReplacer("\n", " ", "%", "%25", "::", ": ").Replace(err.Error())
+	if len(s) > 200 {
+		s = s[:200] + "…"
+	}
+	return s
 }

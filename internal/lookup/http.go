@@ -15,6 +15,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 )
@@ -29,6 +30,32 @@ const UserAgent = "numb-form/1.0 (+https://github.com/z4dm42f5kp-ux/numb-form)"
 // Client is a hardened HTTPS client.
 type Client struct {
 	hc *http.Client
+
+	mu      sync.Mutex
+	engines []string // search engines in order; nil means Engines
+	browser *Browser // invisible browser for searches and script-built pages; nil means none
+	setting string   // the browser setting browser was found for
+}
+
+// configure applies the search engines and browser of cfg.
+func (c *Client) configure(cfg Config) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.engines = nil
+	if f := strings.Fields(cfg.Search); len(f) > 0 && f[0] != "none" {
+		c.engines = f
+	}
+	if c.setting != cfg.Browser || (c.browser == nil && cfg.Browser != "" && cfg.Browser != "none") {
+		c.browser, c.setting = FindBrowser(cfg.Browser), cfg.Browser
+	}
+}
+
+// BrowserName names the invisible browser in use, or "".
+func (c *Client) BrowserName() string {
+	if c.browser == nil {
+		return ""
+	}
+	return c.browser.Name
 }
 
 func proxyConfigured() bool {

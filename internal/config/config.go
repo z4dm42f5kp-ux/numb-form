@@ -42,7 +42,8 @@ type Config struct {
 	RepsFallback    string // no-reps-text | blank
 	Caution         string // auto | always | never
 	Website         string // auto | ask | never
-	Search          string // duckduckgo | none
+	Search          string // search engines in order, or none
+	Browser         string // auto | none | path of a Chromium-based browser
 	GuessDomains    bool   // also try addresses such as companyname.de
 
 	Soffice          string // path to LibreOffice/OpenOffice soffice; empty = search
@@ -58,6 +59,9 @@ type Config struct {
 
 // Sources understood in *_sources keys, most authoritative first.
 var Sources = []string{"companies-house", "vies", "brasil-cnpj", "official", "gleif", "website", "search", "wikidata"}
+
+// SearchEngines are the keyless web search engines, in default order.
+var SearchEngines = []string{"duckduckgo", "mojeek", "yahoo", "brave"}
 
 // MaxTimeout is the hard upper bound for a run.
 const MaxTimeout = 25 * time.Minute
@@ -84,7 +88,8 @@ func Defaults() Config {
 		RepsFallback:     "no-reps-text",
 		Caution:          "auto",
 		Website:          "auto",
-		Search:           "duckduckgo",
+		Search:           "duckduckgo mojeek yahoo brave",
+		Browser:          "auto",
 		GuessDomains:     true,
 		PagesConverter:   "auto",
 		NumbersConverter: "auto",

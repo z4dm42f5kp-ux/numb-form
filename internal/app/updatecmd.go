@@ -28,6 +28,7 @@ func Update(out io.Writer, cfg config.Config, offline bool, channel string) int 
 	if channel == "" {
 		channel = update.DefaultChannel(Version)
 	}
+	channel, _ = update.Channel(channel)
 	exe, err := os.Executable()
 	if err == nil {
 		exe, err = filepath.EvalSymlinks(exe)

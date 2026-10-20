@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const ddgPage = `<html><body>
+const ddgFixture = `<html><body>
 <div class="result results_links results_links_deep result--ad">
  <div class="links_main links_deep result__body"><h2 class="result__title">
  <a rel="nofollow" class="result__a" href="https://duckduckgo.com/y.js?ad_domain=ads.example">Ad</a></h2></div></div>
@@ -27,7 +27,7 @@ const ddgPage = `<html><body>
 </body></html>`
 
 func TestParseDDG(t *testing.T) {
-	hits, err := ParseDDG(ddgPage)
+	hits, err := ParseDDG(ddgFixture)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -175,7 +175,7 @@ func TestFindOnePass(t *testing.T) {
 	srv = httptest.NewTLSServer(mux)
 	defer srv.Close()
 	ddgHTML, ddgLite, viesAPI, gleifAPI, wdAPI = srv.URL+"/ddg/", srv.URL+"/ddg/", srv.URL+"/vies", srv.URL+"/gleif", srv.URL+"/wd"
-	searchGap = time.Millisecond
+	searchGap, searchJitter = time.Millisecond, 0
 
 	res := Find(context.Background(), testClient(srv), Config{Search: "duckduckgo"}, "Foo Maschinen GmbH", "")
 	if res.Website != srv.URL+"/" && !strings.HasPrefix(res.Website, srv.URL) {

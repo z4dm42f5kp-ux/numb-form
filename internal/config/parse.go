@@ -55,25 +55,42 @@ func keyTable(c *Config) map[string]setter {
 		return func(_ *Config, v string) error { s, err := sources(v); *p = s; return err }
 	}
 	return map[string]setter{
-		"mode":              oneOf(&c.Mode, "direct", "review"),
-		"confirm":           oneOf(&c.Confirm, "each", "none"),
-		"online":            boolean(&c.Online),
-		"overview_dir":      str(&c.OverviewDir),
-		"header":            str(&c.Header),
-		"id_header":         str(&c.IDHeader),
-		"template_name":     str(&c.TemplateName),
-		"person":            str(&c.Person),
-		"date_format":       str(&c.DateFormat),
-		"downloads":         str(&c.Downloads),
-		"log_dir":           str(&c.LogDir),
-		"address_sources":   list(&c.AddressSources),
-		"address_fallback":  oneOf(&c.AddressFallback, "ask", "blank"),
-		"reps_sources":      list(&c.RepsSources),
-		"reps_min_trust":    oneOf(&c.RepsMinTrust, "register", "website", "any"),
-		"reps_fallback":     oneOf(&c.RepsFallback, "no-reps-text", "blank"),
-		"caution":           oneOf(&c.Caution, "auto", "always", "never"),
-		"website":           oneOf(&c.Website, "auto", "ask", "wikidata", "never"),
-		"search":            oneOf(&c.Search, "duckduckgo", "none"),
+		"mode":             oneOf(&c.Mode, "direct", "review"),
+		"confirm":          oneOf(&c.Confirm, "each", "none"),
+		"online":           boolean(&c.Online),
+		"overview_dir":     str(&c.OverviewDir),
+		"header":           str(&c.Header),
+		"id_header":        str(&c.IDHeader),
+		"template_name":    str(&c.TemplateName),
+		"person":           str(&c.Person),
+		"date_format":      str(&c.DateFormat),
+		"downloads":        str(&c.Downloads),
+		"log_dir":          str(&c.LogDir),
+		"address_sources":  list(&c.AddressSources),
+		"address_fallback": oneOf(&c.AddressFallback, "ask", "blank"),
+		"reps_sources":     list(&c.RepsSources),
+		"reps_min_trust":   oneOf(&c.RepsMinTrust, "register", "website", "any"),
+		"reps_fallback":    oneOf(&c.RepsFallback, "no-reps-text", "blank"),
+		"caution":          oneOf(&c.Caution, "auto", "always", "never"),
+		"website":          oneOf(&c.Website, "auto", "ask", "wikidata", "never"),
+		"search": func(_ *Config, v string) error {
+			f := strings.Fields(strings.ReplaceAll(v, ",", " "))
+			if len(f) == 1 && f[0] == "none" {
+				c.Search = "none"
+				return nil
+			}
+			if len(f) == 0 {
+				return fmt.Errorf("list one or more of: %s, or none", strings.Join(SearchEngines, " "))
+			}
+			for _, e := range f {
+				if !Allowed(SearchEngines, e) {
+					return fmt.Errorf("unknown search engine %q (known: %s, or none)", e, strings.Join(SearchEngines, " "))
+				}
+			}
+			c.Search = strings.Join(f, " ")
+			return nil
+		},
+		"browser":           str(&c.Browser),
 		"guess_domains":     boolean(&c.GuessDomains),
 		"soffice":           str(&c.Soffice),
 		"pages_converter":   oneOf(&c.PagesConverter, "auto", "pages-app", "libreoffice"),

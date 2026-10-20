@@ -171,21 +171,17 @@ Switch back with `numb-form config set mode direct`.
 
 ## Reinstall or update
 
-The easy way: open Windows PowerShell and type
+The easy way: open Windows PowerShell and type one of these:
 
-```
-numb-form update
-```
+| Type | What you get |
+| --- | --- |
+| `numb-form update stable` | the latest stable release (use this for real work) |
+| `numb-form update rolling` | the current rolling build: the newest changes, rebuilt automatically after every update on GitHub |
+| `numb-form update` | the newest version of the kind you already have |
 
-It downloads the newest version, checks it, replaces the program and
-prints the new version, for example
-`Updated to numb-form v0.1.2 (stable)`.
+It downloads the version, checks it, replaces the program and prints
+the new version, for example `Updated to numb-form v0.1.2 (stable)`.
 Your saved settings (your name, the heading, the mode) are kept.
-It stays on the version you have: the development version keeps updating
-to the newest development build, the stable version to the newest stable
-release.
-To switch, type `numb-form update edge` (development) or
-`numb-form update stable`.
 
 Versions 0.1.1 and older do not have `numb-form update`.
 For those, or if `numb-form update` cannot connect, use one of the two
@@ -201,7 +197,7 @@ Close every numb-form window first.
 & { $ErrorActionPreference = 'Stop'; if (Get-Process numb-form, numb-commit -ErrorAction SilentlyContinue) { throw 'Close every numb-form window first, then run this again' }; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $u = 'https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download'; $z = 'numb-form_windows_amd64.zip'; $d = Join-Path $env:LOCALAPPDATA 'Programs\numb-form'; New-Item -ItemType Directory -Force $d | Out-Null; Push-Location $d; try { Invoke-WebRequest -UseBasicParsing "$u/$z" -OutFile $z; Invoke-WebRequest -UseBasicParsing "$u/SHA256SUMS" -OutFile SHA256SUMS; $h = (Get-FileHash $z -Algorithm SHA256).Hash.ToLower(); if (-not (Select-String -Path SHA256SUMS -SimpleMatch "$h  $z" -Quiet)) { throw 'CHECKSUM MISMATCH' }; Remove-Item -Force -ErrorAction SilentlyContinue numb-form.exe, numb-commit.exe; Expand-Archive -Force $z -DestinationPath $d } finally { Remove-Item -ErrorAction SilentlyContinue $z, SHA256SUMS; Pop-Location }; $p = [Environment]::GetEnvironmentVariable('Path', 'User'); if (-not $p) { $p = '' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';') + ';' + $d).TrimStart(';'), 'User') }; & (Join-Path $d 'numb-form.exe') -version; 'OK, reinstalled. Your settings are kept. Open a new PowerShell window' }
 ```
 
-**Development version** (the newest changes, rebuilt automatically after
+**Rolling version** (the newest changes, rebuilt automatically after
 every update on GitHub; use this to try a fix right away):
 
 ```
@@ -209,14 +205,15 @@ every update on GitHub; use this to try a fix right away):
 ```
 
 Both print the version they installed, for example `v0.1.1` (stable) or
-`edge-3f976cc` (development), and end with `OK, reinstalled`.
+`rolling-3f976cc` (rolling; older rolling builds say `edge-…`), and end
+with `OK, reinstalled`.
 Open a new PowerShell window afterwards.
 
 If PowerShell answers `Unexpected token` or `Missing ...` in red, the
 line was changed while copying (usually a character was lost): copy it
 again with the copy icon.
 
-If the development line says `CHECKSUM MISMATCH`, a new build was being
+If the rolling line says `CHECKSUM MISMATCH`, a new build was being
 uploaded at that moment: wait five minutes and run it once more.
 If it happens again, or with the stable line, stop and tell whoever looks
 after the tool.

@@ -85,6 +85,14 @@ the company's own website:
 
 Nothing from the spreadsheet other than the company name is sent, and
 nothing about the person processing the form.
+
+Searches go to DuckDuckGo, Mojeek, Yahoo or Brave Search in turn.
+When Google Chrome (or Chromium or Edge) is installed, it is started
+headless for script-built websites and refused searches: with fixed
+flags, no extensions, a new empty profile in the temporary folder that is
+deleted right after (never the user's profile), HTTPS addresses only, one
+browser at a time, at most 40 seconds and 4 MB per page.
+`browser = none` turns it off.
 `search = none` stops searching; `-offline` or `online = no` sends
 nothing at all.
 Searches are spaced a few seconds apart and pause for a minute when

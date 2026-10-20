@@ -218,7 +218,7 @@ func TestAssetAndHosts(t *testing.T) {
 	if _, err := httpsGet(context.Background(), "http://github.com/x", 1); err == nil {
 		t.Error("plain HTTP accepted")
 	}
-	if DefaultChannel("edge-abc1234") != "edge" || DefaultChannel("v0.1.1") != "stable" {
+	if DefaultChannel("edge-abc1234") != "rolling" || DefaultChannel("rolling-abc1234") != "rolling" || DefaultChannel("v0.1.1") != "stable" {
 		t.Error("default channel")
 	}
 }
