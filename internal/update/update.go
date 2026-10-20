@@ -12,8 +12,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -53,14 +55,24 @@ func DefaultChannel(version string) string {
 	return "stable"
 }
 
+// reTag matches a release number such as v0.1.1.
+var reTag = regexp.MustCompile(`^v\d+\.\d+(?:\.\d+)?(?:-[0-9A-Za-z.]+)?$`)
+
 // Channel normalises a channel name: "edge" is the older name of
-// "rolling".
+// "rolling"; a release number such as v0.1.1 names that release.
 func Channel(name string) (string, bool) {
-	switch strings.ToLower(strings.TrimSpace(name)) {
+	n := strings.ToLower(strings.TrimSpace(name))
+	switch n {
 	case "stable":
 		return "stable", true
 	case "rolling", "edge":
 		return "rolling", true
+	}
+	if !strings.HasPrefix(n, "v") {
+		n = "v" + n
+	}
+	if reTag.MatchString(n) {
+		return n, true
 	}
 	return "", false
 }
@@ -74,8 +86,11 @@ func Base(channel string) (string, error) {
 		return Releases + "/latest/download", nil
 	case "rolling":
 		return Releases + "/download/edge", nil
+	case "":
+	default:
+		return Releases + "/download/" + url.PathEscape(c), nil
 	}
-	return "", fmt.Errorf("unknown channel %q (use stable or rolling)", channel)
+	return "", fmt.Errorf("unknown channel %q (use stable, rolling or a release number such as v0.1.1)", channel)
 }
 
 // Asset returns the archive name of a platform, as scripts/build-release.sh
@@ -183,16 +198,16 @@ func install(ctx context.Context, o Options, files map[string][]byte, ext string
 	}
 	for i, name := range Programs {
 		dst := filepath.Join(o.Dir, name+ext)
-		if o.GOOS == "windows" {
-			// A running .exe cannot be overwritten but can be renamed;
-			// the .old file is removed at the next start.
-			old := filepath.Join(o.Dir, name+".old"+ext)
-			_ = os.Remove(old)
-			if err := os.Rename(dst, old); err != nil && !errors.Is(err, os.ErrNotExist) {
-				return "", fmt.Errorf("replace %s: %w (close every numb-form window and try again)", filepath.Base(dst), err)
-			}
+		// The version being replaced is kept as name.previous for
+		// "numb-form rollback". A running .exe cannot be overwritten but
+		// can be renamed, so this also works on Windows.
+		prev := PreviousPath(o.Dir, name, ext)
+		_ = os.Remove(prev)
+		if err := os.Rename(dst, prev); err != nil && !errors.Is(err, os.ErrNotExist) {
+			return "", fmt.Errorf("replace %s: %w (close every numb-form window and try again)", filepath.Base(dst), err)
 		}
 		if err := os.Rename(staged[i], dst); err != nil {
+			_ = os.Rename(prev, dst) // put the old one back
 			return "", fmt.Errorf("replace %s: %w", filepath.Base(dst), err)
 		}
 	}
@@ -200,7 +215,11 @@ func install(ctx context.Context, o Options, files map[string][]byte, ext string
 	return v, nil
 }
 
-// Cleanup removes the .old programs an earlier update left on Windows.
+// PreviousPath is where an update keeps the version it replaced.
+func PreviousPath(dir, name, ext string) string { return filepath.Join(dir, name+".previous"+ext) }
+
+// Cleanup removes the .old programs that versions before rollback
+// support left on Windows.
 func Cleanup(dir string) {
 	for _, name := range Programs {
 		_ = os.Remove(filepath.Join(dir, name+".old.exe"))

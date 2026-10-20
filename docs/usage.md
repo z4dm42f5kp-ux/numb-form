@@ -11,7 +11,8 @@ numb-form [-f conf] [-offline] [-root dir] [-downloads dir] [-timeout duration]
 numb-form [-f conf] check-template template [sample]
 numb-form [-f conf] config [init | set key value]
 numb-form keys
-numb-form [-f conf] update [stable | rolling]
+numb-form [-f conf] update [stable | rolling | v1.2.3]
+numb-form rollback
 numb-commit [-f conf] [-run dir] [-downloads dir]
 ```
 
@@ -198,6 +199,13 @@ Afterwards it offers to delete the review copy; the logs are kept.
 `keys`
 : Explain the optional free API keys.
 
+`rollback`
+: Switch back to the version that the last `update` replaced.
+  The version rolled back from is kept in its place, so a second
+  `rollback` returns to it.
+  Without a kept version, install a release by number instead:
+  `numb-form update v0.1.1`.
+
 `man` [*topic*] [`en` | `es` | `de`]
 : Show this manual in the terminal, one screen at a time (Enter: next
   screen; q and Enter: quit).
@@ -212,11 +220,13 @@ Afterwards it offers to delete the review copy; the logs are kept.
   Windows PowerShell keeps `man` for its own help: there, type
   `numb-form man`.
 
-`update` [`stable` | `rolling`]
+`update` [`stable` | `rolling` | *v1.2.3*]
 : Replace the installed `numb-form` and `numb-commit`:
   **stable** with the latest stable release, **rolling** with the
   current rolling build of `main` (rebuilt after every change; `edge` is
-  accepted as an older name).
+  accepted as an older name), or *v1.2.3* with exactly that release.
+  The version replaced is kept next to the programs as
+  `numb-form.previous` and `numb-commit.previous` for `rollback`.
   It works as the install commands do: the archive and `SHA256SUMS` are downloaded over HTTPS from
   GitHub only, the checksum must match, and the new `numb-form` must start
   before anything is replaced.

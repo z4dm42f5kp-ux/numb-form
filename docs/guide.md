@@ -178,6 +178,8 @@ The easy way: open Windows PowerShell and type one of these:
 | `numb-form update stable` | the latest stable release (use this for real work) |
 | `numb-form update rolling` | the current rolling build: the newest changes, rebuilt automatically after every update on GitHub |
 | `numb-form update` | the newest version of the kind you already have |
+| `numb-form update v0.1.1` | exactly that release (any number from the Releases page) |
+| `numb-form rollback` | back to the version you had before the last update; type it again to return |
 
 It downloads the version, checks it, replaces the program and prints
 the new version, for example `Updated to numb-form v0.1.2 (stable)`.

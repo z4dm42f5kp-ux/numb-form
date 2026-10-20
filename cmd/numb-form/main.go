@@ -23,7 +23,8 @@ const usage = `usage: numb-form [-f conf] [-offline] [-root dir] [-downloads dir
        numb-form [-f conf] check-template template [sample]
        numb-form [-f conf] config [init | set key value]
        numb-form keys
-       numb-form [-f conf] update [stable | rolling]
+       numb-form [-f conf] update [stable | rolling | v1.2.3]
+       numb-form rollback
        numb-form man [topic] [en | es | de]       (numb-form man topics; numb-form man -install)
 
 `
@@ -73,6 +74,8 @@ func realMain() int {
 		return app.InitConfig(os.Stdout)
 	case cmd == "config" && len(rest) >= 3 && rest[0] == "set":
 		return app.SetConfig(os.Stdout, rest[1], strings.Join(rest[2:], " "))
+	case cmd == "rollback" && len(rest) == 0:
+		return app.Rollback(os.Stdout)
 	case cmd == "update" && len(rest) == 0:
 		return app.Update(os.Stdout, cfg, *offline, "")
 	case cmd == "update" && len(rest) == 1 && validChannel(rest[0]):
@@ -125,7 +128,8 @@ func pause() {
 	}
 }
 
-// validChannel accepts stable and rolling (and edge, its older name).
+// validChannel accepts stable, rolling (and edge, its older name) and
+// release numbers such as v0.1.1.
 func validChannel(c string) bool {
 	_, ok := update.Channel(c)
 	return ok

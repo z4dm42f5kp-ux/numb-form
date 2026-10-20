@@ -109,8 +109,8 @@ func TestWindowsUpdate(t *testing.T) {
 	if read(t, filepath.Join(dir, "numb-form.exe")) != "new form" || read(t, filepath.Join(dir, "numb-commit.exe")) != "new commit" {
 		t.Error("programs not replaced")
 	}
-	if read(t, filepath.Join(dir, "numb-form.old.exe")) != "old form" {
-		t.Error("old program not kept for later removal")
+	if read(t, filepath.Join(dir, "numb-form.previous.exe")) != "old form" {
+		t.Error("replaced program not kept for rollback")
 	}
 	if f.urls[0] != Releases+"/download/edge/SHA256SUMS" {
 		t.Errorf("urls %v", f.urls)
@@ -121,8 +121,37 @@ func TestWindowsUpdate(t *testing.T) {
 	for _, e := range ents {
 		names = append(names, e.Name())
 	}
-	if strings.Join(names, " ") != "numb-commit.exe numb-form.exe" {
-		t.Errorf("left behind: %v", names)
+	if strings.Join(names, " ") != "numb-commit.exe numb-commit.previous.exe numb-form.exe numb-form.previous.exe" {
+		t.Errorf("files: %v", names)
+	}
+	// Roll back, then forward again.
+	ro := Options{Dir: dir, GOOS: "windows", Probe: func(_ context.Context, p string) (string, error) { return read(t, p), nil }}
+	if v, err := Rollback(context.Background(), ro); err != nil || v != "old form" {
+		t.Fatalf("rollback %q %v", v, err)
+	}
+	if read(t, filepath.Join(dir, "numb-form.exe")) != "old form" || read(t, filepath.Join(dir, "numb-commit.exe")) != "old commit" ||
+		read(t, filepath.Join(dir, "numb-form.previous.exe")) != "new form" {
+		t.Error("rollback did not swap the versions")
+	}
+	if v, err := Rollback(context.Background(), ro); err != nil || v != "new form" || read(t, filepath.Join(dir, "numb-form.exe")) != "new form" {
+		t.Errorf("second rollback %q %v", v, err)
+	}
+	if ents, _ := os.ReadDir(dir); len(ents) != 4 {
+		t.Errorf("%d files after rollbacks, want 4", len(ents))
+	}
+}
+
+func TestRollbackWithoutPrevious(t *testing.T) {
+	if _, err := Rollback(context.Background(), Options{Dir: t.TempDir(), GOOS: "linux"}); err == nil || !strings.Contains(err.Error(), "numb-form update v") {
+		t.Errorf("err %v", err)
+	}
+	for in, want := range map[string]string{"v0.1.1": Releases + "/download/v0.1.1", "0.2.0": Releases + "/download/v0.2.0", "rolling": Releases + "/download/edge", "edge": Releases + "/download/edge", "stable": Releases + "/latest/download"} {
+		if got, err := Base(in); err != nil || got != want {
+			t.Errorf("Base(%q) = %q, %v", in, got, err)
+		}
+	}
+	if _, err := Base("nightly"); err == nil {
+		t.Error("unknown channel accepted")
 	}
 }
 
@@ -151,8 +180,8 @@ func TestUnixUpdateAndUpToDate(t *testing.T) {
 	if read(t, filepath.Join(dir, "numb-form")) != "new form" {
 		t.Error("not replaced")
 	}
-	if ents, _ := os.ReadDir(dir); len(ents) != 2 {
-		t.Errorf("%d files left, want 2", len(ents))
+	if ents, _ := os.ReadDir(dir); len(ents) != 3 {
+		t.Errorf("%d files left, want numb-form, numb-commit and numb-form.previous", len(ents))
 	}
 }
 
