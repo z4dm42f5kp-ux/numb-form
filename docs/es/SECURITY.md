@@ -37,7 +37,9 @@ Los buscadores en línea envían sólo nombres de empresa y números oficiales i
 * Números de IVA de la UE a VIES de la UE, y números de CNPJ brasileños a BrasilAPI;
 * Solicitudes de página ordinarias a la página web de la empresa (encontradas automáticamente, o escritas por el usuario) y a las páginas de consulta gubernamentales (BORME, Portal da Justiça, Boletín Oficial, Sunbiz, Companies House) encontradas por búsqueda.
 
-Nada de la hoja de cálculo aparte del nombre de la empresa es enviado, y nada sobre la persona que procesa la forma. `search = none` deja de buscar; `-offline` o `online = no` no envía nada en absoluto. Las búsquedas están separadas unos segundos y pausan por un minuto cuando DuckDuckGo pide un cheque humano.
+Nada de la hoja de cálculo aparte del nombre de la empresa es enviado, y nada sobre la persona que procesa la forma.
+
+Las búsquedas van a DuckDuckGo, Mojeek, Yahoo o Brave Search a su vez. Las páginas del directorio Company-data encontradas por búsqueda se leen como cualquier página web (en la mayoría de tres por empresa), y OpenStreetMap's Nominatim se pide una vez por el nombre de la empresa cuando no se encontró dirección. Cuando Google Chrome (o Chromium o Edge) se instala, se inicia sin cabeza para sitios web construidos por script y se niegan las búsquedas: con banderas fijas, sin extensiones, un nuevo perfil vacío en la carpeta temporal que se elimina justo después (nunca el perfil del usuario), HTTPS sólo direcciones, un navegador a la vez, a la mayoría de 40 segundos y 4 MB por página. `browser = none` lo apaga. `search = none` deja de buscar; `-offline` o `online = no` no envía nada en absoluto. Las búsquedas están separadas unos segundos y pausan por un minuto cuando DuckDuckGo pide un cheque humano.
 
 * HTTPS sólo, TLS 1.2 o posterior, a la mayoría de cinco HTTPS redirige.
 * Sin un proxy, se rechazan las conexiones con el bucleback, las direcciones privadas, locales de enlace y multicast (solicitud de guardia de falsificación del lado del servidor).

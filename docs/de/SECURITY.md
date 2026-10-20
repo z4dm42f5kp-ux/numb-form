@@ -37,7 +37,9 @@ Online-Lookups senden nur Firmennamen und offizielle Nummern, die auf der eigene
 * EU-Mehrwertsteuernummern für EU VIES und brasilianische CNPJ-Nummern für BrasilAPI;
 * gewöhnliche Seitenanfragen auf der Website des Unternehmens (automatisch gefunden oder vom Benutzer eingegeben) und auf Seiten des Regierungsblatts (BORME, Portal da Justiça, Boletín Oficial, Sunbiz, Companies House), die durch Suche gefunden werden.
 
-Nichts aus der Tabelle außer dem Firmennamen wird gesendet und nichts über die Person, die das Formular verarbeitet. `search = none` stoppt die Suche; `-offline` oder `online = no` sendet überhaupt nichts. Die suchanfragen sind einige sekunden voneinander entfernt und halten eine minute inne, wenn duckduckgo nach einem menschlichen check fragt.
+Nichts aus der Tabelle außer dem Firmennamen wird gesendet und nichts über die Person, die das Formular verarbeitet.
+
+Die Suchanfragen gehen wiederum zu DuckDuckGo, Mojeek, Yahoo oder Brave Search. Firmendatenverzeichnisseiten, die durch die Suche gefunden werden, werden wie jede andere Webseite gelesen (höchstens drei pro Unternehmen), und der Name von OpenStreetMap wird einmal nach dem Firmennamen gefragt, wenn keine Adresse gefunden wurde. Wenn Google Chrome (oder Chromium oder Edge) installiert ist, wird es für Script-basierte Websites kopflos gestartet und die Suche abgelehnt: mit festen Flags, keine Erweiterungen, ein neues leeres Profil im temporären Ordner, das direkt danach gelöscht wird (nie das Profil des Benutzers), nur HTTPS-Adressen, ein Browser nach dem anderen, höchstens 40 Sekunden und 4 MB pro Seite. `browser = none` schaltet es aus. `search = none` stoppt die Suche; `-offline` oder `online = no` sendet überhaupt nichts. Die suchanfragen sind einige sekunden voneinander entfernt und halten eine minute inne, wenn duckduckgo nach einem menschlichen check fragt.
 
 * Nur HTTPS, TLS 1.2 oder höher, höchstens fünf HTTPS-Weiterleitungen.
 * Ohne Proxy werden Verbindungen zu Loopback-, Private-, Link-Local- und Multicast-Adressen abgelehnt (serverseitiger Request Forgery Guard).

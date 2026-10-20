@@ -122,13 +122,17 @@ A partir de entonces, numb-form copias GWG en su carpeta **Downloads** y solo fu
 
 ## Reinstalar o actualizar
 
-La manera fácil: abrir Windows PowerShell y tipo
+La manera fácil: abrir Windows PowerShell y escribir uno de estos:
 
-```
-numb-form update
-```
+| Tipo | Lo que consigues |
+| --- | --- |
+| `numb-form update stable` | la última versión estable (utiliza esto para el trabajo real) |
+| `numb-form update rolling` | la construcción de rodaje actual: los cambios más recientes, reconstruidos automáticamente después de cada actualización en GitHub |
+| `numb-form update` | la versión más reciente del tipo que ya tiene |
+| `numb-form update v0.1.1` | exactamente ese lanzamiento (cualquier número de la página de lanzamientos) |
+| `numb-form rollback` | volver a la versión que tenía antes de la última actualización; escribir de nuevo para volver |
 
-Se descarga la versión más reciente, lo comprueba, reemplaza el programa e imprime la nueva versión, por ejemplo `Updated to numb-form v0.1.2 (stable)`. Los ajustes guardados (su nombre, la partida, el modo) se mantienen. Se mantiene en la versión que tiene: la versión de desarrollo mantiene la actualización a la nueva construcción de desarrollo, la versión estable a la nueva versión estable. Para cambiar, escriba `numb-form update edge` (desarrollo) o `numb-form update stable`.
+Se descarga la versión, se comprueba, reemplaza el programa e imprime la nueva versión, por ejemplo `Updated to numb-form v0.1.2 (stable)`. Los ajustes guardados (su nombre, la partida, el modo) se mantienen.
 
 Versiones 0.1.1 y mayores no tienen `numb-form update`. Para aquellos, o si `numb-form update` no puede conectarse, use una de las dos líneas siguientes. No escriba ellos: Abra esta página en su navegador, haga clic en el icono de copia en el borde derecho de la caja gris, y haga clic con el botón derecho en la ventana PowerShell para pegar. Cierre cada ventana numb-form primero.
 
@@ -138,17 +142,17 @@ Versiones 0.1.1 y mayores no tienen `numb-form update`. Para aquellos, o si `num
 & { $ErrorActionPreference = 'Stop'; if (Get-Process numb-form, numb-commit -ErrorAction SilentlyContinue) { throw 'Close every numb-form window first, then run this again' }; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $u = 'https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download'; $z = 'numb-form_windows_amd64.zip'; $d = Join-Path $env:LOCALAPPDATA 'Programs\numb-form'; New-Item -ItemType Directory -Force $d | Out-Null; Push-Location $d; try { Invoke-WebRequest -UseBasicParsing "$u/$z" -OutFile $z; Invoke-WebRequest -UseBasicParsing "$u/SHA256SUMS" -OutFile SHA256SUMS; $h = (Get-FileHash $z -Algorithm SHA256).Hash.ToLower(); if (-not (Select-String -Path SHA256SUMS -SimpleMatch "$h  $z" -Quiet)) { throw 'CHECKSUM MISMATCH' }; Remove-Item -Force -ErrorAction SilentlyContinue numb-form.exe, numb-commit.exe; Expand-Archive -Force $z -DestinationPath $d } finally { Remove-Item -ErrorAction SilentlyContinue $z, SHA256SUMS; Pop-Location }; $p = [Environment]::GetEnvironmentVariable('Path', 'User'); if (-not $p) { $p = '' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';') + ';' + $d).TrimStart(';'), 'User') }; & (Join-Path $d 'numb-form.exe') -version; 'OK, reinstalled. Your settings are kept. Open a new PowerShell window' }
 ```
 
-**Development version** (los cambios más recientes, reconstruidos automáticamente después de cada actualización en GitHub; utilice esto para probar una solución de inmediato):
+**Rolling version** (los cambios más recientes, reconstruidos automáticamente después de cada actualización en GitHub; use esto para probar una solución de inmediato):
 
 ```
 & { $ErrorActionPreference = 'Stop'; if (Get-Process numb-form, numb-commit -ErrorAction SilentlyContinue) { throw 'Close every numb-form window first, then run this again' }; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $u = 'https://github.com/z4dm42f5kp-ux/numb-form/releases/download/edge'; $z = 'numb-form_windows_amd64.zip'; $d = Join-Path $env:LOCALAPPDATA 'Programs\numb-form'; New-Item -ItemType Directory -Force $d | Out-Null; Push-Location $d; try { Invoke-WebRequest -UseBasicParsing "$u/$z" -OutFile $z; Invoke-WebRequest -UseBasicParsing "$u/SHA256SUMS" -OutFile SHA256SUMS; $h = (Get-FileHash $z -Algorithm SHA256).Hash.ToLower(); if (-not (Select-String -Path SHA256SUMS -SimpleMatch "$h  $z" -Quiet)) { throw 'CHECKSUM MISMATCH' }; Remove-Item -Force -ErrorAction SilentlyContinue numb-form.exe, numb-commit.exe; Expand-Archive -Force $z -DestinationPath $d } finally { Remove-Item -ErrorAction SilentlyContinue $z, SHA256SUMS; Pop-Location }; $p = [Environment]::GetEnvironmentVariable('Path', 'User'); if (-not $p) { $p = '' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';') + ';' + $d).TrimStart(';'), 'User') }; & (Join-Path $d 'numb-form.exe') -version; 'OK, reinstalled. Your settings are kept. Open a new PowerShell window' }
 ```
 
-Ambos imprimir la versión que instalaron, por ejemplo `v0.1.1` (estable) o `edge-3f976cc` (desarrollo), y terminar con `OK, reinstalled`. Abra una nueva ventana PowerShell después.
+Ambos imprimen la versión que instalaron, por ejemplo `v0.1.1` (estable) o `rolling-3f976cc` (rolling; construcciones de rodamiento mayores dicen `edge-…`), y terminan con `OK, reinstalled`. Abra una nueva ventana PowerShell después.
 
 Si PowerShell responde `Unexpected token` o `Missing ...` en rojo, la línea fue cambiada mientras se copia (normalmente se perdió un personaje): copiarlo de nuevo con el icono de copia.
 
-Si la línea de desarrollo dice `CHECKSUM MISMATCH`, se estaba subiendo una nueva construcción en ese momento: esperar cinco minutos y ejecutarla una vez más. Si sucede de nuevo, o con la línea estable, deténgase y dígale a quien se ocupa de la herramienta.
+Si la línea de rodaje dice `CHECKSUM MISMATCH`, se estaba subiendo una nueva construcción en ese momento: esperar cinco minutos y ejecutarla una vez más. Si sucede de nuevo, o con la línea estable, deténgase y dígale a quien se ocupa de la herramienta.
 
 ## Lea este manual en la ventana
 

@@ -13,7 +13,8 @@ numb-form [-f conf] [-offline] [-root dir] [-downloads dir] [-timeout duration]
 numb-form [-f conf] check-template template [sample]
 numb-form [-f conf] config [init | set key value]
 numb-form keys
-numb-form [-f conf] update [stable | edge]
+numb-form [-f conf] update [stable | rolling | v1.2.3]
+numb-form rollback
 numb-commit [-f conf] [-run dir] [-downloads dir]
 ```
 
@@ -57,7 +58,9 @@ Alles wird in einem Durchgang pro Unternehmen nachgeschlagen, ohne Fragen. Die K
 1. Regierungsregister: UK Companies House (nur mit einem kostenlosen Schlüssel); EU VIES, für eine EU-Mehrwertsteuernummer, die auf der Website des Unternehmens gedruckt wird (Name und Anschrift; Deutschland bestätigt nur, dass die Nummer gültig ist); Receita Federal, für eine brasilianische CNPJ, die auf der Website gedruckt wird (Adresse, Administratoren und Direktoren), lesen Sie den kostenlosen BrasilAPI-Spiegel; Regierungsblatter und Register, die bei der Suche nach ihren Websites für das Unternehmen gefunden werden: BORME (Spanien), Portal da Justiça (Portugal), Boletín Oficial (Argentinien), Sunbiz (Florida), Companies House-Seiten (Vereinigtes Königreich); welche von den Ländern abhängt, auf die die Rechtsform hinweist;
 2. das GLEIF LEI-Register (Regulierungsregister);
 3. die eigene Website des Unternehmens: seine rechtlichen Hinweise (Impressum, Aviso legal, Erwähnungen légales, Rechtliche Hinweise) zuerst, dann über, Kontakt- und Datenschutzseiten;
-4. Wikidata und die Snippets der Web-Suchergebnisse (Community-Daten, nicht verifiziert; Snippets werden nur gelesen, wenn nichts anderes jemanden benannt hat).
+4. Community-Daten, die mit dem Vorsichtstext nicht verifiziert angezeigt werden: Unternehmensdatenverzeichnisse, die Registerdaten neu veröffentlichen (northdata, firmenwissen, Moneyhouse, Racius, Empresite, cnpj.biz, OpenCorporates, Dun & Bradstreet und ähnliches; höchstens drei Seiten pro Unternehmen), die Ausschnitte der Web-Suchergebnisse, OpenStreetMap (für eine Adresse) und Wikidata.
+
+Wenn von einer offiziellen Quelle bestätigte Vertreter oder eine Adresse aus einem Register oder der Website des Unternehmens noch fehlen, führt numb-form eine weitere Suche nach den Vertretern (mit dem lokalen Wort, wie *Geschäftsführer* oder *representante legal*) und eine nach der Adresse durch und liest die Verzeichnisseiten, die sie finden. Eine Person, die durch zwei verschiedene Arten von Quellen benannt wurde (z. B. die Website des Unternehmens und ein Verzeichnis), zählt als verifiziert.
 
 Die Website wird automatisch gefunden: von Wikidata, von einer DuckDuckGo-Suche nach dem genauen Namen und von Adressen wie `foobar.de` oder `foobar.com.mx`, die aus dem Namen und den Ländern ihrer Rechtsform erstellt wurden. Eine Website wird nur verwendet, wenn eine ihrer Seiten das Unternehmen mit seiner Rechtsform benennt. Auf dem rechtlichen Hinweis einer Gruppe, der mehrere Unternehmen benennt, wird nur der Teil über das Unternehmen gelesen.
 
@@ -65,7 +68,9 @@ Repräsentative Labels werden in deutscher, englischer, spanischer, portugiesisc
 
 Offizielle Nummern und Registereinträge, die auf der Website gedruckt werden (z. B. `HRB 12345` oder `FN 123456 a`), werden vor dem Abfassen des Formulars angezeigt; die Nummer kann mit *Bearbeiten* in *Commercial Registry Number* eingegeben werden.
 
-DuckDuckGo wird höchstens einige Male pro Unternehmen im Abstand von wenigen Sekunden gefragt. Wenn es nach einem menschlichen Check fragt, werden Suchpausen für eine Minute und die anderen Quellen zwischenzeitlich verwendet.
+Die Suche verwendet wiederum schlüssellose Engines: DuckDuckGo, dann Mojeek, Yahoo und Brave Search (`search` in der Konfiguration). Jeder wird höchstens ein paar Mal pro Unternehmen gefragt, ein paar Sekunden auseinander. Ein Motor, der sich weigert (ein menschlicher Scheck, ein Tariflimit), ruht eine Minute lang und der nächste wird gefragt.
+
+Wenn Google Chrome installiert ist (oder, ohne es, Chromium oder Microsoft Edge), startet numb-form es unsichtbar, ohne ein Fenster (headless), für zwei Dinge: Lesen von Firmenwebsites, deren Inhalt von JavaScript erstellt wird oder die Programme wegschalten, höchstens drei Seiten pro Site; und Suchen, wenn jede Engine ablehnt. Jeder Start verwendet ein neues, leeres Profil im temporären Ordner, das direkt danach gelöscht wird; der Browser, die Historie und die Anmeldungen des Benutzers werden nie verwendet. `browser = none` schaltet dies aus.
 
 Welche Quellen welches Feld speisen, die am wenigsten vertrauenswürdige Quelle, die für Vertreter akzeptiert wird, und die Fallbacks werden in der Konfiguration festgelegt. Personen und Adressen werden niemals von einem Elternteil, einer Tochtergesellschaft oder einer ähnlich benannten Einheit übernommen. Nicht verifizierte Werte erhalten genau diesen Text, wenn `caution` dies sagt:
 
@@ -94,11 +99,14 @@ Wenn kein Vertreter gefunden wird, lautet das Feld:
 `keys`
 : Erklären Sie die optionalen kostenlosen API-Schlüssel.
 
+`rollback`
+: Wechseln Sie zurück zu der Version, die das letzte `update` ersetzt hat. Die zurückgerollte Version wird an ihrem Platz gehalten, so dass ein zweiter `rollback` zu ihr zurückkehrt. Ohne eine gespeicherte Version installieren Sie stattdessen ein Release nach Nummer: `numb-form update v0.1.1`.
+
 `man` [*topic*] [`en` | `es` | `de`]
 : Zeigen Sie dieses Handbuch im Terminal, jeweils einen Bildschirm (Enter: next screen; q und Enter: quit). Ohne ein Thema wird das gesamte Handbuch angezeigt, beginnend mit dem Leitfaden. Themen: `guide`, `usage`, `configuration`, `install`, `formats`, `containers`, `security`; `numb-form man topics` listet sie auf. Die Sprache folgt `LANG` oder wird angegeben. `numb-form man -install` lässt `man numb-form` funktionieren: Unter Linux, macOS und den BSDs schreibt es die Handbuchseite zu `~/.local/share/man/man1` (erneuert von `numb-form update`); Unter Windows schreibt es `man.cmd` neben `numb-form.exe` für Command Prompt. Windows PowerShell behält `man` für seine eigene Hilfe: dort, Typ `numb-form man`.
 
-`update` [`stable` | `edge`]
-: Ersetzen Sie das installierte `numb-form` und `numb-commit` durch das neueste stabile Release oder den neuesten `edge`-Entwicklungs-Build, wie es die Installationsbefehle tun: Das Archiv und `SHA256SUMS` werden nur von GitHub über HTTPS heruntergeladen, die Prüfsumme muss übereinstimmen und das neue `numb-form` muss beginnen, bevor etwas ersetzt wird. Ohne Argument wird der Kanal des laufenden Builds verwendet. Einstellungen werden beibehalten. Verweigert mit `-offline`, mit `online = no` und für Builds von der Quelle. Unter Windows wird das alte Programm in `numb-form.old.exe` umbenannt und beim nächsten Start entfernt.
+`update` [`stable` | `rolling` | *v1.2.3*]
+: Ersetzen Sie das installierte `numb-form` und `numb-commit`: **stable** durch das neueste stabile Release, **rolling** durch den aktuellen Rolling Build von `main` (nach jeder Änderung neu erstellt; `edge` wird als älterer Name akzeptiert), oder *v1.2.3* mit genau diesem Release. Die ersetzte Version wird neben den Programmen als `numb-form.previous` und `numb-commit.previous` für `rollback` beibehalten. Es funktioniert wie die Installationsbefehle: Das Archiv und `SHA256SUMS` werden nur von GitHub über HTTPS heruntergeladen, die Prüfsumme muss übereinstimmen und das neue `numb-form` muss starten, bevor etwas ersetzt wird. Ohne Argument wird der Kanal des laufenden Builds verwendet. Einstellungen werden beibehalten. Verweigert mit `-offline`, mit `online = no` und für Builds von der Quelle. Unter Windows wird das alte Programm in `numb-form.old.exe` umbenannt und beim nächsten Start entfernt.
 
 ## OPTIONS
 

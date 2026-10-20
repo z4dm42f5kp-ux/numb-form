@@ -93,15 +93,15 @@ numb-form config init && numb-form config
 
 ### Fuentes
 
-Las fuentes son `companies-house`, `vies`, `brasil-cnpj`, `official` (fotones y registros gubernamentales encontrados por la búsqueda), `gleif`, `website`, `search` (búsqueda web, también utilizada para encontrar el sitio web) y `wikidata`. Las listas están separadas por espacios o comas; su orden es el orden de preferencia.
+Sources are `companies-house`, `vies`, `brasil-cnpj`, `official` (government gazettes and registers found by search), `gleif`, `website`, `directory` (company-data websites that republish register data, such as northdata, Moneyhouse, Racius or OpenCorporates), `search` (web search snippets; search also finds the website), `osm` (OpenStreetMap, for an address) and `wikidata`. Lists are separated by spaces or commas; their order is the order of preference.
 
-`address_sources = companies-house vies brasil-cnpj official gleif website search wikidata`
+`address_sources = companies-house vies brasil-cnpj official gleif website directory search osm wikidata`
 : Fuentes para *Headquarters / Address*.
 
 `address_fallback = ask` | `blank`
 : Cuando no se encuentra ninguna dirección. Con `confirm = none`, `ask` actúa como `blank`.
 
-`reps_sources = companies-house vies brasil-cnpj official gleif website search wikidata`
+`reps_sources = companies-house vies brasil-cnpj official gleif website directory search osm wikidata`
 : Fuentes para *Authorized Representatives*.
 
 `reps_min_trust = any` | `website` | `register`
@@ -116,8 +116,11 @@ Las fuentes son `companies-house`, `vies`, `brasil-cnpj`, `official` (fotones y 
 `website = auto` | `ask` | `never`
 : El sitio web de la empresa leyó su aviso legal. **auto** (predeterminado): encontrado automáticamente y utilizado sólo si se llama la empresa. **ask**: escriba la dirección de cada empresa (Enter la encuentra automáticamente). **never**: no se lee ningún sitio web. Con `confirm = none`, `ask` actúa como `auto`. El valor más antiguo `wikidata` significa `auto`.
 
-`search = duckduckgo` | `none`
-: Búsqueda web usada para encontrar sitios web, entradas de la gaceta del gobierno y, como último recurso, representantes en resultados snippets. Sólo se envía el nombre de la empresa, con palabras como `impressum` o `site:boe.es`. **none** apaga la búsqueda; registros y direcciones conjeturadas todavía se utilizan.
+`search = duckduckgo mojeek yahoo brave` | `none`
+: Motores de búsqueda web utilizados para encontrar sitios web, entradas gubernamentales y, como último recurso, representantes en resultado snippets, en orden de preferencia: cuando uno se niega, descansa por un minuto y el siguiente se pregunta. Sólo se envía el nombre de la empresa, con palabras como `impressum` o `site:boe.es`. **none** apaga la búsqueda; registros y direcciones conjeturadas todavía se utilizan.
+
+`browser = auto` Silencio `none` Silencio *pate*
+: El navegador comenzó invisiblemente (sin cabeza, sin ventana) para sitios web construidos con JavaScript y para buscar cuando cada motor se niega. **auto**: Google Chrome; sin él, cromo o Microsoft Edge. Un *path* nombra otro navegador basado en cromo. Cada inicio utiliza un nuevo perfil vacío que se elimina justo después.
 
 `guess_domains = yes` | `no`
 : También pruebe las direcciones construidas desde el nombre, como `foobar.de` o `foobar.com.br`, elegidas por los países de la forma legal.

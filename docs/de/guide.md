@@ -122,13 +122,17 @@ Von da an kopiert numb-form GWG in Ihren **Downloads** Ordner und funktioniert n
 
 ## Neuinstallation oder Update
 
-Der einfache Weg: Windows PowerShell öffnen und Typ
+Der einfache Weg: Öffnen Sie Windows PowerShell und geben Sie eine davon ein:
 
-```
-numb-form update
-```
+| Typ | Was du bekommst |
+| --- | --- |
+| `numb-form update stable` | die neueste stabile Version (verwenden Sie diese für echte Arbeit) |
+| `numb-form update rolling` | der aktuelle Rolling Build: die neuesten Änderungen, automatisch nach jedem Update auf GitHub neu aufgebaut |
+| `numb-form update` | die neueste Version der Art, die Sie bereits haben |
+| `numb-form update v0.1.1` | Genau diese Version (eine beliebige Nummer von der Releases-Seite) |
+| `numb-form rollback` | zurück zu der Version, die Sie vor dem letzten Update hatten; geben Sie sie erneut ein, um zurückzukehren |
 
-Es lädt die neueste Version herunter, überprüft sie, ersetzt das Programm und druckt die neue Version, z. B. `Updated to numb-form v0.1.2 (stable)`. Ihre gespeicherten Einstellungen (Ihr Name, die Überschrift, der Modus) bleiben erhalten. Es bleibt auf der Version, die Sie haben: Die Entwicklungsversion aktualisiert ständig auf den neuesten Entwicklungs-Build, die stabile Version auf das neueste stabile Release. Um zu wechseln, Typ `numb-form update edge` (Entwicklung) oder `numb-form update stable`.
+Es lädt die Version herunter, überprüft sie, ersetzt das Programm und druckt die neue Version, z. B. `Updated to numb-form v0.1.2 (stable)`. Ihre gespeicherten Einstellungen (Ihr Name, die Überschrift, der Modus) bleiben erhalten.
 
 Versionen 0.1.1 und älter haben `numb-form update` nicht. Für diejenigen, oder wenn `numb-form update` keine Verbindung herstellen kann, verwenden Sie eine der beiden folgenden Zeilen. Geben Sie sie nicht ein: Öffnen Sie diese Seite in Ihrem Browser, klicken Sie auf das Kopiersymbol am rechten Rand des grauen Feldes und klicken Sie mit der rechten Maustaste auf das PowerShell-Fenster, um es einzufügen. Schließen Sie zuerst jedes numb-form-Fenster.
 
@@ -138,17 +142,17 @@ Versionen 0.1.1 und älter haben `numb-form update` nicht. Für diejenigen, oder
 & { $ErrorActionPreference = 'Stop'; if (Get-Process numb-form, numb-commit -ErrorAction SilentlyContinue) { throw 'Close every numb-form window first, then run this again' }; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $u = 'https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download'; $z = 'numb-form_windows_amd64.zip'; $d = Join-Path $env:LOCALAPPDATA 'Programs\numb-form'; New-Item -ItemType Directory -Force $d | Out-Null; Push-Location $d; try { Invoke-WebRequest -UseBasicParsing "$u/$z" -OutFile $z; Invoke-WebRequest -UseBasicParsing "$u/SHA256SUMS" -OutFile SHA256SUMS; $h = (Get-FileHash $z -Algorithm SHA256).Hash.ToLower(); if (-not (Select-String -Path SHA256SUMS -SimpleMatch "$h  $z" -Quiet)) { throw 'CHECKSUM MISMATCH' }; Remove-Item -Force -ErrorAction SilentlyContinue numb-form.exe, numb-commit.exe; Expand-Archive -Force $z -DestinationPath $d } finally { Remove-Item -ErrorAction SilentlyContinue $z, SHA256SUMS; Pop-Location }; $p = [Environment]::GetEnvironmentVariable('Path', 'User'); if (-not $p) { $p = '' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';') + ';' + $d).TrimStart(';'), 'User') }; & (Join-Path $d 'numb-form.exe') -version; 'OK, reinstalled. Your settings are kept. Open a new PowerShell window' }
 ```
 
-**Entwicklungsversion** (die neuesten Änderungen, automatisch nach jedem Update auf GitHub neu erstellt; verwenden Sie dies, um sofort eine Korrektur zu versuchen):
+**Rolling Version** (die neuesten Änderungen, automatisch nach jedem Update auf GitHub neu erstellt; verwenden Sie dies, um sofort eine Korrektur zu versuchen):
 
 ```
 & { $ErrorActionPreference = 'Stop'; if (Get-Process numb-form, numb-commit -ErrorAction SilentlyContinue) { throw 'Close every numb-form window first, then run this again' }; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $u = 'https://github.com/z4dm42f5kp-ux/numb-form/releases/download/edge'; $z = 'numb-form_windows_amd64.zip'; $d = Join-Path $env:LOCALAPPDATA 'Programs\numb-form'; New-Item -ItemType Directory -Force $d | Out-Null; Push-Location $d; try { Invoke-WebRequest -UseBasicParsing "$u/$z" -OutFile $z; Invoke-WebRequest -UseBasicParsing "$u/SHA256SUMS" -OutFile SHA256SUMS; $h = (Get-FileHash $z -Algorithm SHA256).Hash.ToLower(); if (-not (Select-String -Path SHA256SUMS -SimpleMatch "$h  $z" -Quiet)) { throw 'CHECKSUM MISMATCH' }; Remove-Item -Force -ErrorAction SilentlyContinue numb-form.exe, numb-commit.exe; Expand-Archive -Force $z -DestinationPath $d } finally { Remove-Item -ErrorAction SilentlyContinue $z, SHA256SUMS; Pop-Location }; $p = [Environment]::GetEnvironmentVariable('Path', 'User'); if (-not $p) { $p = '' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';') + ';' + $d).TrimStart(';'), 'User') }; & (Join-Path $d 'numb-form.exe') -version; 'OK, reinstalled. Your settings are kept. Open a new PowerShell window' }
 ```
 
-Beide drucken die von ihnen installierte Version, z. B. `v0.1.1` (stabil) oder `edge-3f976cc` (Entwicklung), und enden mit `OK, reinstalled`. Öffnen Sie danach ein neues PowerShell-Fenster.
+Beide drucken die von ihnen installierte Version, z. B. `v0.1.1` (stabil) oder `rolling-3f976cc` (Rolling; ältere Rolling Builds sagen `edge-…`) und enden mit `OK, reinstalled`. Öffnen Sie danach ein neues PowerShell-Fenster.
 
 Wenn PowerShell `Unexpected token` oder `Missing ...` rot beantwortet, wurde die Zeile beim Kopieren geändert (normalerweise ging ein Zeichen verloren): Kopieren Sie es erneut mit dem Kopiersymbol.
 
-Wenn die Entwicklungslinie `CHECKSUM MISMATCH` sagt, wurde in diesem Moment ein neuer Build hochgeladen: Warten Sie fünf Minuten und führen Sie ihn noch einmal aus. Wenn es wieder passiert, oder mit der stabilen Linie, stoppen und sagen, wer sich um das Werkzeug kümmert.
+Wenn die rollende Linie `CHECKSUM MISMATCH` sagt, wurde in diesem Moment ein neuer Build hochgeladen: Warten Sie fünf Minuten und führen Sie ihn noch einmal aus. Wenn es wieder passiert, oder mit der stabilen Linie, stoppen und sagen, wer sich um das Werkzeug kümmert.
 
 ## Lesen Sie dieses Handbuch im Fenster
 

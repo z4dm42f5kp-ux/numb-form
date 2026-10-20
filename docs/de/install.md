@@ -61,7 +61,7 @@ Stabile Freigabe:
 & { $ErrorActionPreference = 'Stop'; if (Get-Process numb-form, numb-commit -ErrorAction SilentlyContinue) { throw 'Close every numb-form window first, then run this again' }; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $u = 'https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download'; $z = 'numb-form_windows_amd64.zip'; $d = Join-Path $env:LOCALAPPDATA 'Programs\numb-form'; New-Item -ItemType Directory -Force $d | Out-Null; Push-Location $d; try { Invoke-WebRequest -UseBasicParsing "$u/$z" -OutFile $z; Invoke-WebRequest -UseBasicParsing "$u/SHA256SUMS" -OutFile SHA256SUMS; $h = (Get-FileHash $z -Algorithm SHA256).Hash.ToLower(); if (-not (Select-String -Path SHA256SUMS -SimpleMatch "$h  $z" -Quiet)) { throw 'CHECKSUM MISMATCH' }; Remove-Item -Force -ErrorAction SilentlyContinue numb-form.exe, numb-commit.exe; Expand-Archive -Force $z -DestinationPath $d } finally { Remove-Item -ErrorAction SilentlyContinue $z, SHA256SUMS; Pop-Location }; $p = [Environment]::GetEnvironmentVariable('Path', 'User'); if (-not $p) { $p = '' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';') + ';' + $d).TrimStart(';'), 'User') }; & (Join-Path $d 'numb-form.exe') -version; 'OK, reinstalled. Your settings are kept. Open a new PowerShell window' }
 ```
 
-Entwicklungs-Build (das `edge` Pre-Release, nach jeder Änderung aus `main` umgebaut; siehe unten):
+Rolling Build (nach jeder Änderung aus `main` neu aufgebaut; siehe unten):
 
 ```
 & { $ErrorActionPreference = 'Stop'; if (Get-Process numb-form, numb-commit -ErrorAction SilentlyContinue) { throw 'Close every numb-form window first, then run this again' }; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $u = 'https://github.com/z4dm42f5kp-ux/numb-form/releases/download/edge'; $z = 'numb-form_windows_amd64.zip'; $d = Join-Path $env:LOCALAPPDATA 'Programs\numb-form'; New-Item -ItemType Directory -Force $d | Out-Null; Push-Location $d; try { Invoke-WebRequest -UseBasicParsing "$u/$z" -OutFile $z; Invoke-WebRequest -UseBasicParsing "$u/SHA256SUMS" -OutFile SHA256SUMS; $h = (Get-FileHash $z -Algorithm SHA256).Hash.ToLower(); if (-not (Select-String -Path SHA256SUMS -SimpleMatch "$h  $z" -Quiet)) { throw 'CHECKSUM MISMATCH' }; Remove-Item -Force -ErrorAction SilentlyContinue numb-form.exe, numb-commit.exe; Expand-Archive -Force $z -DestinationPath $d } finally { Remove-Item -ErrorAction SilentlyContinue $z, SHA256SUMS; Pop-Location }; $p = [Environment]::GetEnvironmentVariable('Path', 'User'); if (-not $p) { $p = '' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';') + ';' + $d).TrimStart(';'), 'User') }; & (Join-Path $d 'numb-form.exe') -version; 'OK, reinstalled. Your settings are kept. Open a new PowerShell window' }
@@ -93,17 +93,17 @@ Stellen Sie unter Linux, macOS und den BSDs sicher, dass `~/.local/bin` in `PATH
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.profile" && . "$HOME/.profile"
 ```
 
-### Entwicklungsbauten
+### Walzkörper
 
-Nach jeder Änderung an `main` führt GitHub Actions die Tests durch, baut alle Archive neu auf und ersetzt die Dateien des `edge` Pre-Release. Seine Archive sind checksummed, signiert und wie ein stabiles Release attestiert. `releases/latest` bedeutet immer das neueste stabile Release; Edge wird nie als neuestes markiert.
+Nach jeder Änderung an `main` führt GitHub Actions die Tests durch, baut alle Archive neu auf und ersetzt die Dateien des rollenden Pre-Release (Release-Tag `edge`). Seine Archive sind checksummed, signiert und wie ein stabiles Release attestiert. `releases/latest` bedeutet immer das neueste stabile Release; der rollende Build wird nie als neuestes markiert. `numb-form update rolling` wechselt dazu, `numb-form update stable` zurück.
 
-Um den Entwicklungs-Build auf einem beliebigen System zu installieren oder neu zu installieren, führen Sie den Installationsbefehl dieses Systems aus, wobei `releases/latest/download` durch `releases/download/edge` ersetzt wird. Zum Beispiel unter Linux:
+Um den rollenden Build auf einem beliebigen System zu installieren oder neu zu installieren, führen Sie den Installationsbefehl dieses Systems aus, wobei `releases/latest/download` durch `releases/download/edge` ersetzt wird. Zum Beispiel unter Linux:
 
 ```
 cd "$(mktemp -d)" && curl -fLO https://github.com/z4dm42f5kp-ux/numb-form/releases/download/edge/numb-form_linux_amd64.tar.gz && curl -fLO https://github.com/z4dm42f5kp-ux/numb-form/releases/download/edge/SHA256SUMS && grep ' numb-form_linux_amd64.tar.gz$' SHA256SUMS | sha256sum -c - && tar -xzf numb-form_linux_amd64.tar.gz && mkdir -p "$HOME/.local/bin" && install -m 0755 numb-form numb-commit "$HOME/.local/bin/" && cd / && rm -rf "$OLDPWD" && numb-form -version
 ```
 
-Das erneute Ausführen eines Installationsbefehls ist auch die Neuinstallation: Es überschreibt die Programme und lässt die Konfiguration in Ruhe. `numb-form -version` zeigt `edge-<commit>` für einen Entwicklungs-Build.
+Das erneute Ausführen eines Installationsbefehls ist auch die Neuinstallation: Es überschreibt die Programme und lässt die Konfiguration in Ruhe. `numb-form -version` zeigt `rolling-<commit>` für einen rollenden Build (`edge-<commit>` für ältere).
 
 ### Überprüfen, wer ein Release erstellt hat
 

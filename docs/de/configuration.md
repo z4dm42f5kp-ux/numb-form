@@ -93,15 +93,15 @@ numb-form config init && numb-form config
 
 ### Quellen
 
-Quellen sind `companies-house`, `vies`, `brasil-cnpj`, `official` (Regierungsblätter und Register durch Suche gefunden), `gleif`, `website`, `search` (Websuche, auch verwendet, um die Website zu finden) und `wikidata`. Listen sind durch Leerzeichen oder Kommas getrennt; ihre Reihenfolge ist die Reihenfolge der Präferenz.
+Quellen sind `companies-house`, `vies`, `brasil-cnpj`, `official` (Regierungsblätter und Register, die durch Suche gefunden wurden), `gleif`, `website`, `directory` (Unternehmensdaten-Websites, die Registerdaten wie Northdata, Moneyhouse, Racius oder OpenCorporates erneut veröffentlichen), `search` (Web-Suchsnippets; Suche findet auch die Website), `osm` (OpenStreetMap, für eine Adresse) und `wikidata`. Listen sind durch Leerzeichen oder Kommas getrennt; ihre Reihenfolge ist die Reihenfolge der Präferenz.
 
-`address_sources = companies-house vies brasil-cnpj official gleif website search wikidata`
+`address_sources = companies-house vies brasil-cnpj official gleif website directory search osm wikidata`
 : Quellen für *Headquarters / Address*.
 
 `address_fallback = ask` | `blank`
 : Wenn keine Adresse gefunden wird. Mit `confirm = none` fungiert `ask` als `blank`.
 
-`reps_sources = companies-house vies brasil-cnpj official gleif website search wikidata`
+`reps_sources = companies-house vies brasil-cnpj official gleif website directory search osm wikidata`
 : Quellen für *Authorized Representatives*.
 
 `reps_min_trust = any` | `website` | `register`
@@ -116,8 +116,11 @@ Quellen sind `companies-house`, `vies`, `brasil-cnpj`, `official` (Regierungsbl�
 `website = auto` | `ask` | `never`
 : Die Website des Unternehmens las für seinen rechtlichen Hinweis. **auto** (Standard): automatisch gefunden und nur verwendet, wenn das Unternehmen benannt wird. **ask**: Sie geben die Adresse für jedes Unternehmen ein (Enter findet sie automatisch). **never**: keine Website gelesen wird. Mit `confirm = none` fungiert `ask` als `auto`. Der ältere Wert `wikidata` bedeutet `auto`.
 
-`search = duckduckgo` | `none`
-: Web-Suche verwendet, um Websites zu finden, Regierung Gazette Einträge und, als letztes Mittel, Vertreter in Ergebnis Snippets. Es wird nur der Firmenname mit Wörtern wie `impressum` oder `site:boe.es` gesendet. **none** schaltet die Suche aus; Register und erratene Adressen werden weiterhin verwendet.
+`search = duckduckgo mojeek yahoo brave` | `none`
+: Web-Suchmaschinen verwendet, um Websites zu finden, Regierung Gazette Einträge und, als letztes Mittel, Vertreter in Ergebnis Schnipsel, in der Reihenfolge der Präferenz: Wenn man sich weigert, ruht es für eine Minute und die nächste wird gefragt. Es wird nur der Firmenname mit Wörtern wie `impressum` oder `site:boe.es` gesendet. **none** schaltet die Suche aus; Register und erratene Adressen werden weiterhin verwendet.
+
+`browser = auto` | `none` | *Pfad
+: Der Browser begann unsichtbar (kopflos, kein Fenster) für Websites, die mit JavaScript erstellt wurden, und für die Suche, wenn jede Engine ablehnt. **auto**: Google Chrome; ohne Chromium oder Microsoft Edge. Ein *Pfad* benennt einen anderen Chrom-basierten Browser. Jeder Start verwendet ein neues, leeres Profil, das direkt danach gelöscht wird.
 
 `guess_domains = yes` | `no`
 : Versuchen Sie auch, Adressen aus dem Namen gebaut, wie `foobar.de` oder `foobar.com.br`, von den Ländern der Rechtsform gewählt.
