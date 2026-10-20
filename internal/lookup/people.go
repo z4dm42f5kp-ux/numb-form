@@ -175,12 +175,45 @@ func resigned(before string) bool {
 	return reResigned.MatchString(before)
 }
 
+// reNameRole splits "Max Mustermann (Geschäftsführer)", "Jane Doe – CEO"
+// and "Juan Pérez, Gerente General" into a name and a role.
+var reNameRole = regexp.MustCompile(`^\s*(.{4,60}?)\s*(?:\(([^()]{2,50})\)|[,–—|]\s*([^,–—|()]{2,50})|\s-\s+([^,–—|()]{2,50}))\s*$`)
+
+// nameThenRole reads a short line that gives a name followed by a role
+// that is a known representative role.
+func nameThenRole(line string, src Source) (Person, bool) {
+	if len(line) > 110 {
+		return Person{}, false
+	}
+	m := reNameRole.FindStringSubmatch(line)
+	if m == nil {
+		return Person{}, false
+	}
+	role := strings.TrimSpace(m[2] + m[3] + m[4])
+	k := strings.Join(strings.Fields(reNonWord.ReplaceAllString(textutil.Fold(role), " ")), " ")
+	r, known := roleLabels[k]
+	if !known || r == "" {
+		return Person{}, false
+	}
+	n, ok := cleanName(m[1])
+	if !ok {
+		return Person{}, false
+	}
+	return Person{Name: n, Roles: []string{r}, Sources: []Source{src}}, true
+}
+
 // ExtractPeople finds authorized representatives named in the lines of
-// a legal notice, register extract or gazette entry.
+// a legal notice, register extract, gazette entry or directory page.
 func ExtractPeople(lines []string, src Source) []Person {
 	var out []Person
 	for i, line := range lines {
 		hits := findLabels(line)
+		if len(hits) == 0 || (len(hits) == 1 && hits[0].start > 0) {
+			if p, ok := nameThenRole(line, src); ok && !resigned(line) {
+				out = append(out, p)
+				continue
+			}
+		}
 		for k, h := range hits {
 			if h.role == "" {
 				continue

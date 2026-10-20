@@ -10,8 +10,8 @@ import (
 type Config struct {
 	CompaniesHouseKey string
 	// Sources lists the enabled sources ("companies-house", "vies",
-	// "brasil-cnpj", "official", "gleif", "website", "search",
-	// "wikidata"); nil enables all.
+	// "brasil-cnpj", "official", "gleif", "website", "directory",
+	// "search", "osm", "wikidata"); nil enables all.
 	Sources []string
 	// Search lists the search engines in order of preference
 	// ("duckduckgo mojeek yahoo brave", the default when empty), or

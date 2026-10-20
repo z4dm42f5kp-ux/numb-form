@@ -58,7 +58,7 @@ type Config struct {
 }
 
 // Sources understood in *_sources keys, most authoritative first.
-var Sources = []string{"companies-house", "vies", "brasil-cnpj", "official", "gleif", "website", "search", "wikidata"}
+var Sources = []string{"companies-house", "vies", "brasil-cnpj", "official", "gleif", "website", "directory", "search", "osm", "wikidata"}
 
 // SearchEngines are the keyless web search engines, in default order.
 var SearchEngines = []string{"duckduckgo", "mojeek", "yahoo", "brave"}

@@ -116,18 +116,21 @@ numb-form config init && numb-form config
 
 Sources are `companies-house`, `vies`, `brasil-cnpj`, `official`
 (government gazettes and registers found by search), `gleif`, `website`,
-`search` (web search, also used to find the website) and `wikidata`.
+`directory` (company-data websites that republish register data, such as
+northdata, Moneyhouse, Racius or OpenCorporates), `search` (web search
+snippets; search also finds the website), `osm` (OpenStreetMap, for an
+address) and `wikidata`.
 Lists are separated by spaces or commas; their order is the order of
 preference.
 
-`address_sources = companies-house vies brasil-cnpj official gleif website search wikidata`
+`address_sources = companies-house vies brasil-cnpj official gleif website directory search osm wikidata`
 : Sources for *Headquarters / Address*.
 
 `address_fallback = ask` | `blank`
 : When no address is found. With `confirm = none`, `ask` acts as
   `blank`.
 
-`reps_sources = companies-house vies brasil-cnpj official gleif website search wikidata`
+`reps_sources = companies-house vies brasil-cnpj official gleif website directory search osm wikidata`
 : Sources for *Authorized Representatives*.
 
 `reps_min_trust = any` | `website` | `register`

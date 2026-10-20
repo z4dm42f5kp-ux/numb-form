@@ -104,8 +104,20 @@ Candidates come from, in order of authority:
 3. the company's own website: its legal notice (Impressum, Aviso legal,
    Mentions légales, Legal notice) first, then about, contact and privacy
    pages;
-4. Wikidata, and the snippets of web search results (community data, not
-   verified; snippets are read only when nothing else named anyone).
+4. community data, shown unverified with the caution text: company-data
+   directories that republish register data (northdata, firmenwissen,
+   Moneyhouse, Racius, Empresite, cnpj.biz, OpenCorporates, Dun &
+   Bradstreet and similar; at most three pages per company), the
+   snippets of web search results, OpenStreetMap (for an address) and
+   Wikidata.
+
+When representatives confirmed by an official source, or an address from
+a register or the company's website, are still missing, numb-form runs
+one more search for the representatives (with the local word, such as
+*Geschäftsführer* or *representante legal*) and one for the address, and
+reads the directory pages they find.
+A person named by two different kinds of source (for example the
+company's website and a directory) counts as verified.
 
 The website is found automatically: from Wikidata, from a DuckDuckGo
 search for the exact name, and from addresses such as `foobar.de` or

@@ -87,6 +87,9 @@ Nothing from the spreadsheet other than the company name is sent, and
 nothing about the person processing the form.
 
 Searches go to DuckDuckGo, Mojeek, Yahoo or Brave Search in turn.
+Company-data directory pages found by search are read like any web page
+(at most three per company), and OpenStreetMap's Nominatim is asked once
+for the company name when no address was found.
 When Google Chrome (or Chromium or Edge) is installed, it is started
 headless for script-built websites and refused searches: with fixed
 flags, no extensions, a new empty profile in the temporary folder that is

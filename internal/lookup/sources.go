@@ -102,19 +102,6 @@ func hasCompanySite(hits []Hit) bool {
 	return false
 }
 
-// snippetLines splits a search snippet at sentence ends so that labels
-// such as "Geschäftsführer:" start a line.
-func snippetLines(s string) []string {
-	s = strings.NewReplacer(" · ", "\n", " | ", "\n", "; ", "\n", " - ", "\n", "... ", "\n", "… ", "\n").Replace(s)
-	var out []string
-	for _, l := range strings.Split(s, "\n") {
-		if l = strings.TrimSpace(l); l != "" {
-			out = append(out, l)
-		}
-	}
-	return out
-}
-
 func itoa(n int) string {
 	if n == 0 {
 		return "0"

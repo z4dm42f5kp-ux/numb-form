@@ -145,31 +145,16 @@ func Find(ctx context.Context, c *Client, cfg Config, name, site string) Result 
 			}
 		}
 	}
+	// Snippets of the first searches often already name the managing
+	// directors and the address (directories, news, registers).
+	if cfg.enabled("search") {
+		all.merge(mineSnippets(hits, q))
+	}
 	all.merge(runJobs(ctx, jobs))
 
-	// 5. Last resort for representatives: search result snippets.
-	if useSearch && len(all.People) == 0 && cfg.enabled("search") {
-		var n []string
-		for _, h := range search(ctx, c, `"`+q.Name+`" `+roleWords(country), region, &n) {
-			if !Mentions(normWords(h.Title+" "+h.Snippet), q) {
-				continue
-			}
-			u, _ := url.Parse(h.URL)
-			host := ""
-			if u != nil {
-				host = u.Hostname()
-			}
-			src := Source{ID: "search", Name: "search result from " + host + " (not verified)", URL: h.URL, Kind: KindCommunity}
-			ps := ExtractPeople(snippetLines(h.Snippet), src)
-			for _, p := range ps {
-				all.addPerson(p)
-			}
-			if len(ps) > 0 {
-				all.Sources = append(all.Sources, src)
-			}
-		}
-		all.Notes = append(all.Notes, n...)
-	}
+	// 5. Fill what is still missing: directories, targeted searches,
+	// OpenStreetMap.
+	fillGaps(ctx, c, cfg, q, region, country, hits, useSearch, &all)
 	all.sortResult()
 	return all
 }
