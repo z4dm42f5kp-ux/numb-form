@@ -47,6 +47,9 @@ cd "/path/to/working-folder" && numb-form
   needs an administrator, the second is experimental.
 * Never modify the spreadsheet in `3. Übersichten`, not even to save it
   unchanged.
+  The only exception is numb-date, which writes digit-free cells of the
+  *Report created* column after the person agrees; never answer its
+  questions for the person either.
 * Never add formatting to documents.
   Never touch section B or anything outside section A.
 * Fill *Commercial Registry Number* with the registry text below, unless
@@ -111,14 +114,15 @@ cd "/path/to/working-folder" && numb-form
 
 | Path | Purpose |
 | --- | --- |
-| `cmd/numb-form`, `cmd/numb-commit` | entry points and flags |
+| `cmd/numb-form`, `cmd/numb-commit`, `cmd/numb-date` | entry points and flags |
 | `internal/app` | the run, modes, the per-company dialogue, automatic choices, commit |
 | `internal/config` | numb-form.conf: locations, parsing, defaults |
 | `internal/form` | fields, locating section A, splicing and the self-check |
 | `internal/docx`, `internal/odt`, `internal/rtf` | template fillers |
 | `internal/formats` | choosing a filler or converter by extension |
 | `internal/convert` | LibreOffice/OpenOffice and Apple Pages/Numbers conversion |
-| `internal/sheet` | read-only spreadsheet readers (xlsx, ods, csv, xls) |
+| `internal/sheet` | spreadsheet readers (xlsx, ods, csv, xls); `table.go` and `setcells.go` serve numb-date |
+| `internal/reportdate` | numb-date: finding and parsing the date in a form |
 | `internal/match` | legal-form extraction and folder matching |
 | `internal/manual` | `numb-form man` and the Unix manual page |
 | `internal/fsutil` | Downloads folder, tree copy, safe names |

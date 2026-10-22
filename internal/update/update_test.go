@@ -170,6 +170,9 @@ func TestUnixUpdateAndUpToDate(t *testing.T) {
 	if read(t, filepath.Join(dir, "numb-form")) != "old" {
 		t.Error("same version must not replace anything")
 	}
+	if read(t, filepath.Join(dir, "numb-commit")) != "new commit" {
+		t.Error("same version must still add a missing program")
+	}
 	if f.urls[0] != Releases+"/latest/download/SHA256SUMS" {
 		t.Errorf("urls %v", f.urls)
 	}
@@ -180,8 +183,8 @@ func TestUnixUpdateAndUpToDate(t *testing.T) {
 	if read(t, filepath.Join(dir, "numb-form")) != "new form" {
 		t.Error("not replaced")
 	}
-	if ents, _ := os.ReadDir(dir); len(ents) != 3 {
-		t.Errorf("%d files left, want numb-form, numb-commit and numb-form.previous", len(ents))
+	if ents, _ := os.ReadDir(dir); len(ents) != 4 {
+		t.Errorf("%d files left, want numb-form, numb-commit and their .previous", len(ents))
 	}
 }
 
@@ -249,5 +252,22 @@ func TestAssetAndHosts(t *testing.T) {
 	}
 	if DefaultChannel("edge-abc1234") != "rolling" || DefaultChannel("rolling-abc1234") != "rolling" || DefaultChannel("v0.1.1") != "stable" {
 		t.Error("default channel")
+	}
+}
+
+// numb-date is installed when the archive has it, also by an update to the
+// version already running; older archives without it still install.
+func TestOptionalNumbDate(t *testing.T) {
+	dir := t.TempDir()
+	_ = os.WriteFile(filepath.Join(dir, "numb-form"), []byte("form"), 0o755)
+	_ = os.WriteFile(filepath.Join(dir, "numb-commit"), []byte("commit"), 0o755)
+	arc := tgzOf(t, map[string]string{"numb-form": "form", "numb-commit": "commit", "numb-date": "date"})
+	name := "numb-form_linux_amd64.tar.gz"
+	f := &fake{files: map[string][]byte{name: arc, "SHA256SUMS": []byte(sumLine(arc, name))}}
+	if _, err := Run(context.Background(), opts(dir, "linux", f, "v0.1.1")); err != nil {
+		t.Fatal(err)
+	}
+	if read(t, filepath.Join(dir, "numb-date")) != "date" {
+		t.Error("numb-date not installed by a same-version update")
 	}
 }

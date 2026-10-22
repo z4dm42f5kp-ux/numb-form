@@ -14,6 +14,7 @@ const manCmd = `@echo off
 rem Installed by "numb-form man -install": "man numb-form" shows the numb-form manual.
 if /i "%~1"=="numb-form" goto show
 if /i "%~1"=="numb-commit" goto show
+if /i "%~1"=="numb-date" goto show
 echo man: no manual entry for %1. This man only knows numb-form: man numb-form
 exit /b 1
 :show
@@ -59,11 +60,15 @@ func Install(roff string) ([]string, error) {
 	if err := os.WriteFile(p1, []byte(roff), 0o644); err != nil { // #nosec G306 -- manual pages are public.
 		return nil, err
 	}
-	p2 := filepath.Join(dir, "numb-commit.1")
-	if err := os.WriteFile(p2, []byte(".so man1/numb-form.1\n"), 0o644); err != nil { // #nosec G306
-		return nil, err
+	out := []string{p1}
+	for _, n := range []string{"numb-commit.1", "numb-date.1"} {
+		p := filepath.Join(dir, n)
+		if err := os.WriteFile(p, []byte(".so man1/numb-form.1\n"), 0o644); err != nil { // #nosec G306
+			return nil, err
+		}
+		out = append(out, p)
 	}
-	return []string{p1, p2}, nil
+	return out, nil
 }
 
 // Installed reports whether the Unix manual page exists, so that an

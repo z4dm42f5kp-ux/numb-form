@@ -1,5 +1,6 @@
-// Package sheet reads company names from the overview spreadsheet. It
-// never writes: files are opened read-only and parsed in memory.
+// Package sheet reads company names from the overview spreadsheet: files
+// are opened read-only and parsed in memory. SetText, used only by
+// numb-date, returns an edited copy; it writes no file itself.
 //
 // Supported: .xlsx and .xlsm (macros are never run), .ods and .fods,
 // .csv and .tsv, and, only when legacy formats are enabled, .xls.

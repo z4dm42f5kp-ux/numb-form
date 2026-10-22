@@ -1,4 +1,4 @@
-// Package app implements the numb-form and numb-commit programs.
+// Package app implements the numb-form, numb-commit and numb-date programs.
 package app
 
 import (

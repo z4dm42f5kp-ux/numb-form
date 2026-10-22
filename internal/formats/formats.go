@@ -69,6 +69,16 @@ func native(ext string) form.Filler {
 	return nil
 }
 
+// ReadFilled reads section A from a filled form in a format numb-form
+// reads itself (.docx, .odt, .fodt, .rtf).
+func ReadFilled(b []byte, ext string) (form.Values, error) {
+	f := native(ext)
+	if f == nil {
+		return nil, fmt.Errorf("%s forms cannot be read directly", ext)
+	}
+	return f.ReadBack(b)
+}
+
 // LoadTemplate reads and, if needed, converts the template at p.
 func LoadTemplate(ctx context.Context, p string, cfg config.Config) (*Template, error) {
 	data, err := os.ReadFile(p) // #nosec G304 -- the user's own template.
