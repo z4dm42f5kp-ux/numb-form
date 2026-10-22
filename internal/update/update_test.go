@@ -251,3 +251,20 @@ func TestAssetAndHosts(t *testing.T) {
 		t.Error("default channel")
 	}
 }
+
+// numb-date is installed when the archive has it, also by an update to the
+// version already running; older archives without it still install.
+func TestOptionalNumbDate(t *testing.T) {
+	dir := t.TempDir()
+	_ = os.WriteFile(filepath.Join(dir, "numb-form"), []byte("form"), 0o755)
+	_ = os.WriteFile(filepath.Join(dir, "numb-commit"), []byte("commit"), 0o755)
+	arc := tgzOf(t, map[string]string{"numb-form": "form", "numb-commit": "commit", "numb-date": "date"})
+	name := "numb-form_linux_amd64.tar.gz"
+	f := &fake{files: map[string][]byte{name: arc, "SHA256SUMS": []byte(sumLine(arc, name))}}
+	if _, err := Run(context.Background(), opts(dir, "linux", f, "v0.1.1")); err != nil {
+		t.Fatal(err)
+	}
+	if read(t, filepath.Join(dir, "numb-date")) != "date" {
+		t.Error("numb-date not installed by a same-version update")
+	}
+}

@@ -6,7 +6,9 @@ company in the overview spreadsheet that has no folder yet.
 It fills the name, legal form, registry sentence, date and your name by
 itself, and asks you for the address and the representatives.
 You confirm every document.
-The spreadsheet is never changed.
+numb-form never changes the spreadsheet; afterwards, `numb-date` writes
+the date of each new form into its *Report created* cell, after you
+agree, and changes nothing else.
 
 Español: [docs/es/README.md](docs/es/README.md) ·
 Deutsch: [docs/de/README.md](docs/de/README.md)

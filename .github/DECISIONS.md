@@ -108,3 +108,16 @@ numb-form now fills the name, legal form, registry sentence, date and
 person by itself and asks for the address and the representatives.
 Old configuration keys are ignored with a note.
 `numb-form update`, `rollback` and `numb-commit` are unchanged.
+
+## numb-date writes the report dates
+
+numb-date is the only program allowed to write the overview
+spreadsheet, and only digit-free cells of the *Report created* column.
+The date is read from each company's form (*Date of the evaluation*),
+which also covers forms filled by hand, so numb-form writes no
+`for-numb-date.txt` list: a second source of the same date could only
+disagree with the form.
+Cells are spliced into the sheet XML like values in templates; every
+write is checked with SHA-256 and a cell-by-cell comparison, and the
+user accepts the result read back from disk or undoes it.
+Only `.xlsx` and `.xlsm` are written.

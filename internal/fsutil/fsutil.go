@@ -218,6 +218,56 @@ func WriteNew(path string, data []byte) error {
 	return err
 }
 
+// ReplaceVerified replaces the file at path with data, checked with
+// SHA-256 at every step: the file must still have the hash have (nobody
+// changed it since it was read), the temporary copy in the same folder
+// must hash like data before it is renamed over the file, and the file
+// must hash like data afterwards. The temporary copy never outlives the
+// call.
+func ReplaceVerified(path, have string, data []byte) error {
+	info, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
+	if h, _, err := SHA256File(path); err != nil {
+		return err
+	} else if h != have {
+		return fmt.Errorf("%s changed since it was read; nothing was written", filepath.Base(path))
+	}
+	want := SHA256Bytes(data)
+	tmp := filepath.Join(filepath.Dir(path), ".numb-date-tmp-"+randHex(6))
+	f, err := os.OpenFile(tmp, os.O_WRONLY|os.O_CREATE|os.O_EXCL, info.Mode().Perm()) // #nosec G304
+	if err != nil {
+		return err
+	}
+	_, err = f.Write(data)
+	if err == nil {
+		err = f.Sync()
+	}
+	if cerr := f.Close(); err == nil {
+		err = cerr
+	}
+	if err == nil {
+		var h string
+		if h, _, err = SHA256File(tmp); err == nil && h != want {
+			err = fmt.Errorf("the temporary copy does not match (sha256 %s, want %s)", h, want)
+		}
+	}
+	if err == nil {
+		err = os.Rename(tmp, path)
+	}
+	if err != nil {
+		_ = os.Remove(tmp)
+		return err
+	}
+	if h, _, err := SHA256File(path); err != nil {
+		return err
+	} else if h != want {
+		return fmt.Errorf("%s does not match after writing (sha256 %s, want %s)", filepath.Base(path), h, want)
+	}
+	return nil
+}
+
 func randHex(n int) string {
 	b := make([]byte, n)
 	if _, err := rand.Read(b); err != nil {

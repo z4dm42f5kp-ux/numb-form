@@ -3,7 +3,7 @@
 # Build it with container/build.sh, which compiles the binaries first.
 FROM scratch
 COPY ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY numb-form numb-commit /
+COPY numb-form numb-commit numb-date /
 ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
     NUMBFORM_DOWNLOADS=/downloads \
     HOME=/downloads
