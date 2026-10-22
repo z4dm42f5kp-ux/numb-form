@@ -2,7 +2,7 @@
 
 ## NAME
 
-**numb-form**, **numb-commit** — fill risk assessment forms
+**numb-form**, **numb-commit**, **numb-date** — fill risk assessment forms
 
 ## SYNOPSIS
 
@@ -13,6 +13,7 @@ numb-form [-f conf] config [init | set key value]
 numb-form [-f conf] update [stable | rolling | v1.2.3]
 numb-form rollback
 numb-commit [-f conf] [-run dir] [-downloads dir]
+numb-date [-f conf] [-root dir] [-timeout duration]
 ```
 
 ## DESCRIPTION
@@ -52,7 +53,7 @@ A run proceeds as follows:
 4. Company names are read from the column headed `Customer Name`, from
    top to bottom.
    All other columns are ignored, including `Report created`.
-   The spreadsheet is never written to; its SHA-256 checksum is checked
+   numb-form never writes the spreadsheet; its SHA-256 checksum is checked
    before and after the run.
 5. For each company, the folders in the working folder and all of its
    subfolders are searched.
@@ -103,6 +104,37 @@ Each folder is copied to a temporary name, verified with SHA-256 and then
 renamed.
 Documents edited during review are listed before the user confirms.
 Afterwards it offers to delete the review copy; the logs are kept.
+
+**numb-date** fills the report-date column of the spreadsheet.
+It is started like numb-form, in or above the working folder, and finds
+the same overview spreadsheet, which must be `.xlsx` or `.xlsm`.
+
+1. The company column is found by `header`, then by common names
+   (`Customer Name`, `Customer`, `Company Name`, `Kunde`, `Cliente` and
+   others, ignoring case); the date column in the same header row by
+   `Report created AB`, `Report created`, `Report date`, `Created` and
+   similar names, or any heading that mentions a report and its creation
+   or date.
+2. Rows whose date cell contains a digit are skipped: they already have
+   a date.
+3. For the other rows, the company's folder is found as numb-form finds
+   it (near matches are asked).
+   The `.docx`, `.odt`, `.fodt` or `.rtf` forms in the folder (and one
+   level below) are read, the risk assessment form first: the *Date of
+   the evaluation* of section A, or, in forms laid out differently, the
+   date written after a date label.
+   Dates such as `16/10/2026`, `16.10.2026`, `2026-10-16` and
+   `16 October 2026` are understood.
+   When no date is found, the user types it or skips the company.
+4. The dates are listed, written as `DD-MM-YYYY` after the user agrees,
+   read back from disk and shown; the user accepts them or undoes the
+   write.
+
+Only the listed cells change; see [../SECURITY.md](../SECURITY.md) for
+the checks.
+Forms are only read.
+The file must not be open in Excel or LibreOffice.
+The log is `numb-date.log` in the per-user state folder (or `log_dir`).
 
 ## COMMANDS
 
@@ -203,6 +235,10 @@ Afterwards it offers to delete the review copy; the logs are kept.
 
 `<log folder>/<run>/manifest.json`
 : Machine-readable record of the run.
+
+`<log folder>/<run>_date/numb-date.log`
+: Log of a numb-date run, with the SHA-256 of the spreadsheet before
+  and after.
 
 `Downloads/numb-form-runs/<run>/<working folder>/`
 : Review mode: the copy.

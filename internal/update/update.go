@@ -1,4 +1,4 @@
-// Package update replaces the installed numb-form and numb-commit
+// Package update replaces the installed numb-form, numb-commit and numb-date
 // programs with those of the newest GitHub release (stable) or of the
 // edge development build. It does what the install commands in
 // docs/install.md do: download the archive and SHA256SUMS over HTTPS,
@@ -29,7 +29,11 @@ const (
 )
 
 // Programs are the files replaced by an update, without extension.
-var Programs = []string{"numb-form", "numb-commit"}
+var Programs = []string{"numb-form", "numb-commit", "numb-date"}
+
+// Optional programs may be missing from older releases; numb-form must
+// stay first.
+var Optional = map[string]bool{"numb-date": true}
 
 // Options describes one update.
 type Options struct {
@@ -182,7 +186,13 @@ func install(ctx context.Context, o Options, files map[string][]byte, ext string
 			_ = os.Remove(p)
 		}
 	}()
+	var names []string
 	for _, name := range Programs {
+		if files[name] != nil {
+			names = append(names, name)
+		}
+	}
+	for _, name := range names {
 		p := filepath.Join(o.Dir, name+".new"+ext)
 		if err := os.WriteFile(p, files[name], 0o755); err != nil { // #nosec G306 -- programs must be executable.
 			return "", err
@@ -193,10 +203,10 @@ func install(ctx context.Context, o Options, files map[string][]byte, ext string
 	if err != nil {
 		return "", fmt.Errorf("the downloaded numb-form does not start (%w); nothing was changed", err)
 	}
-	if v == o.Current {
+	if v == o.Current && allInstalled(o.Dir, names, ext) {
 		return v, nil
 	}
-	for i, name := range Programs {
+	for i, name := range names {
 		dst := filepath.Join(o.Dir, name+ext)
 		// The version being replaced is kept as name.previous for
 		// "numb-form rollback". A running .exe cannot be overwritten but
@@ -213,6 +223,17 @@ func install(ctx context.Context, o Options, files map[string][]byte, ext string
 	}
 	staged = nil
 	return v, nil
+}
+
+// allInstalled reports whether every program is already installed, so an
+// update to the same version can still add a program that was missing.
+func allInstalled(dir string, names []string, ext string) bool {
+	for _, name := range names {
+		if _, err := os.Stat(filepath.Join(dir, name+ext)); err != nil {
+			return false
+		}
+	}
+	return true
 }
 
 // PreviousPath is where an update keeps the version it replaced.

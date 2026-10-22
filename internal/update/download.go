@@ -35,8 +35,8 @@ func lookupSum(sums []byte, asset string) (string, error) {
 	return "", fmt.Errorf("SHA256SUMS has no entry for %s", asset)
 }
 
-// extract returns the programs from a release archive. Only the two
-// expected files at the top level are read; everything else is ignored.
+// extract returns the programs from a release archive. Only the expected
+// files at the top level are read; everything else is ignored.
 func extract(arc []byte, asset, ext string) (map[string][]byte, error) {
 	want := map[string]string{}
 	for _, p := range Programs {
@@ -100,7 +100,7 @@ func extract(arc []byte, asset, ext string) (map[string][]byte, error) {
 		}
 	}
 	for _, p := range Programs {
-		if len(out[p]) == 0 {
+		if len(out[p]) == 0 && !Optional[p] {
 			return nil, fmt.Errorf("the archive has no %s%s", p, ext)
 		}
 	}

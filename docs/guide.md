@@ -125,7 +125,7 @@ Forms you already accepted stay; the one you were working on is removed.
 * One new folder per accepted company, with one filled form in it.
 * Nothing else.
   No existing file or folder is changed or deleted, and the Excel list
-  is never changed.
+  is never changed by numb-form (see step 7 for numb-date).
 * A rejected form leaves nothing behind.
 
 To undo an accepted form, delete its company folder.
@@ -147,6 +147,38 @@ It reads the template without changing it and saves a filled example on
 your desktop.
 Open `sample.docx` and check that the values are in the right places.
 Delete it afterwards.
+
+## 7. Fill in the report dates (after numb-form)
+
+The Excel list has a column such as *Report created AB*.
+`numb-date` fills it for you.
+In the same PowerShell window in GWG, type:
+
+```
+numb-date
+```
+
+It goes through the list.
+Companies whose *Report created* cell already contains a date are
+skipped.
+For the others it opens the company's form (only to read it), takes the
+*Date of the evaluation* and lists, for example:
+
+```
+Dates to write into Kundenliste.xlsx (column "Report created AB"):
+  F13    16-10-2026  Foo Ltda
+```
+
+| numb-date asks | What you do |
+| --- | --- |
+| `Is the folder "Fooo Inc" this company's folder? (...) [y/N]` | `y` if it is the same company, otherwise Enter |
+| `Date (DD-MM-YYYY, Enter = skip):` | The form has no readable date: type it, or Enter to skip the company |
+| `Write these 1 date(s)? Nothing else in the spreadsheet changes. [y/N]` | `y` to write them; Enter writes nothing |
+| `Is this correct? [a]ccept, [u]ndo:` | numb-date shows the cells as the file now reads; `a` to keep them, `u` to put the file back exactly as it was |
+
+**Close the Excel list first.**
+numb-date stops if the file is open.
+Only the *Report created* cells change: no other cell, no formatting.
 
 ## Prefer to review everything before it lands in GWG?
 

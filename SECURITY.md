@@ -25,10 +25,27 @@ numb-form handles customer documents, so the design rules are strict.
   It never overwrites or deletes, refuses folders that appeared in the
   meantime, copies to a temporary name, verifies every file with SHA-256
   and then renames.
-* The spreadsheet in `3. Übersichten` is opened read-only and is never
-  written.
+* numb-form and numb-commit open the spreadsheet in `3. Übersichten`
+  read-only and never write it.
   Its SHA-256 checksum is compared before the copy, after the copy and
   at the end of the run; a difference stops the run.
+* **numb-date** is the only program that writes the spreadsheet, and only
+  `.xlsx` and `.xlsm`.
+  It writes only empty or digit-free cells of the *Report created*
+  column, after the user agrees to the list of dates.
+  The cells are spliced into the sheet's XML, keep their own style and
+  get no new formatting; every other part of the workbook is copied byte
+  for byte, and cells with formulas are left alone.
+  Before writing it compares every cell of every sheet of the new
+  workbook with the original: anything else that differs stops it.
+  SHA-256 guards every step: the file must still have the checksum it
+  had when it was read, the temporary copy beside it must match the new
+  workbook before it is renamed over the file, and the file must match
+  afterwards.
+  The original is kept in the log folder until the user accepts the
+  result read back from disk; *undo* restores it, checked with SHA-256.
+  It refuses to run while Excel or LibreOffice has the file open.
+  Forms are only read.
 * Documents are not re-serialised.
   The XML is only scanned for byte offsets and values are spliced into the
   original bytes; all other parts of the `.docx` are copied byte for byte.
