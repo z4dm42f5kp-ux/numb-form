@@ -113,7 +113,7 @@ func realMain() int {
 		In:          os.Stdin,
 		Out:         os.Stdout,
 		Now:         time.Now,
-		Lookup:      app.LookupConfig{CompaniesHouseKey: app.LookupKeyFromEnv()},
+		Lookup:      app.LookupKeysFromEnv(),
 	})
 	pause()
 	return code

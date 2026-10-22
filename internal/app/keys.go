@@ -9,35 +9,46 @@ import (
 	"strings"
 )
 
-// KeyEnv is the environment variable holding the free Companies House key.
-const KeyEnv = "NUMBFORM_COMPANIES_HOUSE_KEY"
+// Environment variables holding the optional free API keys.
+const (
+	KeyEnv       = "NUMBFORM_COMPANIES_HOUSE_KEY"
+	SerperKeyEnv = "NUMBFORM_SERPER_KEY"
+	TavilyKeyEnv = "NUMBFORM_TAVILY_KEY"
+)
 
-// LookupKeyFromEnv returns the optional free API key, trimmed.
+// LookupKeyFromEnv returns the optional Companies House key, trimmed.
 func LookupKeyFromEnv() string { return strings.TrimSpace(os.Getenv(KeyEnv)) }
+
+// LookupKeysFromEnv returns every optional free key from the environment.
+func LookupKeysFromEnv() LookupConfig {
+	return LookupConfig{
+		CompaniesHouseKey: LookupKeyFromEnv(),
+		SerperKey:         strings.TrimSpace(os.Getenv(SerperKeyEnv)),
+		TavilyKey:         strings.TrimSpace(os.Getenv(TavilyKeyEnv)),
+	}
+}
 
 // Keys prints the state of the optional free API keys and how to set them.
 // Keys are read from the environment only; numb-form never stores them.
 func Keys(out io.Writer) int {
-	k := LookupKeyFromEnv()
-	state := "not set (Companies House is skipped; every other source needs no key)"
-	if k != "" {
-		state = "set (" + mask(k) + ")"
+	keys := []struct{ env, what, where string }{
+		{SerperKeyEnv, "Serper: Google results for the searches, and Google Maps for addresses.", "https://serper.dev (2,500 free searches, no credit card)"},
+		{TavilyKeyEnv, "Tavily: the last resort, a short AI answer with its sources (never taken as verified).", "https://tavily.com (1,000 free a month, no credit card)"},
+		{KeyEnv, "UK Companies House: officers and registered office of UK companies.", "https://developer.company-information.service.gov.uk/ (free REST key)"},
 	}
-	fmt.Fprintf(out, `Optional free API keys
-
-  %s
-      UK Companies House, the official UK register (officers and
-      registered office). Free: register at
-      https://developer.company-information.service.gov.uk/ and create
-      a "REST" API key. Status: %s
-
-numb-form never stores keys and never uses paid services.
-`, KeyEnv, state)
+	fmt.Fprintln(out, "Optional free API keys (numb-form never stores keys and never uses paid services)")
+	for _, k := range keys {
+		state := "not set"
+		if v := strings.TrimSpace(os.Getenv(k.env)); v != "" {
+			state = "set (" + mask(v) + ")"
+		}
+		fmt.Fprintf(out, "\n  %s: %s\n      %s\n      Get it at %s\n", k.env, state, k.what, k.where)
+	}
 	switch runtime.GOOS {
 	case "windows":
-		fmt.Fprintf(out, "\nTo set it for your Windows user (new terminals only):\n  setx %s \"your-key\"\n", KeyEnv)
+		fmt.Fprintln(out, "\nTo set a key for your Windows user (new PowerShell windows only):\n  setx NAME \"your-key\"")
 	default:
-		fmt.Fprintf(out, "\nTo set it for this shell:\n  export %s='your-key'\n", KeyEnv)
+		fmt.Fprintln(out, "\nTo set a key, add to your shell profile:\n  export NAME='your-key'")
 	}
 	return ExitOK
 }

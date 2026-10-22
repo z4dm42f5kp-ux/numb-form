@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"runtime"
 	"time"
 
 	"github.com/z4dm42f5kp-ux/numb-form/internal/config"
@@ -32,6 +33,8 @@ const (
 	NoRepsText  = "No representatives were found online, please consult other internal sources for more accurate information"
 	// RegistryText always fills the Commercial Registry Number field; the
 	// user may replace it with the number when editing the form.
+	// TraceName is the debug file written next to the log of every run.
+	TraceName    = "output.txt"
 	RegistryText = "No commercial registry number was found online consult internal sources for further information"
 )
 
@@ -61,6 +64,8 @@ type Options struct {
 }
 
 type run struct {
+	trace        *lookup.Trace // output.txt: every lookup step, for debugging
+	traceFile    *os.File
 	browserNoted bool // the browser note was shown
 	opt          Options
 	cfg          config.Config
@@ -149,6 +154,10 @@ func (r *run) finish() {
 	}
 	if r.log != nil {
 		_ = r.log.Close()
+	}
+	if r.traceFile != nil {
+		r.trace.Ev("end")
+		_ = r.traceFile.Close()
 	}
 }
 
@@ -248,6 +257,9 @@ func (r *run) summary() {
 		r.ui.Printf("Review copy: %s\n", r.workRoot)
 	}
 	r.ui.Printf("Log:         %s\n", filepath.Join(r.runDir, runlog.LogName))
+	if r.trace != nil {
+		r.ui.Printf("Debug file:  %s  (send this file when something did not work)\n", filepath.Join(r.runDir, TraceName))
+	}
 	if r.cfg.Mode == "review" && counts["accepted"] > 0 {
 		r.ui.Println("\nNothing has been written to the real folder. After reviewing, run numb-commit to copy the accepted folders back.")
 	}
@@ -293,6 +305,12 @@ func (r *run) openRun(dir string, in *inputs) error {
 	var err error
 	if r.log, err = runlog.Open(filepath.Join(r.runDir, runlog.LogName)); err != nil {
 		return err
+	}
+	// output.txt: a compact record of every lookup step, made for
+	// debugging rather than for reading.
+	if f, err := os.OpenFile(filepath.Join(r.runDir, TraceName), os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o600); err == nil {
+		r.traceFile, r.trace = f, lookup.NewTrace(f)
+		r.trace.Ev("run", "v", Version, "os", runtime.GOOS, "mode", r.cfg.Mode, "confirm", r.cfg.Confirm, "search", r.cfg.Search, "browser", r.cfg.Browser, "online", r.online)
 	}
 	r.man = &runlog.Manifest{
 		Version: 1, Tool: "numb-form " + Version, Started: r.opt.Now(), SourceRoot: in.root,

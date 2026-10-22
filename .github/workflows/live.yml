@@ -1,10 +1,11 @@
 name: live
 
-# Looks up a few well-known companies against the real services
-# (DuckDuckGo, GLEIF, Wikidata, EU VIES, BrasilAPI, company websites) to
-# check that parsing still matches what they serve. Only counts and
-# source names are reported, as annotations. Runs on agent branches that
-# change the lookups, and by hand; never on pull requests.
+# Looks up the companies in the LIVE_COMPANIES secret against the real
+# services, with the free keys from secrets. The results (with their
+# traces) are compressed and encrypted with .github/live/results.pub
+# before they are shown, as annotations, so company names never appear in
+# this public log; only the holder of the private key can read them. Runs
+# on agent branches that change the lookups, and by hand.
 
 on:
   push:
@@ -21,7 +22,7 @@ concurrency:
 jobs:
   live:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 75
     permissions:
       contents: read
     steps:
@@ -30,9 +31,40 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: stable
+          go-version-file: go.mod
           cache: false
       - name: Live lookups
         env:
           NUMB_FORM_LIVE: "1"
-        run: go test -count=1 -run '^TestLive$' -v -timeout 40m ./internal/lookup/
+          LIVE_COMPANIES: ${{ secrets.LIVE_COMPANIES }}
+          NUMBFORM_SERPER_KEY: ${{ secrets.SERPER_API_KEY }}
+          NUMBFORM_TAVILY_KEY: ${{ secrets.TAVILY_API_KEY }}
+          LIVE_OUT: ${{ runner.temp }}/live.jsonl
+        run: go test -count=1 -run '^TestLive$' -timeout 70m ./internal/lookup/
+      - name: Encrypted results
+        if: always()
+        env:
+          OUT: ${{ runner.temp }}/live.jsonl
+        run: |
+          if [ ! -s "$OUT" ]; then
+            echo "::notice title=live::no results (is the LIVE_COMPANIES secret set?)"
+            exit 0
+          fi
+          key=$(openssl rand -hex 32)
+          gzip -9 < "$OUT" | openssl enc -aes-256-cbc -pbkdf2 -salt -pass "pass:$key" -out "$RUNNER_TEMP/live.enc"
+          wrapped=$(printf %s "$key" | openssl pkeyutl -encrypt -pubin -inkey .github/live/results.pub \
+            -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 | base64 -w0)
+          echo "::notice title=live key::$wrapped"
+          base64 -w0 "$RUNNER_TEMP/live.enc" | fold -w 60000 > "$RUNNER_TEMP/chunks"
+          n=$(wc -l < "$RUNNER_TEMP/chunks")
+          if [ "$n" -gt 9 ]; then
+            # GitHub keeps at most 10 notices per step.
+            echo "::warning title=live::results too large ($n chunks); only the first 9 are published"
+          fi
+          i=0
+          while IFS= read -r chunk; do
+            i=$((i + 1))
+            [ "$i" -le 9 ] || break
+            echo "::notice title=live data $i/$n::$chunk"
+          done < "$RUNNER_TEMP/chunks"
+          rm -f "$OUT" "$RUNNER_TEMP/live.enc" "$RUNNER_TEMP/chunks"

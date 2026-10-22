@@ -12,15 +12,6 @@ import (
 	"time"
 )
 
-const mojeekFixture = `<ul class="results-standard"><li class="r1"><a class="ob" href="https://www.foo.de/">foo.de</a>
-<h2><a class="title" href="https://www.foo.de/impressum">Impressum – Foo GmbH</a></h2><p class="s">Geschäftsführer: Erika Mustermann</p></li>
-<li class="r2"><h2><a class="title" href="https://www.mojeek.com/about">About</a></h2></li></ul>`
-
-const yahooFixture = `<div class="dd algo algo-sr relsrch Sr" data-x="1"><div class="compTitle options-toggle">
-<a class="d-ib" href="https://r.search.yahoo.com/_ylt=Aw;_ylu=Y2/RV=2/RE=1/RO=10/RU=https%3a%2f%2fwww.foo.com.mx%2faviso-legal/RK=2/RS=abc-"><h3 class="title"><span>Foo, S.A. de C.V.</span></h3></a></div>
-<div class="compText aAbs"><p>Aviso legal de Foo, S.A. de C.V.</p></div></div>
-<div class="dd algo relsrch"><div class="compTitle"><a href="https://www.bing.com/aclick?ld=x">Ad</a></div></div>`
-
 const braveFixture = `<div class="snippet svelte-1" data-pos="0" data-type="web"><a href="https://www.foo.pt/" class="h"><div class="title svelte-x">Foo, Lda.</div></a>
 <div class="snippet-description">Foo, Lda. — gerente: João Silva</div></div>
 <div class="snippet" data-type="web"><a href="https://search.brave.com/x"><div class="title">internal</div></a></div>`
@@ -34,8 +25,6 @@ func TestEngineParsers(t *testing.T) {
 		title string
 		snip  string
 	}{
-		{"mojeek", ParseMojeek, mojeekFixture, "https://www.foo.de/impressum", "Impressum – Foo GmbH", "Geschäftsführer: Erika Mustermann"},
-		{"yahoo", ParseYahoo, yahooFixture, "https://www.foo.com.mx/aviso-legal", "Foo, S.A. de C.V.", "Aviso legal de Foo, S.A. de C.V."},
 		{"brave", ParseBrave, braveFixture, "https://www.foo.pt/", "Foo, Lda.", "Foo, Lda. — gerente: João Silva"},
 	}
 	for _, c := range cases {
@@ -58,27 +47,27 @@ func TestSearchFallsBack(t *testing.T) {
 		w.WriteHeader(202)
 		_, _ = w.Write([]byte(`<div class="anomaly-modal">bots</div>`))
 	})
-	mux.HandleFunc("/mojeek", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/brave", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Query().Get("q") != `"Foo GmbH"` {
-			t.Errorf("mojeek query %q", r.URL.RawQuery)
+			t.Errorf("brave query %q", r.URL.RawQuery)
 		}
-		_, _ = w.Write([]byte(mojeekFixture))
+		_, _ = w.Write([]byte(braveFixture))
 	})
 	srv := httptest.NewTLSServer(mux)
 	defer srv.Close()
-	ddgHTML, ddgLite, mojeekURL = srv.URL+"/ddg/", srv.URL+"/ddg/", srv.URL+"/mojeek"
+	ddgHTML, ddgLite, braveURL = srv.URL+"/ddg/", srv.URL+"/ddg/", srv.URL+"/brave"
 	searchGap, searchJitter = time.Millisecond, 0
 	c := testClient(srv)
-	c.engines = []string{"duckduckgo", "mojeek"}
+	c.engines = []string{"duckduckgo", "brave"}
 	hits, engine, err := Search(context.Background(), c, `"Foo GmbH"`, "")
-	if err != nil || engine != "mojeek" || len(hits) != 1 {
+	if err != nil || engine != "brave" || len(hits) != 1 {
 		t.Fatalf("hits %+v engine %q err %v", hits, engine, err)
 	}
 	if !paused("duckduckgo") {
 		t.Error("DuckDuckGo not rested after refusing")
 	}
 	before := ddgCalls
-	if _, engine, _ = Search(context.Background(), c, `"Foo GmbH"`, ""); engine != "mojeek" || ddgCalls != before {
+	if _, engine, _ = Search(context.Background(), c, `"Foo GmbH"`, ""); engine != "brave" || ddgCalls != before {
 		t.Errorf("a resting engine was asked again (%d calls) or wrong engine %q", ddgCalls-before, engine)
 	}
 	pausedUntil = map[string]time.Time{}

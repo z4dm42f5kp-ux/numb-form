@@ -35,7 +35,7 @@ func (k Kind) String() string {
 
 // Source tells where a value came from.
 type Source struct {
-	ID   string // companies-house, gleif, website or wikidata
+	ID   string // the source identifier used in *_sources settings
 	Name string
 	URL  string
 	Kind Kind
@@ -111,10 +111,15 @@ type Result struct {
 
 // Query is what is known about a company before the lookup.
 type Query struct {
-	Name      string
-	Form      string
-	Base      string
-	Countries []string // where the legal form is used, most common first
+	Raw       string   // the spreadsheet cell
+	Name      string   // the clean name: core and legal form, no places
+	Form      string   // legal form
+	Base      string   // the core name
+	Prefix    bool     // the legal form comes first ("Ets Zorbu")
+	Places    []string // cities and countries written after the name
+	Countries []string // from the places, then the legal form
+	Confident bool     // the first country is more than a guess
+	Searches  []string // web searches to try, in order
 }
 
 // NewQuery builds a query from the literal spreadsheet name.

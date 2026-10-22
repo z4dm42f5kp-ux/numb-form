@@ -45,7 +45,7 @@ var legalForms = []formDef{
 	{"S. de R.L. de C.V.", []string{"MX"}}, {"S. de R.L. de C.V.", []string{"MX"}}, {"S. en C. de C.V.", []string{"MX"}},
 	{"S.C. de R.L. de C.V.", []string{"MX"}}, {"S.A. de C.V.", []string{"MX", "SV", "HN"}}, {"C.A. de C.V.", []string{"MX", "VE"}},
 	{"S. de R.L.", []string{"MX", "HN", "PA", "GT"}}, {"S. en C.S.", []string{"CO"}}, {"S. en C.", []string{"CO", "MX"}},
-	{"S.A.E.C.A.", []string{"PY"}}, {"S.A.I.C.A.", []string{"AR"}}, {"S.A.C.I.F.", []string{"AR"}}, {"S.A.I.C.", []string{"AR"}}, {"S.A.C.I.", []string{"AR", "CL"}},
+	{"S.A.E.C.A.", []string{"PY"}}, {"C.I.S.A.", []string{"PY"}}, {"S.A.C.I.A.", []string{"AR", "PY"}}, {"S.A.I.C.A.", []string{"AR"}}, {"S.A.C.I.F.", []string{"AR"}}, {"S.A.I.C.", []string{"AR"}}, {"S.A.C.I.", []string{"AR", "CL"}},
 	{"S.A.P.I.", []string{"MX"}}, {"S.A.S.U.", []string{"FR"}}, {"S.A.S.", []string{"CO", "FR", "AR"}}, {"S.A.C.", []string{"PE"}}, {"S.A.A.", []string{"PE"}},
 	{"S.A.E.", []string{"EG", "ES"}}, {"S.A.U.", []string{"ES", "AR"}}, {"S.L.U.", []string{"ES"}}, {"S.L.N.E.", []string{"ES"}}, {"S.L.L.", []string{"ES"}}, {"S.L.P.", []string{"ES"}},
 	{"S.Coop.", []string{"ES"}}, {"S.C.A.", []string{"ES", "AR", "BE", "LU"}}, {"S.C.S.", []string{"AR", "BE", "LU"}}, {"S.C.R.L.", []string{"PE", "BE"}},
@@ -238,6 +238,9 @@ func build(name string, start, end int, c compiled) (Match, bool) {
 // "S.A. de C.V.") and the name without it. It returns an empty form when
 // no known form is present.
 func LegalForm(name string) (form, base string) {
+	if n := ParseName(name); n.Form != "" {
+		return n.Form, n.Core
+	}
 	if m, ok := FindLegalForm(name); ok {
 		return m.Form, m.Base
 	}

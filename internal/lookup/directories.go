@@ -18,7 +18,13 @@ var directories = []string{
 	"librebor.me", "empresite.eleconomista.es", "infoempresa.com", "einforma.com", "infocif.es", "axesor.es", "racius.com", "einforma.pt",
 	// Latin America.
 	"cnpj.biz", "casadosdados.com.br", "cnpja.com", "econodata.com.br", "datosperu.org", "universidadperu.com", "genealog.cl",
-	"dateas.com", "cuitonline.com", "einforma.co", "informacolombia.com", "empresas.mx",
+	"dateas.com", "cuitonline.com", "einforma.co", "informacolombia.com", "empresas.mx", "datacreditoempresas.com.co",
+	"directorio-empresas.einforma.co", "indicadores.ar", "bidsfactory.com", "ampliz.com", "dealroom.co", "panjiva.com",
+	"emis.com", "dunsguide.com", "connectamericas.com", "infobel.com", "kompass.com", "empresite.com.co",
+	"informacionempresarial.com.co", "verifiquese.com", "boliviaempresas.com", "paraguayempresas.com",
+	"rdempresas.com", "empresasdeecuador.com", "ecuadorempresas.com", "guiaempresas.com.ve", "elsalvadorempresas.com",
+	"cameroun-entreprises.com", "nigeriagalleria.com", "vconnect.com", "ngcheckers.com", "dubaicompanies.ae",
+	"yello.ae", "connect.ae", "opencorporates.com.co",
 	// United States, Africa and worldwide.
 	"opencorporates.com", "bizapedia.com", "opengovus.com", "corporationwiki.com", "dnb.com", "b2bhint.com",
 }
@@ -33,12 +39,38 @@ func directoryHost(host string) bool {
 	return false
 }
 
-// directoryPage reads the part of a directory page about the company.
-func directoryPage(ctx context.Context, c *Client, q Query, pageURL string) (Result, error) {
+// governmentHost reports whether a host belongs to a government, such as
+// a procurement portal or an official gazette (.gov, .gob, .gouv).
+func governmentHost(host string) bool {
+	h := "." + strings.ToLower(host) + "."
+	for _, m := range []string{".gov.", ".gob.", ".gouv.", ".gub.", ".go.", ".admin.ch.", ".europa.eu."} {
+		if strings.Contains(h, m) {
+			return true
+		}
+	}
+	return false
+}
+
+// socialHost reports whether a host is a social network, whose pages
+// need a login and are not read (their search snippets still are).
+func socialHost(host string) bool {
+	h := "." + strings.ToLower(host)
+	for _, s := range []string{".linkedin.com", ".facebook.com", ".instagram.com", ".twitter.com", ".x.com", ".youtube.com", ".tiktok.com", ".pinterest."} {
+		if strings.Contains(h, s) {
+			return true
+		}
+	}
+	return false
+}
+
+// hitPage reads the part of a search result page about the company:
+// a directory entry, a procurement record, a gazette or a news article.
+func hitPage(ctx context.Context, c *Client, q Query, pageURL string) (Result, error) {
 	var res Result
 	budget := 1
 	body, final, err := c.page(ctx, pageURL, &budget)
 	if err != nil {
+		tr(ctx).Ev("page", "u", pageURL, "err", err)
 		return res, err
 	}
 	if final == nil {
@@ -46,11 +78,18 @@ func directoryPage(ctx context.Context, c *Client, q Query, pageURL string) (Res
 	}
 	all := HTMLText(string(body))
 	if !Mentions(normWords(strings.Join(all, "\n")), q) {
+		tr(ctx).Ev("page", "u", final.String(), "named", false, "lines", len(all))
 		return res, nil
 	}
 	lines := companyLines(all, q)
 	host := strings.TrimPrefix(final.Hostname(), "www.")
-	src := Source{ID: "directory", Name: "company data directory " + host + " (not official)", URL: final.String(), Kind: KindCommunity}
+	src := Source{ID: "search", Name: "web page " + host + " (not verified)", URL: final.String(), Kind: KindCommunity}
+	switch {
+	case directoryHost(host):
+		src = Source{ID: "directory", Name: "company data directory " + host + " (not official)", URL: final.String(), Kind: KindCommunity}
+	case governmentHost(host):
+		src = Source{ID: "search", Name: "government website " + host, URL: final.String(), Kind: KindGovernment}
+	}
 	for _, p := range ExtractPeople(lines, src) {
 		res.addPerson(p)
 	}
@@ -65,27 +104,10 @@ func directoryPage(ctx context.Context, c *Client, q Query, pageURL string) (Res
 	if a != "" {
 		res.Addresses = append(res.Addresses, Address{Text: a, Source: src})
 	}
+	res.IDs = appendIDs(res.IDs, ExtractIDs(strings.Join(lines, "\n")))
 	if len(res.People)+len(res.Addresses) > 0 {
 		res.Sources = append(res.Sources, src)
 	}
+	tr(ctx).Ev("page", "u", final.String(), "named", true, "kind", src.Kind.String(), "lines", len(lines), "people", len(res.People), "addr", a)
 	return res, nil
-}
-
-// directoryJobs reads up to max directory pages found among hits.
-func directoryJobs(c *Client, q Query, hits []Hit, max int) []func(context.Context) (Result, error) {
-	var jobs []func(context.Context) (Result, error)
-	seen := map[string]bool{}
-	for _, h := range hits {
-		u, err := url.Parse(h.URL)
-		if err != nil || !directoryHost(u.Hostname()) || seen[hostKey(u)] {
-			continue
-		}
-		seen[hostKey(u)] = true
-		link := h.URL
-		jobs = append(jobs, func(ctx context.Context) (Result, error) { return directoryPage(ctx, c, q, link) })
-		if len(jobs) >= max {
-			break
-		}
-	}
-	return jobs
 }

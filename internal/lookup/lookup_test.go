@@ -98,23 +98,6 @@ func TestRegistriesWithMockServers(t *testing.T) {
   "legalForm":{"id":"2HBR","other":null},"status":"ACTIVE"}}},
  {"id":"OTHER","attributes":{"lei":"OTHER","entity":{"legalName":{"name":"Foo Holding AG"},"legalAddress":{"city":"Zug","country":"CH"},"headquartersAddress":{},"legalForm":{},"status":"ACTIVE"}}}]}`))
 	})
-	mux.HandleFunc("/wd", func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Query().Get("action") {
-		case "wbsearchentities":
-			_, _ = w.Write([]byte(`{"search":[{"id":"Q1","label":"Foo GmbH"},{"id":"Q2","label":"Foo"}]}`))
-		case "wbgetentities":
-			if strings.Contains(r.URL.Query().Get("props"), "claims") {
-				_, _ = w.Write([]byte(`{"entities":{
- "Q1":{"labels":{"en":{"value":"Foo GmbH"}},"claims":{
-  "P856":[{"rank":"normal","mainsnak":{"datavalue":{"value":"https://foo.example"}}}],
-  "P169":[{"rank":"normal","mainsnak":{"datavalue":{"value":{"id":"Q10"}}}},
-          {"rank":"normal","mainsnak":{"datavalue":{"value":{"id":"Q11"}}},"qualifiers":{"P582":[]}}]}},
- "Q2":{"labels":{"en":{"value":"Foo"}},"claims":{"P169":[{"rank":"normal","mainsnak":{"datavalue":{"value":{"id":"Q12"}}}}]}}}}`))
-				return
-			}
-			_, _ = w.Write([]byte(`{"entities":{"Q10":{"labels":{"en":{"value":"Erika Mustermann"}}},"Q11":{"labels":{"en":{"value":"Former Boss"}}},"Q12":{"labels":{"en":{"value":"Parent Person"}}}}}`))
-		}
-	})
 	mux.HandleFunc("/ch/search/companies", func(w http.ResponseWriter, r *http.Request) {
 		if u, _, ok := r.BasicAuth(); !ok || u != "free-key" {
 			t.Error("missing basic auth")
@@ -126,7 +109,7 @@ func TestRegistriesWithMockServers(t *testing.T) {
 	})
 	srv := httptest.NewTLSServer(mux)
 	defer srv.Close()
-	gleifAPI, wdAPI, chAPI = srv.URL+"/gleif", srv.URL+"/wd", srv.URL+"/ch"
+	gleifAPI, chAPI = srv.URL+"/gleif", srv.URL+"/ch"
 
 	res := Registries(context.Background(), testClient(srv), Config{CompaniesHouseKey: "free-key"}, NewQuery("Foo GmbH"))
 	if len(res.Addresses) == 0 || !strings.HasPrefix(res.Addresses[0].Text, "1 Road") || res.Addresses[0].Source.Kind != KindGovernment {
@@ -147,12 +130,7 @@ func TestRegistriesWithMockServers(t *testing.T) {
 	if len(res.People) != 1 || res.People[0].Name != "Erika Mustermann" || !res.People[0].Verified() {
 		t.Fatalf("people: %+v", res.People)
 	}
-	if len(res.People[0].Sources) != 2 {
-		t.Errorf("sources not merged: %+v", res.People[0].Sources)
-	}
-	if len(res.Websites) != 1 || res.Websites[0] != "https://foo.example" {
-		t.Errorf("websites %v", res.Websites)
-	}
+
 }
 
 func TestClientRefusesHTTPAndPrivate(t *testing.T) {

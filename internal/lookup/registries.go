@@ -9,13 +9,15 @@ import (
 // Config holds optional free API keys and the enabled sources.
 type Config struct {
 	CompaniesHouseKey string
-	// Sources lists the enabled sources ("companies-house", "vies",
-	// "brasil-cnpj", "official", "gleif", "website", "directory",
-	// "search", "osm", "wikidata"); nil enables all.
+	SerperKey         string // Google results through serper.dev
+	TavilyKey         string // AI answers through tavily.com
+	// Sources lists the enabled sources ("companies-house", "secop",
+	// "vies", "brasil-cnpj", "gleif", "website", "directory", "search",
+	// "ai"); nil enables all.
 	Sources []string
 	// Search lists the search engines in order of preference
-	// ("duckduckgo mojeek yahoo brave", the default when empty), or
-	// "none".
+	// ("serper duckduckgo brave", the default when empty; serper only
+	// with a key), or "none".
 	Search string
 	// Browser is "auto" (Google Chrome, else Chromium or Edge), "none",
 	// or the path of a Chromium-based browser, started invisibly.
@@ -46,8 +48,8 @@ func Registries(ctx context.Context, c *Client, cfg Config, q Query) Result {
 	if cfg.enabled("gleif") {
 		jobs = append(jobs, job{"GLEIF", func(ctx context.Context) (Result, error) { return gleif(ctx, c, q) }})
 	}
-	if cfg.enabled("wikidata") {
-		jobs = append(jobs, job{"Wikidata", func(ctx context.Context) (Result, error) { return wikidata(ctx, c, q) }})
+	if cfg.enabled("secop") && (!q.Confident || contains3(q.Countries, "CO")) {
+		jobs = append(jobs, job{"SECOP", func(ctx context.Context) (Result, error) { return secop(ctx, c, q) }})
 	}
 	if cfg.CompaniesHouseKey != "" && cfg.enabled("companies-house") {
 		jobs = append(jobs, job{"Companies House", func(ctx context.Context) (Result, error) {
@@ -77,4 +79,17 @@ func Registries(ctx context.Context, c *Client, cfg Config, q Query) Result {
 	}
 	all.sortResult()
 	return all
+}
+
+// contains3 reports whether cc is among the first three countries.
+func contains3(list []string, cc string) bool {
+	for i, x := range list {
+		if i >= 3 {
+			break
+		}
+		if x == cc {
+			return true
+		}
+	}
+	return false
 }

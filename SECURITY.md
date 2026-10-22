@@ -73,23 +73,25 @@ numb-form handles customer documents, so the design rules are strict.
 ## Network
 
 Online lookups send only company names and official numbers printed on
-the company's own website:
+pages about the company:
 
-* company names to the GLEIF API, Wikidata and DuckDuckGo (with words
-  such as `impressum` or `site:boe.es`), and to UK Companies House only
-  when a free key is set;
+* company names to the GLEIF API, to Colombia's open data portal
+  (datos.gov.co, SECOP II suppliers), to DuckDuckGo and Brave Search
+  (with words such as `representante legal` or the company's city), and,
+  only when the user set a free key, to Serper (Google search and Google
+  Maps), Tavily (AI answer) and UK Companies House;
 * EU VAT numbers to EU VIES, and Brazilian CNPJ numbers to BrasilAPI;
 * ordinary page requests to the company's website (found automatically,
-  or typed by the user) and to government gazette pages (BORME, Portal da
-  Justiça, Boletín Oficial, Sunbiz, Companies House) found by search.
+  or typed by the user) and to pages that name the company found by
+  search (at most four, plus two per targeted search).
 
 Nothing from the spreadsheet other than the company name is sent, and
 nothing about the person processing the form.
 
-Searches go to DuckDuckGo, Mojeek, Yahoo or Brave Search in turn.
-Company-data directory pages found by search are read like any web page
-(at most three per company), and OpenStreetMap's Nominatim is asked once
-for the company name when no address was found.
+API keys are read from environment variables only, sent only to their
+own service over HTTPS, and never logged, written to output.txt or
+stored.
+
 When Google Chrome (or Chromium or Edge) is installed, it is started
 headless for script-built websites and refused searches: with fixed
 flags, no extensions, a new empty profile in the temporary folder that is

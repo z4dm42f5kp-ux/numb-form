@@ -42,14 +42,18 @@ func TestApply(t *testing.T) {
 
 func TestSearchEngines(t *testing.T) {
 	c := Defaults()
-	if c.Search != "duckduckgo mojeek yahoo brave" || c.Browser != "auto" {
+	if c.Search != "serper duckduckgo brave" || c.Browser != "auto" {
 		t.Fatalf("defaults %q %q", c.Search, c.Browser)
 	}
-	if _, err := c.Apply([]byte("search = mojeek, duckduckgo\nbrowser = none\n"), "u", false); err != nil || c.Search != "mojeek duckduckgo" || c.Browser != "none" {
+	if _, err := c.Apply([]byte("search = brave, duckduckgo\nbrowser = none\n"), "u", false); err != nil || c.Search != "brave duckduckgo" || c.Browser != "none" {
 		t.Fatalf("%v %q %q", err, c.Search, c.Browser)
 	}
 	if _, err := c.Apply([]byte("search = none\n"), "u", false); err != nil || c.Search != "none" {
 		t.Fatalf("%v %q", err, c.Search)
+	}
+	// Names from older versions are skipped, not refused.
+	if _, err := c.Apply([]byte("search = mojeek yahoo brave\naddress_sources = gleif osm wikidata official\n"), "u", false); err != nil || c.Search != "brave" || strings.Join(c.AddressSources, " ") != "gleif" {
+		t.Fatalf("%v %q %q", err, c.Search, c.AddressSources)
 	}
 }
 

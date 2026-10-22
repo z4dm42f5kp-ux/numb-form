@@ -81,11 +81,51 @@ func nameVariants(q Query) []string {
 	}
 	base := normWords(q.Base)
 	form := normWords(q.Form)
-	out = append(out, base+strings.TrimLeft(form, " "))
+	out = append(out, base+strings.TrimLeft(form, " "), form+strings.TrimLeft(base, " "))
 	for _, l := range longForms[form] {
 		out = append(out, base+strings.TrimLeft(l, " "))
 	}
+	if j := normWords(match.JoinInitials(q.Base)); j != base {
+		out = append(out, j+strings.TrimLeft(form, " "))
+	}
 	return out
+}
+
+// generic words do not make a core name distinctive on their own.
+var generic = map[string]bool{
+	"industrial": true, "industrias": true, "laboratorios": true, "laboratorio": true, "comercial": true, "grupo": true,
+	"group": true, "pharma": true, "farma": true, "international": true, "internacional": true, "services": true,
+	"servicios": true, "trading": true, "import": true, "export": true, "distribuidora": true, "company": true,
+}
+
+// distinctive reports whether a core name alone identifies a company:
+// two or more non-generic words, or one word of six letters or more.
+func distinctive(base string) bool {
+	var words []string
+	for _, w := range strings.Fields(base) {
+		if !generic[w] {
+			words = append(words, w)
+		}
+	}
+	return len(words) >= 2 || (len(words) == 1 && len([]rune(words[0])) >= 6)
+}
+
+// placeNamed reports whether text names one of the company's places or
+// countries.
+func placeNamed(norm string, q Query) bool {
+	for _, p := range q.Places {
+		if v := normWords(p); strings.TrimSpace(v) != "" && strings.Contains(norm, v) {
+			return true
+		}
+	}
+	for _, cc := range q.Countries[:min(len(q.Countries), 2)] {
+		for _, w := range match.CountryWords(cc) {
+			if strings.Contains(norm, normWords(w)) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // Mentions reports whether normalised text names the company: the full
@@ -93,18 +133,19 @@ func nameVariants(q Query) []string {
 // Names without a legal form need at least two words or eight letters,
 // so that a common word is not taken for the company.
 func Mentions(norm string, q Query) bool {
-	if q.Form == "" {
-		base := normWords(q.Base)
-		if len(strings.Fields(base)) < 2 && len(strings.TrimSpace(base)) < 8 {
-			return false
-		}
+	base := normWords(q.Base)
+	if q.Form == "" && len(strings.Fields(base)) < 2 && len(strings.TrimSpace(base)) < 8 {
+		return false
 	}
 	for _, v := range nameVariants(q) {
 		if strings.TrimSpace(v) != "" && strings.Contains(norm, v) {
 			return true
 		}
 	}
-	return false
+	// Niche companies are often written without their legal form: a
+	// distinctive core name counts together with the company's city or
+	// country.
+	return distinctive(strings.TrimSpace(base)) && strings.Contains(norm, base) && placeNamed(norm, q)
 }
 
 // slugs returns plausible domain labels for a company name: "Foo Bar
@@ -203,9 +244,7 @@ func guessDomains(q Query) []string {
 
 // queryFor builds the lookup query from the literal spreadsheet name.
 func queryFor(name string) Query {
-	m, ok := match.FindLegalForm(name)
-	if !ok {
-		return Query{Name: name, Base: strings.TrimSpace(name)}
-	}
-	return Query{Name: name, Form: m.Form, Base: m.Base, Countries: m.Countries}
+	n := match.ParseName(name)
+	return Query{Raw: name, Name: n.Clean(), Form: n.Form, Base: n.Core, Prefix: n.Prefix,
+		Places: n.Places, Countries: n.Countries, Confident: n.Confident, Searches: n.Queries()}
 }

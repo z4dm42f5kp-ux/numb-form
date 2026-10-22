@@ -46,7 +46,7 @@ func TestNameThenRole(t *testing.T) {
 	}
 }
 
-func TestFillGapsDirectoryAndOSM(t *testing.T) {
+func TestTargetedSearches(t *testing.T) {
 	var queries []string
 	mux := http.NewServeMux()
 	var srv *httptest.Server
@@ -54,27 +54,28 @@ func TestFillGapsDirectoryAndOSM(t *testing.T) {
 		_ = r.ParseForm()
 		queries = append(queries, r.PostForm.Get("q"))
 		_, _ = w.Write([]byte(`<div class="result results_links web-result"><div class="result__body"><h2 class="result__title">
-<a class="result__a" href="` + srv.URL + `/page">Foo Maschinen GmbH</a></h2></div></div>`))
+<a class="result__a" href="` + srv.URL + `/page">Foo Maschinen GmbH</a></h2>
+<a class="result__snippet" href="` + srv.URL + `/page">Foo Maschinen GmbH · Hafenweg 3, 20457 Hamburg</a></div></div>`))
 	})
-	mux.HandleFunc("/nominatim", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte(`[{"name":"Foo Maschinen","address":{"road":"Hafenweg","house_number":"3","postcode":"20457","city":"Hamburg","country":"Deutschland","country_code":"de"}}]`))
+	mux.HandleFunc("/page", func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`<h1>Foo Maschinen GmbH</h1><p>Geschäftsführer: Erika Mustermann</p>`))
 	})
 	srv = httptest.NewTLSServer(mux)
 	defer srv.Close()
-	ddgHTML, ddgLite, nominatimAPI = srv.URL+"/ddg/", srv.URL+"/ddg/", srv.URL+"/nominatim"
+	ddgHTML, ddgLite = srv.URL+"/ddg/", srv.URL+"/ddg/"
 	searchGap, searchJitter = time.Millisecond, 0
 	c := testClient(srv)
 	c.engines = []string{"duckduckgo"}
-	q := NewQuery("Foo Maschinen GmbH")
-	var all Result
-	// No directory pages are found, so the two follow-up searches and
-	// OpenStreetMap must answer.
-	fillGaps(context.Background(), c, Config{}, q, "de-de", "DE", nil, true, &all)
-	if len(queries) != 2 || !strings.Contains(queries[0], "Geschäftsführer") || !strings.Contains(queries[1], "Adresse") {
+	s := &state{c: c, q: NewQuery("Foo Maschinen GmbH"), country: "DE", lang: "DE", region: "de-de", search: true, read: map[string]bool{}}
+	targetedStep(context.Background(), s)
+	if len(queries) != 1 || !strings.Contains(queries[0], "Geschäftsführer") {
 		t.Errorf("queries %q", queries)
 	}
-	if len(all.Addresses) != 1 || all.Addresses[0].Text != "Hafenweg 3, 20457 Hamburg, Germany" || all.Addresses[0].Source.ID != "osm" {
-		t.Errorf("addresses %+v", all.Addresses)
+	if len(s.all.People) != 1 || s.all.People[0].Name != "Erika Mustermann" {
+		t.Errorf("people %+v", s.all.People)
+	}
+	if len(s.all.Addresses) != 1 || s.all.Addresses[0].Text != "Hafenweg 3, 20457 Hamburg" {
+		t.Errorf("addresses %+v", s.all.Addresses)
 	}
 }
 
@@ -86,11 +87,11 @@ func TestDirectoryPage(t *testing.T) {
 	})
 	srv := httptest.NewTLSServer(mux)
 	defer srv.Close()
-	r, err := directoryPage(context.Background(), testClient(srv), NewQuery("Foo Maschinen GmbH"), srv.URL+"/foo")
+	r, err := hitPage(context.Background(), testClient(srv), NewQuery("Foo Maschinen GmbH"), srv.URL+"/foo")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(r.People) != 1 || r.People[0].Name != "Erika Mustermann" || r.People[0].Sources[0].ID != "directory" {
+	if len(r.People) != 1 || r.People[0].Name != "Erika Mustermann" || r.People[0].Sources[0].ID != "search" {
 		t.Errorf("people %+v", r.People)
 	}
 	if len(r.Addresses) != 1 || r.Addresses[0].Text != "Industriestraße 5, 80333 München" {

@@ -2,7 +2,6 @@ package lookup
 
 import (
 	"context"
-	"html"
 	"regexp"
 	"sort"
 	"strings"
@@ -47,10 +46,9 @@ func ReadSite(ctx context.Context, c *Client, site string, q Query, typed bool) 
 	}
 	out.Home = final.Scheme + "://" + final.Host + "/"
 	links := map[string]int{}
-	for _, m := range reLink.FindAllStringSubmatch(string(body), -1) {
-		href := html.UnescapeString(m[1])
-		text := strings.Join(HTMLText(m[2]), " ")
-		u, err := final.Parse(href)
+	for _, l := range ParsePage(body).Links {
+		text := l.Text
+		u, err := final.Parse(l.Href)
 		if err != nil || (u.Scheme != "https" && u.Scheme != "http") || !sameSite(u, final) {
 			continue
 		}
@@ -108,6 +106,22 @@ func ReadSite(ctx context.Context, c *Client, site string, q Query, typed bool) 
 		}
 		out.read(q, fu.String(), string(b), what, legal)
 	}
+	// Important fields still missing: let the invisible browser run the
+	// pages' scripts and read them again (legal notices first).
+	if c.browser != nil && out.mentioned && (len(out.legal) == 0 || len(out.Addresses) == 0) {
+		redo := append([]string{final.String()}, pages...)
+		for i, p := range redo {
+			if i >= 3 || ctx.Err() != nil {
+				break
+			}
+			b, err := c.browser.Fetch(ctx, p)
+			tr(ctx).Ev("render", "u", p, "bytes", len(b), "err", err)
+			if err != nil {
+				continue
+			}
+			out.read(q, p, string(b), "company website (rendered)", i == 0 || links[p] == 0)
+		}
+	}
 	// Representatives from the legal notice win; other pages (about,
 	// team, contact) are used only when the legal notice names nobody.
 	people := out.legal
@@ -141,7 +155,8 @@ func inLinks(links map[string]int, p string) bool {
 // the home page and legal-notice pages.
 func (s *SiteResult) read(q Query, pageURL, body, what string, legal bool) {
 	s.Pages++
-	all := HTMLText(body)
+	pg := ParsePage([]byte(body))
+	all := pg.Lines
 	named := Mentions(normWords(strings.Join(all, "\n")), q)
 	if named {
 		s.mentioned = true
@@ -167,12 +182,15 @@ func (s *SiteResult) read(q Query, pageURL, body, what string, legal bool) {
 	if a := ExtractAddress(lines, q); a != "" {
 		s.Addresses = append(s.Addresses, Address{Text: a, Source: src})
 	}
-	ln, la := structuredData(body)
-	if ln != "" && (Mentions(normWords(ln), q) || SameEntity(q, ln)) {
-		s.LegalNames = append(s.LegalNames, LegalName{Name: ln, Source: src})
-		if la != "" {
-			s.Addresses = append(s.Addresses, Address{Text: la, Source: src})
+	st := structuredData(pg, src)
+	if st.legalName == "" || Mentions(normWords(st.legalName), q) || SameEntity(q, st.legalName) {
+		if st.legalName != "" {
+			s.LegalNames = append(s.LegalNames, LegalName{Name: st.legalName, Source: src})
 		}
+		if st.address != "" {
+			s.Addresses = append(s.Addresses, Address{Text: st.address, Source: src})
+		}
+		s.legal = append(s.legal, st.people...)
 	}
 	for _, l := range lines {
 		if len(l) < 120 && Mentions(normWords(l), Query{Name: q.Base, Base: q.Base}) {

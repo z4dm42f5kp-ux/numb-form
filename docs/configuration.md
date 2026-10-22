@@ -114,23 +114,23 @@ numb-form config init && numb-form config
 
 ### Sources
 
-Sources are `companies-house`, `vies`, `brasil-cnpj`, `official`
-(government gazettes and registers found by search), `gleif`, `website`,
-`directory` (company-data websites that republish register data, such as
-northdata, Moneyhouse, Racius or OpenCorporates), `search` (web search
-snippets; search also finds the website), `osm` (OpenStreetMap, for an
-address) and `wikidata`.
+Sources are `companies-house`, `secop` (Colombia's public procurement
+register of suppliers), `vies`, `brasil-cnpj`, `gleif`, `website`,
+`directory` (company-data websites and other pages that name the
+company), `search` (web search snippets; search also finds the website
+and the pages) and `ai` (Tavily's answer, only with a key).
+The older names `official`, `osm` and `wikidata` are skipped.
 Lists are separated by spaces or commas; their order is the order of
 preference.
 
-`address_sources = companies-house vies brasil-cnpj official gleif website directory search osm wikidata`
+`address_sources = companies-house secop vies brasil-cnpj gleif website directory search ai`
 : Sources for *Headquarters / Address*.
 
 `address_fallback = ask` | `blank`
 : When no address is found. With `confirm = none`, `ask` acts as
   `blank`.
 
-`reps_sources = companies-house vies brasil-cnpj official gleif website directory search osm wikidata`
+`reps_sources = companies-house secop vies brasil-cnpj gleif website directory search ai`
 : Sources for *Authorized Representatives*.
 
 `reps_min_trust = any` | `website` | `register`
@@ -155,13 +155,16 @@ preference.
   With `confirm = none`, `ask` acts as `auto`.
   The older value `wikidata` means `auto`.
 
-`search = duckduckgo mojeek yahoo brave` | `none`
-: Web search engines used to find websites, government gazette entries
+`search = serper duckduckgo brave` | `none`
+: Web search engines used to find websites, pages that name the company
   and, as a last resort, representatives in result snippets, in order of
   preference: when one refuses, it rests for a minute and the next one is
   asked.
-  Only the company name is sent, with words such as `impressum` or
-  `site:boe.es`.
+  **serper** is Google through serper.dev and is used only when
+  `NUMBFORM_SERPER_KEY` is set.
+  Only the company name is sent, with words such as `representante
+  legal` or the company's city.
+  The older names `mojeek` and `yahoo` are skipped.
   **none** turns searching off; registers and guessed addresses are still
   used.
 

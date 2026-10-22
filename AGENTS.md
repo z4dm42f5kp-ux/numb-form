@@ -70,13 +70,17 @@ cd "/path/to/working-folder" && numb-form
 * Ignore every spreadsheet column except `Customer Name`;
   the folder tree is the source of truth for which reports exist.
 * Runs take at most 25 minutes and leave no cache behind.
-* Never commit customer files, logs or run folders to this public
-  repository.
+* Never commit customer files, logs, run folders or output.txt to this
+  public repository.
+  Real company names for the live test live only in the
+  `LIVE_COMPANIES` secret; its results are published encrypted.
 
 ## Changing the code
 
-* Go standard library only.
-  Do not add modules; `scripts/check-deps.sh` fails if you do.
+* Go standard library and `golang.org/x/net/html` only (Go 1.25 or
+  later).
+  Do not add modules; `scripts/check-deps.sh` fails if you do, and runs
+  `go mod verify`.
   If a dependency seems necessary, stop and ask the maintainer, and never
   add a package name you have not verified exists.
 * Test on GitHub, never locally.
@@ -123,8 +127,8 @@ cd "/path/to/working-folder" && numb-form
 | `internal/formats` | choosing a filler or converter by extension |
 | `internal/convert` | LibreOffice/OpenOffice and Apple Pages/Numbers conversion |
 | `internal/sheet` | read-only spreadsheet readers (xlsx, ods, csv, xls) |
-| `internal/match` | legal-form extraction and folder matching |
-| `internal/lookup` | one-pass lookup: registers, search engines, invisible Chrome, websites, gazettes |
+| `internal/match` | name parsing (core, legal form, places), legal forms, folder matching |
+| `internal/lookup` | provider waterfall: registers, search (name variants), websites, pages, ids, Google Maps, AI answer; trace in output.txt |
 | `internal/manual` | `numb-form man` and the Unix manual page |
 | `internal/fsutil` | Downloads folder, tree copy, safe names |
 | `internal/runlog` | log and manifest |

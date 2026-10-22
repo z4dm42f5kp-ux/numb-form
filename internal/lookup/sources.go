@@ -1,9 +1,6 @@
 package lookup
 
-import (
-	"net/url"
-	"strings"
-)
+import "strings"
 
 // notCompanySites are directories, social networks and data brokers.
 // They are never taken for the company's own website.
@@ -33,46 +30,6 @@ func notCompanySite(host string) bool {
 	return false
 }
 
-// official lists government websites whose pages are searched for the
-// company, by country. Their pages are read like a register entry.
-var official = map[string][]string{
-	"ES": {"boe.es"},                // Boletín Oficial del Registro Mercantil (BORME)
-	"PT": {"publicacoes.mj.pt"},     // Portal da Justiça, company publications
-	"AR": {"boletinoficial.gob.ar"}, // Boletín Oficial, second section (companies)
-	"US": {"sunbiz.org"},            // Florida Division of Corporations
-	"GB": {"find-and-update.company-information.service.gov.uk"},
-}
-
-// officialHost reports whether host belongs to a government register or
-// gazette listed above.
-func officialHost(host string) bool {
-	h := strings.TrimPrefix(strings.ToLower(host), "www.")
-	for _, list := range official {
-		for _, d := range list {
-			if h == d || strings.HasSuffix(h, "."+d) {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-// legalWords is the word people add to find a company's legal notice,
-// by country.
-func legalWords(country string) string {
-	switch country {
-	case "DE", "AT", "CH":
-		return "impressum"
-	case "ES", "MX", "AR", "CO", "PE", "CL", "EC", "VE", "UY", "PY", "BO", "GT", "CR", "PA", "DO", "HN", "SV", "NI":
-		return "aviso legal"
-	case "BR", "PT":
-		return "cnpj"
-	case "FR", "BE", "LU", "MA", "SN", "CI", "CM":
-		return "mentions légales"
-	}
-	return "legal notice"
-}
-
 func roleWords(country string) string {
 	switch country {
 	case "DE", "AT":
@@ -85,31 +42,10 @@ func roleWords(country string) string {
 		return "sócio administrador"
 	case "PT":
 		return "gerente administrador"
-	case "FR", "BE", "LU":
-		return "président gérant"
+	case "FR", "BE", "LU", "CM", "SN", "CI", "MA":
+		return "gérant directeur général"
+	case "US", "GB", "IE", "ZA", "NG", "KE", "GH", "IN", "AE":
+		return "managing director CEO owner"
 	}
 	return "managing director CEO"
-}
-
-// hasCompanySite reports whether search results include a site that may
-// be the company's own.
-func hasCompanySite(hits []Hit) bool {
-	for _, h := range hits {
-		if u, err := url.Parse(h.URL); err == nil && !notCompanySite(u.Hostname()) {
-			return true
-		}
-	}
-	return false
-}
-
-func itoa(n int) string {
-	if n == 0 {
-		return "0"
-	}
-	var b []byte
-	for n > 0 {
-		b = append([]byte{byte('0' + n%10)}, b...)
-		n /= 10
-	}
-	return string(b)
 }

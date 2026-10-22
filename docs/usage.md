@@ -87,44 +87,56 @@ unchanged, and no formatting is added.
 | Date of the evaluation | today, `date_format` (default `DD/MM/YYYY`) |
 | Person Processing the Form | from the configuration or typed at the start |
 
-Everything is looked up in one pass per company, without questions.
-Candidates come from, in order of authority:
+Everything is looked up per company, without questions.
+The sources are asked in turn, and the lookup stops as soon as a
+verified representative and an address from a register or the company's
+website are found:
 
-1. government registers:
-   UK Companies House (only with a free key);
-   EU VIES, for an EU VAT number printed on the company's website
-   (name and address; Germany confirms only that the number is valid);
-   Receita Federal, for a Brazilian CNPJ printed on the website (address,
-   administrators and directors), read through the free BrasilAPI mirror;
-   government gazettes and registers found by searching their websites
-   for the company: BORME (Spain), Portal da Justiça (Portugal),
-   Boletín Oficial (Argentina), Sunbiz (Florida), Companies House pages
-   (United Kingdom); which one depends on the countries the legal form
-   points to;
-2. the GLEIF LEI register (regulatory register);
+1. registers:
+   the GLEIF LEI register; SECOP II, Colombia's public procurement
+   register of suppliers (address and legal representative), for
+   Colombian names and names without a known country; UK Companies House
+   (only with a free key);
+2. web search, with the name written the way a person tries it in turn:
+   the cell as it is, the name with its legal form in quotes, the name
+   with its city, the name without the legal form with its country, the
+   name without accents, spaced initials written together
+   (`A B C Trading` as `ABC Trading`);
+   it stops at the first search whose results name the company;
 3. the company's own website: its legal notice (Impressum, Aviso legal,
    Mentions légales, Legal notice) first, then about, contact and privacy
    pages;
-4. community data, shown unverified with the caution text: company-data
-   directories that republish register data (northdata, firmenwissen,
-   Moneyhouse, Racius, Empresite, cnpj.biz, OpenCorporates, Dun &
-   Bradstreet and similar; at most three pages per company), the
-   snippets of web search results, OpenStreetMap (for an address) and
-   Wikidata.
+4. the pages among the search results that name the company: company
+   data directories, procurement records, government pages, news
+   (at most four);
+5. official numbers printed on those pages: an EU VAT number is checked
+   with EU VIES, a Brazilian CNPJ with Receita Federal (through
+   BrasilAPI);
+6. one search for the representatives with the local words (such as
+   *representante legal gerente general* or *Geschäftsführer*) and one
+   for the address, and the pages they find;
+7. Google Maps, for an address (only with a Serper key);
+8. an AI answer from Tavily with its sources (only with a Tavily key);
+   it is always shown unverified.
 
-When representatives confirmed by an official source, or an address from
-a register or the company's website, are still missing, numb-form runs
-one more search for the representatives (with the local word, such as
-*Geschäftsführer* or *representante legal*) and one for the address, and
-reads the directory pages they find.
-A person named by two different kinds of source (for example the
-company's website and a directory) counts as verified.
+Each page is read with the HTML parser of golang.org/x/net/html:
+schema.org JSON-LD (legal name, address, founders and employees with
+their job titles), meta tags and microdata, then the visible text line by
+line, then patterns for labels, addresses and official numbers.
+When a page names the company but representatives or the address are
+still missing, it is opened again in invisible Chrome, so content built
+by JavaScript is read too.
 
-The website is found automatically: from Wikidata, from a DuckDuckGo
-search for the exact name, and from addresses such as `foobar.de` or
-`foobar.com.mx` built from the name and the countries of its legal form.
-A site is used only if one of its pages names the company with its legal
-form.
+The legal form and the places are taken from the name first:
+`Acme SAS, Bogota, Colombia` is searched as `Acme SAS` in Colombia.
+A name with a common form alone, such as `S.A.`, is searched worldwide.
+A page counts as naming the company when it shows the name with its
+legal form, or the distinctive part of the name together with the
+company's city or country.
+A person named by a register or by two different kinds of source (for
+example the company's website and a directory) counts as verified;
+everything else is shown unverified with the caution text.
+
 On a group's legal notice that names several companies, only the part
 about the company is read.
 
@@ -141,21 +153,27 @@ example `HRB 12345` or `FN 123456 a`) are shown before the form is
 written; the number can be typed into *Commercial Registry Number* with
 *edit*.
 
-Searching uses keyless engines in turn: DuckDuckGo, then Mojeek, Yahoo
-and Brave Search (`search` in the configuration).
-Each is asked at most a few times per company, a few seconds apart.
+Searching uses Google through Serper when `NUMBFORM_SERPER_KEY` is set
+(2,500 free searches, no credit card), then the keyless DuckDuckGo and
+Brave Search (`search` in the configuration).
 An engine that refuses (a human check, a rate limit) rests for a minute
 and the next one is asked.
 
 When Google Chrome is installed (or, without it, Chromium or Microsoft
 Edge), numb-form starts it invisibly, without a window (headless), for
-two things: reading company websites whose content is built by
-JavaScript or that turn programs away, at most three pages per site;
-and searching when every engine refuses.
+two things: reading pages whose content is built by JavaScript or that
+turn programs away, at most three pages per site; and searching when
+every engine refuses.
 Each start uses a new, empty profile in the temporary folder that is
 deleted right after; the user's own browser, history and sign-ins are
 never used.
 `browser = none` turns this off.
+
+Every run writes `output.txt` next to the log: one JSON line per step
+(the searches and their results, the pages read, what each source gave,
+errors).
+It is meant for debugging; send it along when something did not work.
+It holds company names and the people found, so treat it like the log.
 
 Which sources feed which field, the least trusted source accepted for
 representatives and the fallbacks are set in the configuration.
@@ -271,6 +289,16 @@ Afterwards it offers to delete the review copy; the logs are kept.
 `NUMBFORM_COMPANIES_HOUSE_KEY`
 : Optional free UK Companies House API key. Never logged or stored.
 
+`NUMBFORM_SERPER_KEY`
+: Optional free Serper key for Google search and Google Maps
+  (serper.dev, 2,500 searches without a credit card).
+  Never logged or stored.
+
+`NUMBFORM_TAVILY_KEY`
+: Optional free Tavily key for the last-resort AI answer (tavily.com,
+  1,000 requests a month without a credit card).
+  Never logged or stored.
+
 `HTTPS_PROXY`, `NO_PROXY`
 : Proxy settings for online lookups.
 
@@ -284,6 +312,9 @@ Afterwards it offers to delete the review copy; the logs are kept.
 
 `<log folder>/<run>/manifest.json`
 : Machine-readable record of the run.
+
+`<log folder>/<run>/output.txt`
+: Debug trace of the lookups, one JSON line per step.
 
 `Downloads/numb-form-runs/<run>/<working folder>/`
 : Review mode: the copy.

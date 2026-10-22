@@ -159,7 +159,7 @@ func Template() string {
 	line("when no representative is found: no-reps-text or blank", "reps_fallback", d.RepsFallback)
 	line("caution text: auto (unverified values), always or never", "caution", d.Caution)
 	line("company website and its legal notice: auto (found by itself), ask (you type it) or never", "website", d.Website)
-	line("web search engines, asked in this order when one refuses: duckduckgo mojeek yahoo brave, or none", "search", d.Search)
+	line("web search engines, asked in this order when one refuses: serper (Google results; needs NUMB_FORM_SERPER_KEY) duckduckgo brave, or none", "search", d.Search)
 	line("invisible browser for script-built websites and refused searches: auto (Google Chrome, else Chromium or Edge), none, or a path", "browser", d.Browser)
 	line("also try addresses such as companyname.de or companyname.com.mx", "guess_domains", "yes")
 	line("path to LibreOffice or OpenOffice soffice; empty means search", "soffice", "")

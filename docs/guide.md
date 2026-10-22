@@ -96,9 +96,9 @@ Each company starts with a line like `[3/11] Foo GmbH  (Sheet1!C5)`:
 the third of eleven companies, and the cell it was taken from.
 
 Then numb-form looks the company up by itself, which takes a few
-seconds: official registers, the company's own website (it finds it
-alone), official numbers printed there, government gazettes and a web
-search.
+seconds to a few minutes: registers, web searches with the name written
+several ways, the company's own website (it finds it alone), pages that
+name the company, and official numbers printed there.
 It shows the website it used, any register entry printed there (for
 example `HRB 12345`), and how many addresses and representatives it
 found.

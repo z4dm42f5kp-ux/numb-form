@@ -12,7 +12,7 @@ There are two ways to install them:
 
 * Download a release binary.
   This never needs administrator rights.
-* Build from source with Go 1.21 or later, with or without administrator
+* Build from source with Go 1.25 or later, with or without administrator
   rights.
 
 Every command below is a single line.
@@ -216,7 +216,7 @@ rights; Go's archives for them need the system's own packages anyway.
 
 On NetBSD, pkgsrc installs Go in a versioned folder such as
 `/usr/pkg/go126/bin`; the table entry adds the newest one to `PATH`.
-If the installed Go is older than 1.21, the build stops with an error;
+If the installed Go is older than 1.25, the build stops with an error;
 install a newer Go rather than letting it download a toolchain.
 
 ### Build and install

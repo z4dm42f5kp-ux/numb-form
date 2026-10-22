@@ -171,10 +171,9 @@ func TestFindOnePass(t *testing.T) {
 		_, _ = w.Write([]byte(`{"isValid":true,"name":"FOO MASCHINEN GMBH","address":"INDUSTRIESTRASSE 5\n80333 MUENCHEN"}`))
 	})
 	mux.HandleFunc("/gleif/lei-records", func(w http.ResponseWriter, r *http.Request) { _, _ = w.Write([]byte(`{"data":[]}`)) })
-	mux.HandleFunc("/wd", func(w http.ResponseWriter, r *http.Request) { _, _ = w.Write([]byte(`{"search":[]}`)) })
 	srv = httptest.NewTLSServer(mux)
 	defer srv.Close()
-	ddgHTML, ddgLite, viesAPI, gleifAPI, wdAPI = srv.URL+"/ddg/", srv.URL+"/ddg/", srv.URL+"/vies", srv.URL+"/gleif", srv.URL+"/wd"
+	ddgHTML, ddgLite, viesAPI, gleifAPI = srv.URL+"/ddg/", srv.URL+"/ddg/", srv.URL+"/vies", srv.URL+"/gleif"
 	searchGap, searchJitter = time.Millisecond, 0
 
 	res := Find(context.Background(), testClient(srv), Config{Search: "duckduckgo"}, "Foo Maschinen GmbH", "")

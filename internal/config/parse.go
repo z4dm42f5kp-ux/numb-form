@@ -33,9 +33,16 @@ func yesNo(v string) (bool, error) {
 	return false, fmt.Errorf("must be yes or no")
 }
 
+// retired names were sources or engines of older versions; files that
+// still list them keep working.
+var retired = map[string]bool{"official": true, "osm": true, "wikidata": true, "mojeek": true, "yahoo": true}
+
 func sources(v string) ([]string, error) {
 	var out []string
 	for _, s := range strings.Fields(strings.ReplaceAll(v, ",", " ")) {
+		if retired[s] {
+			continue
+		}
 		if !Allowed(Sources, s) {
 			return nil, fmt.Errorf("unknown source %q (known: %s)", s, strings.Join(Sources, " "))
 		}
@@ -82,12 +89,20 @@ func keyTable(c *Config) map[string]setter {
 			if len(f) == 0 {
 				return fmt.Errorf("list one or more of: %s, or none", strings.Join(SearchEngines, " "))
 			}
+			var keep []string
 			for _, e := range f {
+				if retired[e] {
+					continue
+				}
 				if !Allowed(SearchEngines, e) {
 					return fmt.Errorf("unknown search engine %q (known: %s, or none)", e, strings.Join(SearchEngines, " "))
 				}
+				keep = append(keep, e)
 			}
-			c.Search = strings.Join(f, " ")
+			if len(keep) == 0 {
+				keep = SearchEngines
+			}
+			c.Search = strings.Join(keep, " ")
 			return nil
 		},
 		"browser":           str(&c.Browser),

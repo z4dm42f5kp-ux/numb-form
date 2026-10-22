@@ -60,7 +60,8 @@ func (r *run) gather(name string) (gathered, error) {
 		}
 	}
 	r.ui.Println("  Searching registers, the company website, official gazettes and the web…")
-	g.res = lookup.Find(r.ctx, r.opt.Client, lc, name, site)
+	r.trace.Company(name)
+	g.res = lookup.Find(lookup.WithTrace(r.ctx, r.trace), r.opt.Client, lc, name, site)
 	if err := r.ctx.Err(); err != nil {
 		return g, err
 	}

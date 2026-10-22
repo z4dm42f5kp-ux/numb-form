@@ -17,7 +17,7 @@ var (
 	srcCH   = lookup.Source{ID: "companies-house", Name: "CH", Kind: lookup.KindGovernment}
 	srcLEI  = lookup.Source{ID: "gleif", Name: "GLEIF", Kind: lookup.KindRegulatory}
 	srcSite = lookup.Source{ID: "website", Name: "site", Kind: lookup.KindCompany}
-	srcWiki = lookup.Source{ID: "wikidata", Name: "wd", Kind: lookup.KindCommunity}
+	srcWiki = lookup.Source{ID: "directory", Name: "wd", Kind: lookup.KindCommunity}
 )
 
 func sample() lookup.Result {
@@ -55,7 +55,7 @@ func autoRun(t *testing.T, mut func(*config.Config)) form.Values {
 
 func TestAutoSourcesAndTrust(t *testing.T) {
 	v := autoRun(t, func(*config.Config) {})
-	// Default order: companies-house gleif website wikidata.
+	// Default order: registers, website, then community sources.
 	if v[form.FieldAddress] != "LEI Street 2" {
 		t.Errorf("address %q", v[form.FieldAddress])
 	}
@@ -73,7 +73,7 @@ func TestAutoSourcesAndTrust(t *testing.T) {
 	}
 
 	v = autoRun(t, func(c *config.Config) {
-		c.RepsSources = []string{"wikidata"}
+		c.RepsSources = []string{"directory"}
 		c.RepsMinTrust = "website"
 	})
 	if v[form.FieldReps] != NoRepsText {
@@ -86,7 +86,7 @@ func TestAutoSourcesAndTrust(t *testing.T) {
 	}
 
 	v = autoRun(t, func(c *config.Config) {
-		c.AddressSources = []string{"wikidata"}
+		c.AddressSources = []string{"directory"}
 		c.Caution = "never"
 	})
 	if v[form.FieldAddress] != "Wiki City" {

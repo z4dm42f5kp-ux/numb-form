@@ -1,38 +1,9 @@
 package lookup
 
 import (
-	"html"
 	"net/url"
-	"regexp"
 	"strings"
-
-	"github.com/z4dm42f5kp-ux/numb-form/internal/textutil"
 )
-
-var (
-	reScript  = regexp.MustCompile(`(?is)<(script|style|noscript|template|svg)\b.*?</(script|style|noscript|template|svg)\s*>`)
-	reComment = regexp.MustCompile(`(?s)<!--.*?-->`)
-	reBreak   = regexp.MustCompile(`(?i)<(br|/p|/div|/li|/h[1-6]|/tr|/td|/th|/dd|/dt|/address|/section|/article|/footer|/header|hr|p|div|li|h[1-6]|tr|td|th|dd|dt|address|section|article|footer)\b[^>]*>`)
-	reTag     = regexp.MustCompile(`(?s)<[^>]*>`)
-	reLink    = regexp.MustCompile(`(?is)<a\b[^>]*?href\s*=\s*["']([^"'#]+)["'][^>]*>(.*?)</a\s*>`)
-)
-
-// HTMLText converts HTML to plain lines.
-func HTMLText(s string) []string {
-	s = reScript.ReplaceAllString(s, " ")
-	s = reComment.ReplaceAllString(s, " ")
-	s = reBreak.ReplaceAllString(s, "\n")
-	s = reTag.ReplaceAllString(s, " ")
-	s = html.UnescapeString(s)
-	var out []string
-	for _, l := range strings.Split(s, "\n") {
-		l = textutil.OneLine(l)
-		if l != "" {
-			out = append(out, l)
-		}
-	}
-	return out
-}
 
 func excerpt(lines []string) string {
 	start := 0

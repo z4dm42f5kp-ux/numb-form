@@ -36,6 +36,8 @@ type Client struct {
 	engines []string // search engines in order; nil means Engines
 	browser *Browser // invisible browser for searches and script-built pages; nil means none
 	setting string   // the browser setting browser was found for
+
+	serperKey, tavilyKey string // optional free keys
 }
 
 // configure applies the search engines and browser of cfg.
@@ -46,6 +48,7 @@ func (c *Client) configure(cfg Config) {
 	if f := strings.Fields(cfg.Search); len(f) > 0 && f[0] != "none" {
 		c.engines = f
 	}
+	c.serperKey, c.tavilyKey = cfg.SerperKey, cfg.TavilyKey
 	if c.setting != cfg.Browser || (c.browser == nil && cfg.Browser != "" && cfg.Browser != "none") {
 		c.browser, c.setting = FindBrowser(cfg.Browser), cfg.Browser
 	}

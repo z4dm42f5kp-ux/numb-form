@@ -96,8 +96,8 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
         go: [stable]
         include:
-          # Oldest supported Go (macOS refuses Go 1.21 binaries, so Linux).
-          - { os: ubuntu-latest, go: "1.21.x" }
+          # Oldest supported Go: golang.org/x/net needs 1.25.
+          - { os: ubuntu-latest, go: "1.25.x" }
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read

@@ -22,7 +22,7 @@ type Hit struct {
 var ErrSearchBlocked = errors.New("the search engine asked for a human check")
 
 // Engines lists the supported search engines in their default order.
-var Engines = []string{"duckduckgo", "mojeek", "yahoo", "brave"}
+var Engines = []string{"serper", "duckduckgo", "brave"}
 
 // engine is one keyless search engine.
 type engine struct {
@@ -35,9 +35,8 @@ type engine struct {
 }
 
 var engines = map[string]engine{
+	"serper":     {fetchSerper, parseSerper, serperPage},
 	"duckduckgo": {fetchDDG, ParseDDG, ddgPage},
-	"mojeek":     {fetchGet(mojeekPage), ParseMojeek, mojeekPage},
-	"yahoo":      {fetchGet(yahooPage), ParseYahoo, yahooPage},
 	"brave":      {fetchGet(bravePage), ParseBrave, bravePage},
 }
 
@@ -132,6 +131,9 @@ func Search(ctx context.Context, c *Client, query, region string) ([]Hit, string
 	allRefused := true
 	for _, name := range names {
 		e, ok := engines[name]
+		if name == "serper" && c.serperKey == "" {
+			continue // only with a key
+		}
 		if !ok || paused(name) {
 			if ok {
 				errs = append(errs, name+": resting after a refusal")
@@ -169,7 +171,11 @@ func Search(ctx context.Context, c *Client, query, region string) ([]Hit, string
 			if !ok {
 				continue
 			}
-			page, err := c.browser.Fetch(ctx, e.page(query, region))
+			target := e.page(query, region)
+			if target == "" {
+				continue
+			}
+			page, err := c.browser.Fetch(ctx, target)
 			if err != nil {
 				errs = append(errs, name+" in "+c.browser.Name+": "+sanitizeErr(err))
 				continue

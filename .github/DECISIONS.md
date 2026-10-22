@@ -33,7 +33,7 @@ settings under #6 remain for the maintainer.
 * Modular keys, at least: `mode`, `overview_dir` (default pattern
   "Übersicht"), `template_name`, `timeout`, `confirm` (each | none),
   per-field source lists and fallbacks, e.g.
-  `address_sources = companies-house gleif website wikidata`,
+  `address_sources = companies-house gleif website wikidata` (since replaced),
   `address_fallback = blank`, `reps_min_trust = register | website | any`,
   `reps_fallback = no-reps-text`, `caution = auto | always | never`,
   `online = yes | no`.
@@ -95,3 +95,27 @@ throwaway profile. No browser library or protocol client is needed, so
 the program stays standard-library only.
 `numb-form update stable` and `update rolling` name the two channels;
 `edge` stays accepted and is still the release tag of the rolling build.
+
+## Provider waterfall, name variants and output.txt
+
+The extra engines (Mojeek, Yahoo), OpenStreetMap, Wikidata and gazette
+searches found almost nothing for small Latin American and African
+companies, so they are removed.
+The lookup is a waterfall of providers that stops when a verified
+representative and a register or website address are found: registers
+(GLEIF, SECOP II for Colombia, Companies House), web search, the
+company's website, pages that name the company, VIES and CNPJ, targeted
+searches, Google Maps, and Tavily's AI answer last.
+Names are parsed into core, legal form and places ("Acme SAS, Bogota")
+and searched in several spellings, as a person would.
+Google is reached through Serper (free key, 2,500 searches); Google's
+Custom Search API is closed to new users and ends in 2027, Brave's API
+needs a card, and Duck.ai has no API, so Tavily (free key) is the AI
+fallback.
+HTML is parsed with golang.org/x/net/html, the only module allowed;
+Playwright is not used because Node and its browsers would exceed the
+100 MB limit and leave files behind; the installed Chrome is used
+headless instead.
+Every run writes output.txt, a JSON-lines trace for debugging.
+The live test reads real names from the `LIVE_COMPANIES` secret and
+publishes its results encrypted to a key held by the maintainer's agent.
