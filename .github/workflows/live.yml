@@ -40,7 +40,10 @@ jobs:
           NUMBFORM_SERPER_KEY: ${{ secrets.SERPER_API_KEY }}
           NUMBFORM_TAVILY_KEY: ${{ secrets.TAVILY_API_KEY }}
           LIVE_OUT: ${{ runner.temp }}/live.jsonl
-        run: go test -count=1 -run '^TestLive$' -timeout 70m ./internal/lookup/
+        run: |
+          n=$(printf '%s\n' "$LIVE_COMPANIES" | grep -c '[^[:space:]]' || true)
+          echo "::notice title=live setup::companies=$n serper=${NUMBFORM_SERPER_KEY:+set} tavily=${NUMBFORM_TAVILY_KEY:+set}"
+          go test -count=1 -run '^TestLive$' -timeout 70m ./internal/lookup/
       - name: Encrypted results
         if: always()
         env:
