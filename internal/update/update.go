@@ -203,7 +203,18 @@ func install(ctx context.Context, o Options, files map[string][]byte, ext string
 	if err != nil {
 		return "", fmt.Errorf("the downloaded numb-form does not start (%w); nothing was changed", err)
 	}
-	if v == o.Current && allInstalled(o.Dir, names, ext) {
+	if v == o.Current {
+		// Same version: replace nothing, but add a program that is
+		// missing (numb-date, for installs older than it).
+		for i, name := range names {
+			dst := filepath.Join(o.Dir, name+ext)
+			if _, err := os.Stat(dst); err == nil {
+				continue
+			}
+			if err := os.Rename(staged[i], dst); err != nil {
+				return "", fmt.Errorf("add %s: %w", filepath.Base(dst), err)
+			}
+		}
 		return v, nil
 	}
 	for i, name := range names {
@@ -223,17 +234,6 @@ func install(ctx context.Context, o Options, files map[string][]byte, ext string
 	}
 	staged = nil
 	return v, nil
-}
-
-// allInstalled reports whether every program is already installed, so an
-// update to the same version can still add a program that was missing.
-func allInstalled(dir string, names []string, ext string) bool {
-	for _, name := range names {
-		if _, err := os.Stat(filepath.Join(dir, name+ext)); err != nil {
-			return false
-		}
-	}
-	return true
 }
 
 // PreviousPath is where an update keeps the version it replaced.

@@ -170,6 +170,9 @@ func TestUnixUpdateAndUpToDate(t *testing.T) {
 	if read(t, filepath.Join(dir, "numb-form")) != "old" {
 		t.Error("same version must not replace anything")
 	}
+	if read(t, filepath.Join(dir, "numb-commit")) != "new commit" {
+		t.Error("same version must still add a missing program")
+	}
 	if f.urls[0] != Releases+"/latest/download/SHA256SUMS" {
 		t.Errorf("urls %v", f.urls)
 	}
@@ -180,8 +183,8 @@ func TestUnixUpdateAndUpToDate(t *testing.T) {
 	if read(t, filepath.Join(dir, "numb-form")) != "new form" {
 		t.Error("not replaced")
 	}
-	if ents, _ := os.ReadDir(dir); len(ents) != 3 {
-		t.Errorf("%d files left, want numb-form, numb-commit and numb-form.previous", len(ents))
+	if ents, _ := os.ReadDir(dir); len(ents) != 4 {
+		t.Errorf("%d files left, want numb-form, numb-commit and their .previous", len(ents))
 	}
 }
 
