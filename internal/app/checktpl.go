@@ -44,7 +44,7 @@ func CheckTemplate(out io.Writer, cfg config.Config, tplPath, sample string) int
 		form.FieldLegalForm: "GmbH",
 		form.FieldAddress:   "Foo Street 64, 80333 München, Germany",
 		form.FieldRegistry:  RegistryText,
-		form.FieldReps:      "Jane Doe (Managing Director, Legal Representative), John Roe (Authorized Signatory (Prokurist)) " + CautionText,
+		form.FieldReps:      "Jane Doe (Managing Director, Legal Representative), John Roe (Authorized Signatory (Prokurist))",
 		form.FieldDate:      "26/09/2026",
 		form.FieldPerson:    "Max Muster",
 	}
@@ -73,10 +73,8 @@ func ShowConfig(out io.Writer, cfg config.Config, notes []string) int {
 	for _, n := range notes {
 		fmt.Fprintln(out, "note:", n)
 	}
-	fmt.Fprintf(out, "\nmode = %s\nconfirm = %s\nonline = %v\noverview_dir = %s\nheader = %s\ntemplate_name = %s\ntimeout = %s\n",
-		cfg.Mode, cfg.Confirm, cfg.Online, cfg.OverviewDir, cfg.Header, cfg.TemplateName, cfg.Timeout)
-	fmt.Fprintf(out, "address_sources = %v\nreps_sources = %v\nreps_min_trust = %s\ncaution = %s\nlegacy_formats = %v\npages_write = %v\n",
-		cfg.AddressSources, cfg.RepsSources, cfg.RepsMinTrust, cfg.Caution, cfg.LegacyFormats, cfg.PagesWrite)
+	fmt.Fprintf(out, "\nmode = %s\nonline = %v\noverview_dir = %s\nheader = %s\ntemplate_name = %s\nperson = %s\ntimeout = %s\nlegacy_formats = %v\npages_write = %v\n",
+		cfg.Mode, cfg.Online, cfg.OverviewDir, cfg.Header, cfg.TemplateName, cfg.Person, cfg.Timeout, cfg.LegacyFormats, cfg.PagesWrite)
 	for k, o := range cfg.Origin {
 		fmt.Fprintf(out, "  (%s set in %s)\n", k, o)
 	}

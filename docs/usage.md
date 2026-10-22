@@ -10,7 +10,6 @@
 numb-form [-f conf] [-offline] [-root dir] [-downloads dir] [-timeout duration]
 numb-form [-f conf] check-template template [sample]
 numb-form [-f conf] config [init | set key value]
-numb-form keys
 numb-form [-f conf] update [stable | rolling | v1.2.3]
 numb-form rollback
 numb-commit [-f conf] [-run dir] [-downloads dir]
@@ -60,17 +59,18 @@ A run proceeds as follows:
    Names are compared ignoring case, accents and umlauts (ü = u = ue),
    punctuation and spaces.
    A match means the form already exists, and the company is skipped.
-   A near match is shown to the user to confirm (or, with
-   `confirm = none`, reported as *needs review* and skipped).
+   A near match is shown to the user to confirm.
    Folders with a different legal form never match:
    `Foo GmbH` and `Foo S.A.` are different companies.
-6. For a new company, a folder named after the company is created.
+6. For a new company, the user types the headquarters address and the
+   authorized representatives.
+   Everything else is filled without questions.
+7. A folder named after the company is created.
    The template is copied into it as
    `<template name> - <Company Name>.<ext>`, and section A is filled.
-7. The document is read back from disk and shown.
+8. The document is read back from disk and shown.
    The user accepts it, edits a field or rejects it; a rejected folder is
    deleted.
-   With `confirm = none` the read-back must equal the values exactly.
 
 Only the lines of section A, *Information About the Contracting Party*,
 are filled.
@@ -81,91 +81,16 @@ unchanged, and no formatting is added.
 | --- | --- |
 | Name / Company Name of the Contracting Party | the literal spreadsheet cell |
 | Legal form | found in the name, also before a branch or country note (`Foo GmbH (Wien)`), written as in the name with conventional capitals (`GMBH` gives `GmbH`); asked only when the name has none |
-| Headquarters / Address | chosen from the candidates found |
+| Headquarters / Address | typed by the user; Enter leaves it blank |
 | Commercial Registry Number | always `No commercial registry number was found online consult internal sources for further information`; it can be replaced with the number with *edit* |
-| Authorized Representatives | `Full Name (Role 1, Role 2), Full Name (Role)`, roles in English |
+| Authorized Representatives | typed by the user as `Full Name (Role 1, Role 2), Full Name (Role)`, roles in English; Enter writes the no-representatives text below, `-` leaves it blank |
 | Date of the evaluation | today, `date_format` (default `DD/MM/YYYY`) |
 | Person Processing the Form | from the configuration or typed at the start |
 
-Everything is looked up in one pass per company, without questions.
-Candidates come from, in order of authority:
+numb-form makes no online lookups for companies.
+Only `numb-form update` contacts GitHub.
 
-1. government registers:
-   UK Companies House (only with a free key);
-   EU VIES, for an EU VAT number printed on the company's website
-   (name and address; Germany confirms only that the number is valid);
-   Receita Federal, for a Brazilian CNPJ printed on the website (address,
-   administrators and directors), read through the free BrasilAPI mirror;
-   government gazettes and registers found by searching their websites
-   for the company: BORME (Spain), Portal da Justiça (Portugal),
-   Boletín Oficial (Argentina), Sunbiz (Florida), Companies House pages
-   (United Kingdom); which one depends on the countries the legal form
-   points to;
-2. the GLEIF LEI register (regulatory register);
-3. the company's own website: its legal notice (Impressum, Aviso legal,
-   Mentions légales, Legal notice) first, then about, contact and privacy
-   pages;
-4. community data, shown unverified with the caution text: company-data
-   directories that republish register data (northdata, firmenwissen,
-   Moneyhouse, Racius, Empresite, cnpj.biz, OpenCorporates, Dun &
-   Bradstreet and similar; at most three pages per company), the
-   snippets of web search results, OpenStreetMap (for an address) and
-   Wikidata.
-
-When representatives confirmed by an official source, or an address from
-a register or the company's website, are still missing, numb-form runs
-one more search for the representatives (with the local word, such as
-*Geschäftsführer* or *representante legal*) and one for the address, and
-reads the directory pages they find.
-A person named by two different kinds of source (for example the
-company's website and a directory) counts as verified.
-
-The website is found automatically: from Wikidata, from a DuckDuckGo
-search for the exact name, and from addresses such as `foobar.de` or
-`foobar.com.mx` built from the name and the countries of its legal form.
-A site is used only if one of its pages names the company with its legal
-form.
-On a group's legal notice that names several companies, only the part
-about the company is read.
-
-Representative labels are recognised in German, English, Spanish,
-Portuguese, French, Italian, Dutch, Polish, Czech, Slovak and the Nordic
-languages, anywhere in a line, in tables and in footers, and translated
-to English roles.
-Labels that name other people (supervisory board, data protection
-officer, person responsible for content, contact, registered agent) and
-people who left (*Ceses/Dimisiones*, *ehemalig*, *former*) are skipped.
-
-Official numbers and register entries printed on the website (for
-example `HRB 12345` or `FN 123456 a`) are shown before the form is
-written; the number can be typed into *Commercial Registry Number* with
-*edit*.
-
-Searching uses keyless engines in turn: DuckDuckGo, then Mojeek, Yahoo
-and Brave Search (`search` in the configuration).
-Each is asked at most a few times per company, a few seconds apart.
-An engine that refuses (a human check, a rate limit) rests for a minute
-and the next one is asked.
-
-When Google Chrome is installed (or, without it, Chromium or Microsoft
-Edge), numb-form starts it invisibly, without a window (headless), for
-two things: reading company websites whose content is built by
-JavaScript or that turn programs away, at most three pages per site;
-and searching when every engine refuses.
-Each start uses a new, empty profile in the temporary folder that is
-deleted right after; the user's own browser, history and sign-ins are
-never used.
-`browser = none` turns this off.
-
-Which sources feed which field, the least trusted source accepted for
-representatives and the fallbacks are set in the configuration.
-People and addresses are never taken from a parent, subsidiary or
-similarly named entity.
-Unverified values get this exact text when `caution` says so:
-
-> Caution: This field might differ from internal sources or be innacurate due to insufficient information online
-
-When no representative is found, the field reads:
+When the representatives are left empty, the field reads:
 
 > No representatives were found online, please consult other internal sources for more accurate information
 
@@ -195,9 +120,6 @@ Afterwards it offers to delete the review copy; the logs are kept.
 : Save one setting in the per-user configuration file, for example
   `numb-form config set person "Erika Mustermann"`.
   The value is checked before it is saved.
-
-`keys`
-: Explain the optional free API keys.
 
 `rollback`
 : Switch back to the version that the last `update` replaced.
@@ -242,7 +164,7 @@ Afterwards it offers to delete the review copy; the logs are kept.
 : Read *file* after the system and per-user configuration files.
 
 `-offline`
-: Contact no online source.
+: With `update`: refuse to contact GitHub.
 
 `-root dir`
 : Use *dir* as the working folder instead of detecting it.
@@ -268,11 +190,8 @@ Afterwards it offers to delete the review copy; the logs are kept.
 `NUMBFORM_DOWNLOADS`
 : Downloads folder to use, for example a mounted volume in a container.
 
-`NUMBFORM_COMPANIES_HOUSE_KEY`
-: Optional free UK Companies House API key. Never logged or stored.
-
 `HTTPS_PROXY`, `NO_PROXY`
-: Proxy settings for online lookups.
+: Proxy settings for `numb-form update`.
 
 `TZ`
 : Time zone of the evaluation date.
@@ -292,7 +211,7 @@ Afterwards it offers to delete the review copy; the logs are kept.
 : Review mode: log of the commit.
 
 No cache or temporary files are left behind.
-Network responses are held in memory only, documents are written through
+Documents are written through
 a temporary file that is renamed or removed, and converters work in a
 private temporary folder that is deleted.
 
@@ -323,12 +242,6 @@ cd /path/to/GWG && numb-form -f review.conf && numb-commit
 ```
 
 where `review.conf` contains `mode = review`.
-
-Run without any network access:
-
-```
-cd /path/to/GWG && numb-form -offline
-```
 
 ## SEE ALSO
 

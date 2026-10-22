@@ -40,15 +40,11 @@ numb-form handles customer documents, so the design rules are strict.
   Values join the label's own text run, or a copy of that run's existing
   properties when the label is followed by a tab.
 * Every document is read back from disk after writing.
-  With `confirm = each` (default) a person sees and accepts it, and the
-  programs refuse to run without an interactive terminal.
-  With `confirm = none` the read-back must equal the intended values
-  exactly, near folder-name matches are never decided automatically, and
-  only the sources and trust level in the configuration are used.
+  A person sees and accepts it, and the programs refuse to run without
+  an interactive terminal.
 * A run stops safely after at most 25 minutes.
   It writes at most 100 MB of documents besides the copy, and leaves no
-  cache or temporary files: network data stays in memory, temporary
-  files are renamed or removed, and converters run in a private
+  cache or temporary files: temporary files are renamed or removed, and converters run in a private
   temporary folder with a throwaway office profile, deleted afterwards.
 
 ## Configuration and formats
@@ -58,8 +54,7 @@ numb-form handles customer documents, so the design rules are strict.
   only in the system file.
   On Unix that file is ignored unless it belongs to root and is not
   writable by group or others; on Windows it lives under Program Files.
-* Legacy binary formats (.doc, .xls) are off by default, and runs that
-  use them are always fully offline.
+* Legacy binary formats (.doc, .xls) are off by default.
   The .xls reader (compound file and BIFF8) is numb-form's own,
   bounds-checks every offset and chain, and is fuzzed continuously.
 * .doc, .pages and .numbers are converted by office software already on
@@ -72,49 +67,10 @@ numb-form handles customer documents, so the design rules are strict.
 
 ## Network
 
-Online lookups send only company names and official numbers printed on
-the company's own website:
+A form run makes no network connections.
+Company names, addresses and representatives never leave the computer.
 
-* company names to the GLEIF API, Wikidata and DuckDuckGo (with words
-  such as `impressum` or `site:boe.es`), and to UK Companies House only
-  when a free key is set;
-* EU VAT numbers to EU VIES, and Brazilian CNPJ numbers to BrasilAPI;
-* ordinary page requests to the company's website (found automatically,
-  or typed by the user) and to government gazette pages (BORME, Portal da
-  Justiça, Boletín Oficial, Sunbiz, Companies House) found by search.
-
-Nothing from the spreadsheet other than the company name is sent, and
-nothing about the person processing the form.
-
-Searches go to DuckDuckGo, Mojeek, Yahoo or Brave Search in turn.
-Company-data directory pages found by search are read like any web page
-(at most three per company), and OpenStreetMap's Nominatim is asked once
-for the company name when no address was found.
-When Google Chrome (or Chromium or Edge) is installed, it is started
-headless for script-built websites and refused searches: with fixed
-flags, no extensions, a new empty profile in the temporary folder that is
-deleted right after (never the user's profile), HTTPS addresses only, one
-browser at a time, at most 40 seconds and 4 MB per page.
-`browser = none` turns it off.
-`search = none` stops searching; `-offline` or `online = no` sends
-nothing at all.
-Searches are spaced a few seconds apart and pause for a minute when
-DuckDuckGo asks for a human check.
-
-* HTTPS only, TLS 1.2 or later, at most five HTTPS redirects.
-* Without a proxy, connections to loopback, private, link-local and
-  multicast addresses are refused (server-side request forgery guard).
-* Response bodies are capped at 2 MB, held in memory and never written to
-  disk.
-* Text from the network is stripped of control characters, ANSI escape
-  sequences and bidirectional overrides before it is shown, so a web page
-  cannot manipulate the terminal.
-* Archives are read with size limits (zip bomb guard).
-* API keys come only from the environment, are sent only to their own
-  service, and are never logged or stored.
-* Data is never taken from a parent, subsidiary or similarly named entity.
-
-`numb-form update` is the only command that downloads programs.
+`numb-form update` is the only command that contacts the network.
 It is run only when the user types it, and never during a form run.
 
 * Downloads come only from `github.com` and `*.githubusercontent.com`,

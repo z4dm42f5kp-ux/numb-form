@@ -3,7 +3,9 @@
 Fills section A of the *Appendix A - Risk Assesment* form for every
 company in the overview spreadsheet that has no folder yet.
 
-You confirm every document, unless you configure it to run unattended.
+It fills the name, legal form, registry sentence, date and your name by
+itself, and asks you for the address and the representatives.
+You confirm every document.
 The spreadsheet is never changed.
 
 Español: [docs/es/README.md](docs/es/README.md) ·

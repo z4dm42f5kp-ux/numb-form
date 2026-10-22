@@ -14,7 +14,6 @@ import (
 	"github.com/z4dm42f5kp-ux/numb-form/internal/config"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/formats"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/fsutil"
-	"github.com/z4dm42f5kp-ux/numb-form/internal/lookup"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/match"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/runlog"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/ui"
@@ -28,8 +27,9 @@ const BigCopyBytes = 2 << 30
 
 // Exact texts from the previous process; do not change them.
 const (
-	CautionText = "Caution: This field might differ from internal sources or be innacurate due to insufficient information online"
-	NoRepsText  = "No representatives were found online, please consult other internal sources for more accurate information"
+	// NoRepsText is written when the person leaves the representatives
+	// empty.
+	NoRepsText = "No representatives were found online, please consult other internal sources for more accurate information"
 	// RegistryText always fills the Commercial Registry Number field; the
 	// user may replace it with the number when editing the form.
 	RegistryText = "No commercial registry number was found online consult internal sources for further information"
@@ -50,33 +50,28 @@ type Options struct {
 	Config      *config.Config
 	Notes       []string // notes from loading the configuration
 	Downloads   string   // overrides config downloads
-	Offline     bool     // overrides config online
 	Timeout     time.Duration
 	AllowNonTTY bool
 	In          io.Reader
 	Out         io.Writer
 	Now         func() time.Time
-	Lookup      lookup.Config
-	Client      *lookup.Client
 }
 
 type run struct {
-	browserNoted bool // the browser note was shown
-	opt          Options
-	cfg          config.Config
-	ctx          context.Context
-	ui           *ui.UI
-	log          *runlog.Logger
-	man          *runlog.Manifest
-	runDir       string
-	srcRoot      string // the real working folder
-	workRoot     string // where folders are created: the copy (review) or srcRoot (direct)
-	tpl          *formats.Template
-	ix           *match.Index
-	written      int64
-	person       string
-	date         string
-	online       bool
+	opt      Options
+	cfg      config.Config
+	ctx      context.Context
+	ui       *ui.UI
+	log      *runlog.Logger
+	man      *runlog.Manifest
+	runDir   string
+	srcRoot  string // the real working folder
+	workRoot string // where folders are created: the copy (review) or srcRoot (direct)
+	tpl      *formats.Template
+	ix       *match.Index
+	written  int64
+	person   string
+	date     string
 }
 
 var errAbort = errors.New("aborted by user")
@@ -92,17 +87,11 @@ func (o *Options) defaults() config.Config {
 	if o.Downloads != "" {
 		c.Downloads = o.Downloads
 	}
-	if o.Offline {
-		c.Online = false
-	}
 	if o.Timeout > 0 && o.Timeout < c.Timeout {
 		c.Timeout = o.Timeout
 	}
 	if c.Timeout <= 0 || c.Timeout > MaxRunTime {
 		c.Timeout = MaxRunTime
-	}
-	if o.Client == nil {
-		o.Client = lookup.NewClient()
 	}
 	return c
 }
@@ -115,7 +104,7 @@ func Run(opt Options) int {
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
 	defer stop()
 
-	r := &run{opt: opt, cfg: cfg, ctx: ctx, ui: ui.New(ctx, opt.In, opt.Out), online: cfg.Online}
+	r := &run{opt: opt, cfg: cfg, ctx: ctx, ui: ui.New(ctx, opt.In, opt.Out)}
 	err := r.main()
 	code := ExitOK
 	switch {
@@ -153,7 +142,7 @@ func (r *run) finish() {
 }
 
 func (r *run) main() error {
-	r.ui.Printf("numb-form %s — risk assessment form filler (mode: %s, confirm: %s)\n\n", Version, r.cfg.Mode, r.cfg.Confirm)
+	r.ui.Printf("numb-form %s — risk assessment form filler (mode: %s)\n\n", Version, r.cfg.Mode)
 	for _, n := range r.opt.Notes {
 		r.ui.Printf("note: %s\n", n)
 	}
@@ -189,10 +178,8 @@ func (r *run) main() error {
 	for _, w := range warns {
 		r.logf("spreadsheet note: %s", w)
 	}
-	if (legacy || r.tpl.Legacy) && r.online {
-		r.online = false
-		r.ui.Println("note: a legacy format is in use, so this run is fully offline.")
-		r.logf("legacy format: online lookups disabled")
+	if legacy || r.tpl.Legacy {
+		r.logf("legacy format in use")
 	}
 	r.ui.Printf("\n%d companies in %s (top to bottom).\n", len(rows), filepath.Base(in.sheet))
 	r.logf("spreadsheet %s sha256=%s rows=%d", r.man.Spreadsheet, in.sheetHash, len(rows))
@@ -203,9 +190,6 @@ func (r *run) main() error {
 	}
 	r.ix.Threshold = r.cfg.Fuzzy
 	r.logf("indexed %d existing folders", r.ix.Len())
-	if r.online {
-		r.ui.Println("Online lookups send only company names and websites.")
-	}
 
 	var runErr error
 	for i, row := range rows {
@@ -242,8 +226,8 @@ func (r *run) summary() {
 	for _, c := range r.man.Companies {
 		counts[c.Status]++
 	}
-	r.ui.Printf("\nDone: %d accepted, %d already had a folder, %d rejected, %d need review, %d skipped, %d errors.\n",
-		counts["accepted"], counts["exists"], counts["rejected"], counts["needs-review"], counts["skipped"], counts["error"])
+	r.ui.Printf("\nDone: %d accepted, %d already had a folder, %d rejected, %d skipped, %d errors.\n",
+		counts["accepted"], counts["exists"], counts["rejected"], counts["skipped"], counts["error"])
 	if r.cfg.Mode == "review" {
 		r.ui.Printf("Review copy: %s\n", r.workRoot)
 	}
@@ -299,8 +283,5 @@ func (r *run) openRun(dir string, in *inputs) error {
 		Spreadsheet: rel(in.root, in.sheet), SheetSHA256: in.sheetHash, Template: r.tpl.Name, Person: r.person,
 	}
 	r.logf("source %s", in.root)
-	if r.cfg.Confirm == "none" {
-		r.logf("confirm = none: documents are accepted automatically after the read-back check")
-	}
 	return nil
 }

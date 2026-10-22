@@ -29,8 +29,6 @@ spec:
           value: Europe/Berlin
         - name: XDG_STATE_HOME # direct-mode logs
           value: /downloads/numb-form-logs
-        # - name: NUMBFORM_COMPANIES_HOUSE_KEY
-        #   valueFrom: {secretKeyRef: {name: numb-form, key: companies-house}}
       securityContext:
         allowPrivilegeEscalation: false
         readOnlyRootFilesystem: true

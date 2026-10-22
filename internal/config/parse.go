@@ -33,17 +33,6 @@ func yesNo(v string) (bool, error) {
 	return false, fmt.Errorf("must be yes or no")
 }
 
-func sources(v string) ([]string, error) {
-	var out []string
-	for _, s := range strings.Fields(strings.ReplaceAll(v, ",", " ")) {
-		if !Allowed(Sources, s) {
-			return nil, fmt.Errorf("unknown source %q (known: %s)", s, strings.Join(Sources, " "))
-		}
-		out = append(out, s)
-	}
-	return out, nil
-}
-
 // keys maps every configuration key to its parser. Pointers into a
 // throwaway Config are rebound per call by keyTable.
 func keyTable(c *Config) map[string]setter {
@@ -51,47 +40,17 @@ func keyTable(c *Config) map[string]setter {
 	boolean := func(p *bool) setter {
 		return func(_ *Config, v string) error { b, err := yesNo(v); *p = b; return err }
 	}
-	list := func(p *[]string) setter {
-		return func(_ *Config, v string) error { s, err := sources(v); *p = s; return err }
-	}
 	return map[string]setter{
-		"mode":             oneOf(&c.Mode, "direct", "review"),
-		"confirm":          oneOf(&c.Confirm, "each", "none"),
-		"online":           boolean(&c.Online),
-		"overview_dir":     str(&c.OverviewDir),
-		"header":           str(&c.Header),
-		"id_header":        str(&c.IDHeader),
-		"template_name":    str(&c.TemplateName),
-		"person":           str(&c.Person),
-		"date_format":      str(&c.DateFormat),
-		"downloads":        str(&c.Downloads),
-		"log_dir":          str(&c.LogDir),
-		"address_sources":  list(&c.AddressSources),
-		"address_fallback": oneOf(&c.AddressFallback, "ask", "blank"),
-		"reps_sources":     list(&c.RepsSources),
-		"reps_min_trust":   oneOf(&c.RepsMinTrust, "register", "website", "any"),
-		"reps_fallback":    oneOf(&c.RepsFallback, "no-reps-text", "blank"),
-		"caution":          oneOf(&c.Caution, "auto", "always", "never"),
-		"website":          oneOf(&c.Website, "auto", "ask", "wikidata", "never"),
-		"search": func(_ *Config, v string) error {
-			f := strings.Fields(strings.ReplaceAll(v, ",", " "))
-			if len(f) == 1 && f[0] == "none" {
-				c.Search = "none"
-				return nil
-			}
-			if len(f) == 0 {
-				return fmt.Errorf("list one or more of: %s, or none", strings.Join(SearchEngines, " "))
-			}
-			for _, e := range f {
-				if !Allowed(SearchEngines, e) {
-					return fmt.Errorf("unknown search engine %q (known: %s, or none)", e, strings.Join(SearchEngines, " "))
-				}
-			}
-			c.Search = strings.Join(f, " ")
-			return nil
-		},
-		"browser":           str(&c.Browser),
-		"guess_domains":     boolean(&c.GuessDomains),
+		"mode":              oneOf(&c.Mode, "direct", "review"),
+		"online":            boolean(&c.Online),
+		"overview_dir":      str(&c.OverviewDir),
+		"header":            str(&c.Header),
+		"id_header":         str(&c.IDHeader),
+		"template_name":     str(&c.TemplateName),
+		"person":            str(&c.Person),
+		"date_format":       str(&c.DateFormat),
+		"downloads":         str(&c.Downloads),
+		"log_dir":           str(&c.LogDir),
 		"soffice":           str(&c.Soffice),
 		"pages_converter":   oneOf(&c.PagesConverter, "auto", "pages-app", "libreoffice"),
 		"pages_write":       boolean(&c.PagesWrite),
@@ -117,6 +76,13 @@ func keyTable(c *Config) map[string]setter {
 			return err
 		},
 	}
+}
+
+// retired keys belonged to the online lookup and to running without
+// questions, both removed; files that still set them keep working.
+var retired = map[string]bool{
+	"confirm": true, "address_sources": true, "address_fallback": true, "reps_sources": true, "reps_min_trust": true,
+	"reps_fallback": true, "caution": true, "website": true, "search": true, "browser": true, "guess_domains": true,
 }
 
 // systemOnly keys are ignored unless they come from the system file.
@@ -158,6 +124,10 @@ func (c *Config) Apply(data []byte, origin string, system bool) ([]string, error
 		}
 		if len(v) >= 2 && v[0] == '"' && v[len(v)-1] == '"' {
 			v = v[1 : len(v)-1]
+		}
+		if retired[k] {
+			notes = append(notes, fmt.Sprintf("%s:%d: %s is no longer used and is ignored", origin, n, k))
+			continue
 		}
 		set, known := table[k]
 		if !known {

@@ -62,12 +62,11 @@ type File struct {
 type Company struct {
 	Name      string            `json:"name"`
 	Cell      string            `json:"cell"`
-	Status    string            `json:"status"` // accepted, rejected, exists, skipped, needs-review, error
+	Status    string            `json:"status"` // accepted, rejected, exists, skipped, error
 	Folder    string            `json:"folder,omitempty"`
 	Reason    string            `json:"reason,omitempty"`
 	Files     []File            `json:"files,omitempty"`
 	Fields    map[string]string `json:"fields,omitempty"`
-	Sources   []string          `json:"sources,omitempty"`
 	Committed bool              `json:"committed,omitempty"`
 }
 

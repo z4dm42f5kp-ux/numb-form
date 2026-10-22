@@ -36,14 +36,8 @@ func (r *run) company(row sheet.Row) (runlog.Company, error) {
 	fileBase, _ := fsutil.SafeName(row.Name, true)
 	fileName := strings.TrimSuffix(r.tpl.Name, filepath.Ext(r.tpl.Name)) + " - " + fileBase + r.tpl.OutExt
 
-	g, err := r.gather(row.Name)
+	vals, err := r.askValues(row.Name)
 	if err != nil {
-		return c, err
-	}
-	var vals form.Values
-	if r.cfg.Confirm == "none" {
-		vals = r.autoValues(row.Name, g)
-	} else if vals, err = r.askValues(row.Name, g); err != nil {
 		return c, err
 	}
 
@@ -79,26 +73,19 @@ func (r *run) company(row sheet.Row) (runlog.Company, error) {
 	for _, f := range form.AllFields {
 		c.Fields[f.Title()] = shown[f]
 	}
-	c.Sources = g.sourceList()
 	r.ix.Add(folder, folderName, folderName)
 	r.logf("accepted %q -> %s sha256=%s fields=%q", row.Name, c.Files[0].Rel, h, c.Fields)
 	return c, nil
 }
 
-// existing reports (done=true) when the company already has a folder, or
-// when, without confirmation, a near match must be left for a person.
+// existing reports (done=true) when the company already has a folder,
+// asking about near matches.
 func (r *run) existing(row sheet.Row, c *runlog.Company) (bool, error) {
 	exact, fuzzy := r.ix.Find(row.Name)
 	if len(exact) > 0 {
 		c.Status, c.Folder, c.Reason = "exists", exact[0].Rel, "folder name matches"
 		r.ui.Printf("  already has a folder: %s — nothing to do\n", ui.Safe(exact[0].Rel))
 		r.logf("exists %q -> %s", row.Name, exact[0].Rel)
-		return true, nil
-	}
-	if len(fuzzy) > 0 && r.cfg.Confirm == "none" {
-		c.Status, c.Folder, c.Reason = "needs-review", fuzzy[0].Folder.Rel, "similar folder exists: "+fuzzy[0].Reason
-		r.ui.Printf("  needs review: similar folder %s exists; not created\n", ui.Safe(fuzzy[0].Folder.Rel))
-		r.logf("needs-review %q: similar folder %s (%.2f)", row.Name, fuzzy[0].Folder.Rel, fuzzy[0].Score)
 		return true, nil
 	}
 	for _, cand := range fuzzy {
@@ -115,8 +102,8 @@ func (r *run) existing(row sheet.Row, c *runlog.Company) (bool, error) {
 	return false, nil
 }
 
-// confirmLoop writes the document and lets the user accept, edit or
-// reject it. Without confirmation the read-back must equal the values.
+// confirmLoop writes the document, shows what it now reads and lets the
+// user accept, edit or reject it.
 func (r *run) confirmLoop(c *runlog.Company, target string, vals form.Values) (form.Values, bool, error) {
 	for {
 		if err := r.write(target, vals); err != nil {
@@ -129,14 +116,6 @@ func (r *run) confirmLoop(c *runlog.Company, target string, vals form.Values) (f
 		if err != nil {
 			c.Status, c.Reason = "error", err.Error()
 			return nil, false, nil
-		}
-		if r.cfg.Confirm == "none" {
-			if err := sameValues(vals, shown); err != nil {
-				c.Status, c.Reason = "error", err.Error()
-				r.logf("ERROR %q: read-back mismatch: %v", c.Name, err)
-				return nil, false, nil
-			}
-			return shown, true, nil
 		}
 		ch, err := r.ui.Choose("  Is this correct? [a]ccept, [e]dit a field, [r]eject: ", "aer", 0)
 		if err != nil {
@@ -158,19 +137,6 @@ func (r *run) confirmLoop(c *runlog.Company, target string, vals form.Values) (f
 			}
 		}
 	}
-}
-
-func sameValues(want, got form.Values) error {
-	for _, f := range form.AllFields {
-		w := strings.Join(strings.Fields(want[f]), " ")
-		if f == form.FieldRegistry && got[f] == "" {
-			continue // the template has no registry label
-		}
-		if w != got[f] {
-			return fmt.Errorf("%s reads %q, want %q", f.Title(), got[f], w)
-		}
-	}
-	return nil
 }
 
 // removeCreated deletes a folder this run created, after checking that it

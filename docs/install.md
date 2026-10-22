@@ -247,12 +247,6 @@ numb-form edits .docx, .odt, .fodt and .rtf templates itself.
 .doc, .pages and .numbers files need LibreOffice, Apache OpenOffice or
 Apple Pages/Numbers on the same computer; see [formats.md](formats.md).
 
-## Optional free API key
-
-The UK Companies House register needs a free key.
-All other sources need none.
-Run `numb-form keys` for instructions.
-
 ## Containers
 
 See [containers.md](containers.md) for Docker, Podman (rootless, no

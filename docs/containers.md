@@ -95,9 +95,3 @@ If the first prompt was printed before you attached, press Enter to see
 it again.
 The pods use a read-only root file system, drop all capabilities, mount
 no service account token and stop after 30 minutes.
-For the optional Companies House key, uncomment the `env` entry and
-create the secret:
-
-```
-kubectl create secret generic numb-form --from-literal=companies-house='your-free-key'
-```

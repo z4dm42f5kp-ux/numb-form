@@ -95,3 +95,16 @@ throwaway profile. No browser library or protocol client is needed, so
 the program stays standard-library only.
 `numb-form update stable` and `update rolling` name the two channels;
 `edge` stays accepted and is still the release tag of the rolling build.
+
+## No online lookups
+
+Automatic lookups never found addresses or representatives for the
+small Latin American, African and Gulf companies the team handles, and
+cost more time than they saved.
+They are removed with everything that served them: web search, the
+headless browser, registers, API keys, `numb-form keys`, the live test,
+`confirm = none` and the source settings.
+numb-form now fills the name, legal form, registry sentence, date and
+person by itself and asks for the address and the representatives.
+Old configuration keys are ignored with a note.
+`numb-form update`, `rollback` and `numb-commit` are unchanged.
