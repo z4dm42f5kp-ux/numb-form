@@ -22,7 +22,6 @@ func main() {
 const usage = `usage: numb-form [-f conf] [-offline] [-root dir] [-downloads dir] [-timeout d]
        numb-form [-f conf] check-template template [sample]
        numb-form [-f conf] config [init | set key value]
-       numb-form keys
        numb-form [-f conf] update [stable | rolling | v1.2.3]
        numb-form rollback
        numb-form man [topic] [en | es | de]       (numb-form man topics; numb-form man -install)
@@ -35,7 +34,7 @@ func realMain() int {
 	conf := fs.String("f", "", "configuration file read after the system and per-user files")
 	root := fs.String("root", "", "working folder (default: the current folder if it is one, else the single folder inside it)")
 	downloads := fs.String("downloads", "", "review mode: folder for the copy (default: the user's Downloads)")
-	offline := fs.Bool("offline", false, "do not contact any online source")
+	offline := fs.Bool("offline", false, "update: do not contact GitHub")
 	timeout := fs.Duration("timeout", 0, "stop safely after this long (at most 25m)")
 	allowPipe := fs.Bool("allow-non-tty", false, "accept answers from a pipe (testing only)")
 	version := fs.Bool("version", false, "print the version and exit")
@@ -51,9 +50,6 @@ func realMain() int {
 		return app.ExitOK
 	}
 	args := fs.Args()
-	if len(args) > 0 && args[0] == "keys" {
-		return app.Keys(os.Stdout)
-	}
 	if len(args) > 0 && (args[0] == "man" || args[0] == "help") {
 		return app.Man(os.Stdout, args[1:])
 	}
@@ -92,8 +88,8 @@ func realMain() int {
 		fmt.Fprintln(os.Stderr, "numb-form: -timeout may not exceed 25m")
 		return app.ExitUsage
 	}
-	if cfg.Confirm == "each" && !*allowPipe && !ui.IsTerminal(os.Stdin) {
-		fmt.Fprintln(os.Stderr, "numb-form: every document must be confirmed by a person; run it in an interactive terminal (docker/podman: -it, kubectl: -it), or set confirm = none")
+	if !*allowPipe && !ui.IsTerminal(os.Stdin) {
+		fmt.Fprintln(os.Stderr, "numb-form: every document must be confirmed by a person; run it in an interactive terminal (docker/podman: -it, kubectl: -it)")
 		return app.ExitUsage
 	}
 	cwd, err := os.Getwd()
@@ -107,13 +103,11 @@ func realMain() int {
 		Config:      &cfg,
 		Notes:       notes,
 		Downloads:   *downloads,
-		Offline:     *offline,
 		Timeout:     *timeout,
 		AllowNonTTY: *allowPipe,
 		In:          os.Stdin,
 		Out:         os.Stdout,
 		Now:         time.Now,
-		Lookup:      app.LookupConfig{CompaniesHouseKey: app.LookupKeyFromEnv()},
 	})
 	pause()
 	return code

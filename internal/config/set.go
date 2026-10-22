@@ -14,6 +14,9 @@ import (
 func SetUserValue(key, value string) (string, error) {
 	key = strings.TrimSpace(key)
 	value = strings.Join(strings.Fields(value), " ")
+	if retired[key] {
+		return "", fmt.Errorf("%s is no longer used", key)
+	}
 	if systemOnly[key] {
 		return "", fmt.Errorf("%s can only be set by an administrator in the system configuration", key)
 	}

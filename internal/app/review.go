@@ -34,7 +34,7 @@ func (r *run) copyToDownloads(in *inputs) error {
 		return err
 	}
 	r.ui.Printf("\nCopying %d files (%.1f MB) to Downloads before anything else.\n", st.Files, float64(st.Bytes)/1e6)
-	if st.Bytes > BigCopyBytes && r.cfg.Confirm == "each" {
+	if st.Bytes > BigCopyBytes {
 		ok, err := r.ui.YesNo("That is a large copy. Continue?", false)
 		if err != nil {
 			return err

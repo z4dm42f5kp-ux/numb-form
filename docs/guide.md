@@ -24,8 +24,9 @@ For every company that does not have a folder yet, it:
 1. creates a folder with the company's name,
 2. puts a copy of the form in it, named
    `Appendix A - Risk Assesment - <company>.docx`,
-3. fills in part A of the form (name, legal form, address,
-   representatives, date and your name),
+3. fills in part A of the form: the name, legal form, registry
+   sentence, date and your name by itself, and the address and
+   representatives you type,
 4. shows you what it wrote and waits for your OK.
 
 Companies that already have a folder are skipped.
@@ -95,14 +96,9 @@ To give a different answer, type it and press Enter.
 Each company starts with a line like `[3/11] Foo GmbH  (Sheet1!C5)`:
 the third of eleven companies, and the cell it was taken from.
 
-Then numb-form looks the company up by itself, which takes a few
-seconds: official registers, the company's own website (it finds it
-alone), official numbers printed there, government gazettes and a web
-search.
-It shows the website it used, any register entry printed there (for
-example `HRB 12345`), and how many addresses and representatives it
-found.
 The legal form is taken from the company name without asking.
+numb-form then asks you for the address and the representatives; it
+does not look anything up online.
 *Commercial Registry Number* always gets the sentence "No commercial
 registry number was found online consult internal sources for further
 information"; to put the number instead, choose `e` (edit) and field 4
@@ -112,15 +108,13 @@ at the end.
 | --- | --- | --- |
 | `Full name of the person processing the form:` | Only asked if you skipped step 2 | Type your name; Enter at the next question uses it for every form in this run |
 | `Is the existing folder "Foo Gmbh" this company's folder? (...) [y/N]` | A folder with a very similar name already exists | `y` if it is the same company (nothing is created), otherwise Enter |
-| `Legal form (Enter = keep, '-' = blank) [GmbH]` | Asked only when the company name has no legal form such as `GmbH` or `S.A.`; the suggestion comes from the register or website | Enter |
-| `Headquarters / Address candidates` and a numbered list, then `Choose a number, 'm' to type it, 'b' to leave blank [1]` | Addresses found, the most reliable (official registers) first; each shows its source | Enter takes number 1; type another number; `m` to type the address yourself; `b` to leave it blank |
-| `Address (Enter = keep, or correct it) [...]` | The address you picked, so you can correct a typo | Enter, or type the corrected address |
-| `Add the caution text to the address (not fully verified)? [y/N]` | Adds the sentence "Caution: This field might differ from internal sources ..." The same question can come for the representatives | Press Enter: the suggestion already depends on how reliable the source is |
-| `Authorized representative candidates` and a numbered list, then `Numbers to include (e.g. 1,3), 'a' all, 'm' type them, 'n' none found [1,2]` | People found, each marked `[verified]` (official register) or `[unverified]` | Enter takes the verified ones; type numbers like `1,3`; `a` for all; `m` to type them yourself; `n` writes "No representatives were found online ..." |
+| `Legal form (the name has none; Enter = blank):` | Asked only when the company name has no legal form such as `GmbH` or `S.A.` | Type it, or Enter to leave it blank |
+| `Headquarters / Address (one line, Enter = blank):` | The company's address, from your own sources | Type or paste it on one line and press Enter |
+| `Representatives (Enter = "No representatives were found…", '-' = blank):` | The people who may sign for the company, written `Full Name (Role 1, Role 2), Full Name (Role)` with the roles in English | Type or paste them; Enter alone writes "No representatives were found online ..."; `-` leaves the field blank |
 | `Is this correct? [a]ccept, [e]dit a field, [r]eject:` | The form has been written; numb-form shows part A as the form now reads | Type `a` if it is right; `e` to change one line; `r` to throw it away. There is no default here: you must type a letter |
 
 At the end numb-form shows a summary, for example
-`Done: 3 accepted, 8 already had a folder, 0 rejected, 0 need review, 0 skipped, 0 errors.`
+`Done: 3 accepted, 8 already had a folder, 0 rejected, 0 skipped, 0 errors.`
 and where the log is.
 
 You can stop at any time with **Ctrl+C**.

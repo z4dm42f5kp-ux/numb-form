@@ -12,22 +12,19 @@ func TestDefaultsValid(t *testing.T) {
 	if err := c.Validate(); err != nil {
 		t.Fatal(err)
 	}
-	if c.Mode != "direct" || c.Confirm != "each" || c.LegacyFormats || c.PagesWrite {
+	if c.Mode != "direct" || !c.Online || c.LegacyFormats || c.PagesWrite {
 		t.Fatalf("unexpected defaults %+v", c)
 	}
 }
 
 func TestApply(t *testing.T) {
 	c := Defaults()
-	notes, err := c.Apply([]byte("\ufeff# comment\nmode = review\nconfirm = none # inline\nperson = \"Max Muster\"\ntimeout = 10m\nreps_sources = companies-house, gleif\nlegacy_formats = yes\n"), "user.conf", false)
+	notes, err := c.Apply([]byte("\ufeff# comment\nmode = review # inline\nperson = \"Max Muster\"\ntimeout = 10m\nlegacy_formats = yes\n"), "user.conf", false)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if c.Mode != "review" || c.Confirm != "none" || c.Person != "Max Muster" || c.Timeout != 10*time.Minute {
+	if c.Mode != "review" || c.Person != "Max Muster" || c.Timeout != 10*time.Minute {
 		t.Fatalf("got %+v", c)
-	}
-	if strings.Join(c.RepsSources, " ") != "companies-house gleif" {
-		t.Fatalf("sources %v", c.RepsSources)
 	}
 	if c.LegacyFormats || len(notes) != 1 {
 		t.Fatalf("legacy_formats must need the system file: %v %v", c.LegacyFormats, notes)
@@ -35,26 +32,23 @@ func TestApply(t *testing.T) {
 	if _, err := c.Apply([]byte("legacy_formats = yes\n"), "sys", true); err != nil || !c.LegacyFormats {
 		t.Fatal("system file could not enable legacy formats")
 	}
-	if err := c.Validate(); err != nil || c.Website != "auto" || c.AddressFallback != "blank" {
-		t.Fatalf("validate %v %+v", err, c)
+	if err := c.Validate(); err != nil {
+		t.Fatal(err)
 	}
 }
 
-func TestSearchEngines(t *testing.T) {
+// Keys of the removed online lookup are skipped with a note, so older
+// files keep working.
+func TestRetiredKeys(t *testing.T) {
 	c := Defaults()
-	if c.Search != "duckduckgo mojeek yahoo brave" || c.Browser != "auto" {
-		t.Fatalf("defaults %q %q", c.Search, c.Browser)
-	}
-	if _, err := c.Apply([]byte("search = mojeek, duckduckgo\nbrowser = none\n"), "u", false); err != nil || c.Search != "mojeek duckduckgo" || c.Browser != "none" {
-		t.Fatalf("%v %q %q", err, c.Search, c.Browser)
-	}
-	if _, err := c.Apply([]byte("search = none\n"), "u", false); err != nil || c.Search != "none" {
-		t.Fatalf("%v %q", err, c.Search)
+	notes, err := c.Apply([]byte("confirm = none\nreps_sources = gleif\nsearch = duckduckgo\nbrowser = none\ncaution = always\n"), "old.conf", false)
+	if err != nil || len(notes) != 5 {
+		t.Fatalf("%v %q", err, notes)
 	}
 }
 
 func TestErrors(t *testing.T) {
-	for _, in := range []string{"nokey\n", "colour = red\n", "mode = maybe\n", "reps_sources = google\n", "timeout = soon\n", "search = google\n"} {
+	for _, in := range []string{"nokey\n", "colour = red\n", "mode = maybe\n", "timeout = soon\n", "online = maybe\n"} {
 		c := Defaults()
 		if _, err := c.Apply([]byte(in), "x", false); err == nil {
 			t.Errorf("%q accepted", in)
@@ -64,11 +58,6 @@ func TestErrors(t *testing.T) {
 	c.Timeout = time.Hour
 	if c.Validate() == nil {
 		t.Error("timeout over 25m accepted")
-	}
-	c = Defaults()
-	c.Confirm = "none"
-	if c.Validate() == nil {
-		t.Error("confirm = none without person accepted")
 	}
 }
 
@@ -103,7 +92,7 @@ func TestDateLayout(t *testing.T) {
 
 func FuzzApply(f *testing.F) {
 	f.Add([]byte(Template()))
-	f.Add([]byte("mode = review\nconfirm = none\n"))
+	f.Add([]byte("mode = review\nperson = P\n"))
 	f.Fuzz(func(t *testing.T, b []byte) {
 		c := Defaults()
 		_, _ = c.Apply(b, "fuzz", false)
@@ -134,7 +123,7 @@ func TestSetUserValue(t *testing.T) {
 	if err != nil || c.Person != "Max Muster" || c.Mode != "review" {
 		t.Fatalf("load %+v %v", c, err)
 	}
-	for _, bad := range [][2]string{{"mode", "maybe"}, {"colour", "red"}, {"legacy_formats", "yes"}} {
+	for _, bad := range [][2]string{{"mode", "maybe"}, {"colour", "red"}, {"legacy_formats", "yes"}, {"confirm", "none"}} {
 		if _, err := SetUserValue(bad[0], bad[1]); err == nil {
 			t.Errorf("%v accepted", bad)
 		}

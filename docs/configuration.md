@@ -37,6 +37,9 @@ value.
 Values may be quoted with `"`.
 Unknown keys and invalid values are errors, so typing mistakes are found
 at once.
+Keys of older versions (`confirm`, `address_sources`, `address_fallback`,
+`reps_sources`, `reps_min_trust`, `reps_fallback`, `caution`, `website`,
+`search`, `browser`, `guess_domains`) are ignored with a note.
 
 Save a single setting without editing the file:
 
@@ -62,17 +65,9 @@ numb-form config init && numb-form config
   work happens in the copy, and `numb-commit` copies the accepted
   folders back.
 
-`confirm = each` | `none`
-: **each** (default): every value and every document is shown and must
-  be accepted.
-  **none**: runs without questions; each document must still read back
-  exactly as written.
-  Near folder-name matches are never decided automatically: the company
-  is skipped and reported as *needs review*.
-  Requires `person`.
-
 `online = yes` | `no`
-: Look up registers and websites (default yes).
+: Let `numb-form update` contact GitHub (default yes).
+  Companies are never looked up online.
 
 `timeout = 25m`
 : Stop safely after this long; at most `25m`.
@@ -112,70 +107,6 @@ numb-form config init && numb-form config
 `fuzzy_threshold = 0.85`
 : How similar a folder name must be to be offered as a match (0.5-1).
 
-### Sources
-
-Sources are `companies-house`, `vies`, `brasil-cnpj`, `official`
-(government gazettes and registers found by search), `gleif`, `website`,
-`directory` (company-data websites that republish register data, such as
-northdata, Moneyhouse, Racius or OpenCorporates), `search` (web search
-snippets; search also finds the website), `osm` (OpenStreetMap, for an
-address) and `wikidata`.
-Lists are separated by spaces or commas; their order is the order of
-preference.
-
-`address_sources = companies-house vies brasil-cnpj official gleif website directory search osm wikidata`
-: Sources for *Headquarters / Address*.
-
-`address_fallback = ask` | `blank`
-: When no address is found. With `confirm = none`, `ask` acts as
-  `blank`.
-
-`reps_sources = companies-house vies brasil-cnpj official gleif website directory search osm wikidata`
-: Sources for *Authorized Representatives*.
-
-`reps_min_trust = any` | `website` | `register`
-: Least trusted source accepted for representatives: `register` accepts
-  only government or regulatory registers.
-
-`reps_fallback = no-reps-text` | `blank`
-: When nobody is found: the exact no-representatives text, or blank.
-
-`caution = auto` | `always` | `never`
-: The caution text.
-  **auto**: suggested for values not confirmed by a register (asked when
-  `confirm = each`).
-
-`website = auto` | `ask` | `never`
-: The company website read for its legal notice.
-  **auto** (default): found automatically and used only if it names the
-  company.
-  **ask**: you type the address for every company (Enter finds it
-  automatically).
-  **never**: no website is read.
-  With `confirm = none`, `ask` acts as `auto`.
-  The older value `wikidata` means `auto`.
-
-`search = duckduckgo mojeek yahoo brave` | `none`
-: Web search engines used to find websites, government gazette entries
-  and, as a last resort, representatives in result snippets, in order of
-  preference: when one refuses, it rests for a minute and the next one is
-  asked.
-  Only the company name is sent, with words such as `impressum` or
-  `site:boe.es`.
-  **none** turns searching off; registers and guessed addresses are still
-  used.
-
-`browser = auto` | `none` | *path*
-: The browser started invisibly (headless, no window) for websites built
-  with JavaScript and for searching when every engine refuses.
-  **auto**: Google Chrome; without it, Chromium or Microsoft Edge.
-  A *path* names another Chromium-based browser.
-  Every start uses a new, empty profile that is deleted right after.
-
-`guess_domains = yes` | `no`
-: Also try addresses built from the name, such as `foobar.de` or
-  `foobar.com.br`, chosen by the countries of the legal form.
-
 ### Formats
 
 `soffice =`
@@ -192,22 +123,16 @@ preference.
 
 `legacy_formats = no`
 : SYSTEM FILE ONLY: allow `.doc` templates and `.xls` spreadsheets.
-  Runs that use them are always offline.
 
 `legacy_output = docx` | `same`
 : Filled forms from a `.doc` template are `.docx`, or `.doc` again.
 
 ## EXAMPLES
 
-Unattended runs that accept only register data:
+Save your name so it is not asked at every run:
 
 ```
-confirm = none
 person = Max Muster
-address_sources = companies-house gleif
-reps_sources = companies-house gleif
-reps_min_trust = register
-caution = auto
 ```
 
 Your previous workflow, with a review copy in Downloads:

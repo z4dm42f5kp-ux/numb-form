@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/z4dm42f5kp-ux/numb-form/internal/config"
-	"github.com/z4dm42f5kp-ux/numb-form/internal/docx"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/form"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/odt"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/testfix"
@@ -40,7 +39,7 @@ func TestDirectMode(t *testing.T) {
 	in = append(in, newCompany("London", "a")...) // Foo Ltd
 	cfg := direct(t)
 	var out bytes.Buffer
-	code := Run(Options{Parent: parent, Offline: true, AllowNonTTY: true, Config: cfg,
+	code := Run(Options{Parent: parent, AllowNonTTY: true, Config: cfg,
 		In: strings.NewReader(strings.Join(in, "\n") + "\n"), Out: &out, Now: fixedNow})
 	if code != ExitOK {
 		t.Fatalf("exit %d\n%s", code, out.String())
@@ -85,37 +84,6 @@ func mustList(t *testing.T, root string) []string {
 	return out
 }
 
-// confirm = none needs no input at all; near matches are left for a
-// person instead of creating duplicates.
-func TestAutoMode(t *testing.T) {
-	parent, root, _ := setup(t)
-	cfg := direct(t)
-	cfg.Confirm, cfg.Person = "none", "Auto Person"
-	if err := cfg.Validate(); err != nil {
-		t.Fatal(err)
-	}
-	var out bytes.Buffer
-	code := Run(Options{Parent: parent, Offline: true, AllowNonTTY: true, Config: cfg,
-		In: strings.NewReader(""), Out: &out, Now: fixedNow})
-	if code != ExitOK {
-		t.Fatalf("exit %d\n%s", code, out.String())
-	}
-	if !strings.Contains(out.String(), "6 accepted, 4 already had a folder, 0 rejected, 1 need review") {
-		t.Fatalf("unexpected summary:\n%s", out.String())
-	}
-	b, err := os.ReadFile(filepath.Join(root, "Foo Ltd", "Appendix A - Risk Assesment - Foo Ltd.docx"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	got, err := (docx.Format{}).ReadBack(b)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got[form.FieldReps] != NoRepsText || got[form.FieldPerson] != "Auto Person" || got[form.FieldLegalForm] != "Ltd" || got[form.FieldAddress] != "" {
-		t.Fatalf("auto values %v", got)
-	}
-}
-
 // The same flow works with an OpenDocument template and a CSV export.
 func TestODTAndCSV(t *testing.T) {
 	base := t.TempDir()
@@ -133,7 +101,7 @@ func TestODTAndCSV(t *testing.T) {
 	cfg.OverviewDir = "overview"
 	in := strings.Join(append([]string{"Max Muster", ""}, newCompany("Musterstr. 1", "a")...), "\n") + "\n"
 	var out bytes.Buffer
-	if code := Run(Options{Parent: parent, Offline: true, AllowNonTTY: true, Config: cfg, In: strings.NewReader(in), Out: &out, Now: fixedNow}); code != ExitOK {
+	if code := Run(Options{Parent: parent, AllowNonTTY: true, Config: cfg, In: strings.NewReader(in), Out: &out, Now: fixedNow}); code != ExitOK {
 		t.Fatalf("exit %d\n%s", code, out.String())
 	}
 	b, err := os.ReadFile(filepath.Join(root, "Foo GmbH", "Appendix A - Risk Assessment - Foo GmbH.odt"))
@@ -150,9 +118,9 @@ func TestODTAndCSV(t *testing.T) {
 func TestStartInsideWorkingFolder(t *testing.T) {
 	_, root, _ := setup(t)
 	cfg := direct(t)
-	cfg.Confirm, cfg.Person = "none", "P"
 	var out bytes.Buffer
-	if code := Run(Options{Parent: root, Offline: true, AllowNonTTY: true, Config: cfg, In: strings.NewReader(""), Out: &out, Now: fixedNow}); code != ExitOK {
+	// The input ends after the person's name; the run stops safely.
+	if code := Run(Options{Parent: root, AllowNonTTY: true, Config: cfg, In: strings.NewReader("P\n"), Out: &out, Now: fixedNow}); code == ExitError {
 		t.Fatalf("exit %d\n%s", code, out.String())
 	}
 	if !strings.Contains(out.String(), "Working folder: "+root) {

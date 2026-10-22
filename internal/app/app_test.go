@@ -76,11 +76,11 @@ func review() *config.Config {
 	return &c
 }
 
-// newCompany answers the offline dialogue for one company whose name has
-// a legal form (so it is not asked): address "m", the address, no
-// caution, no representatives found.
+// newCompany answers the dialogue for one company whose name has a legal
+// form (so it is not asked): the address, then Enter for the
+// representatives, which writes the no-representatives text.
 func newCompany(addr string, final ...string) []string {
-	a := []string{"", addr, "", ""}
+	a := []string{addr, ""}
 	return append(a, final...)
 }
 
@@ -104,7 +104,7 @@ func TestRunAndCommit(t *testing.T) {
 	var out bytes.Buffer
 	now := func() time.Time { return time.Date(2026, 10, 16, 9, 30, 0, 0, time.Local) }
 	code := Run(Options{
-		Parent: parent, Downloads: dl, Offline: true, AllowNonTTY: true, Config: review(),
+		Parent: parent, Downloads: dl, AllowNonTTY: true, Config: review(),
 		In: strings.NewReader(strings.Join(in, "\n") + "\n"), Out: &out, Now: now,
 	})
 	if code != ExitOK {
@@ -208,7 +208,7 @@ func TestRunAndCommit(t *testing.T) {
 	}
 	out.Reset()
 	in2 := "Max Muster\n\n" + newCompanyLine("Caracas 4") // only the rejected Foo C.A. is new again
-	code = Run(Options{Parent: parent, Downloads: dl, Offline: true, AllowNonTTY: true, Config: review(), In: strings.NewReader(in2), Out: &out, Now: now})
+	code = Run(Options{Parent: parent, Downloads: dl, AllowNonTTY: true, Config: review(), In: strings.NewReader(in2), Out: &out, Now: now})
 	if code != ExitOK {
 		t.Fatalf("second run exit %d\n%s", code, out.String())
 	}
@@ -237,7 +237,7 @@ func TestTimeoutStopsSafely(t *testing.T) {
 	defer pr.Close()
 	defer pw.Close()
 	var out bytes.Buffer
-	code := Run(Options{Parent: parent, Downloads: dl, Offline: true, AllowNonTTY: true, Config: review(), In: pr, Out: &out, Timeout: 300 * time.Millisecond})
+	code := Run(Options{Parent: parent, Downloads: dl, AllowNonTTY: true, Config: review(), In: pr, Out: &out, Timeout: 300 * time.Millisecond})
 	if code != ExitInterrupted {
 		t.Fatalf("exit %d\n%s", code, out.String())
 	}

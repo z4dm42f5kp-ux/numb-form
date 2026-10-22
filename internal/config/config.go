@@ -18,9 +18,8 @@ import (
 
 // Config is the effective configuration.
 type Config struct {
-	Mode    string // direct | review
-	Confirm string // each | none
-	Online  bool
+	Mode   string // direct | review
+	Online bool   // numb-form update may contact GitHub
 
 	OverviewDir  string // folder name pattern of the overview folder
 	Header       string // spreadsheet column with company names
@@ -35,17 +34,6 @@ type Config struct {
 	Downloads string // review mode: where the copy goes; empty = Downloads
 	LogDir    string // direct mode: where logs go; empty = per-user state folder
 
-	AddressSources  []string
-	AddressFallback string // blank | ask
-	RepsSources     []string
-	RepsMinTrust    string // register | website | any
-	RepsFallback    string // no-reps-text | blank
-	Caution         string // auto | always | never
-	Website         string // auto | ask | never
-	Search          string // search engines in order, or none
-	Browser         string // auto | none | path of a Chromium-based browser
-	GuessDomains    bool   // also try addresses such as companyname.de
-
 	Soffice          string // path to LibreOffice/OpenOffice soffice; empty = search
 	PagesConverter   string // auto | pages-app | libreoffice
 	PagesWrite       bool   // experimental: write .pages through Apple Pages
@@ -57,12 +45,6 @@ type Config struct {
 	Origin map[string]string
 }
 
-// Sources understood in *_sources keys, most authoritative first.
-var Sources = []string{"companies-house", "vies", "brasil-cnpj", "official", "gleif", "website", "directory", "search", "osm", "wikidata"}
-
-// SearchEngines are the keyless web search engines, in default order.
-var SearchEngines = []string{"duckduckgo", "mojeek", "yahoo", "brave"}
-
 // MaxTimeout is the hard upper bound for a run.
 const MaxTimeout = 25 * time.Minute
 
@@ -71,7 +53,6 @@ const MaxTimeout = 25 * time.Minute
 func Defaults() Config {
 	return Config{
 		Mode:             "direct",
-		Confirm:          "each",
 		Online:           true,
 		OverviewDir:      "Übersicht",
 		Header:           "Customer Name",
@@ -81,16 +62,6 @@ func Defaults() Config {
 		Timeout:          MaxTimeout,
 		MaxWriteMB:       100,
 		Fuzzy:            0.85,
-		AddressSources:   append([]string(nil), Sources...),
-		AddressFallback:  "ask",
-		RepsSources:      append([]string(nil), Sources...),
-		RepsMinTrust:     "any",
-		RepsFallback:     "no-reps-text",
-		Caution:          "auto",
-		Website:          "auto",
-		Search:           "duckduckgo mojeek yahoo brave",
-		Browser:          "auto",
-		GuessDomains:     true,
 		PagesConverter:   "auto",
 		NumbersConverter: "auto",
 		LegacyOutput:     "docx",
@@ -108,30 +79,8 @@ func GoDateLayout(f string) (string, error) {
 	return out, nil
 }
 
-// Allowed reports whether source is listed.
-func Allowed(list []string, source string) bool {
-	for _, s := range list {
-		if s == source {
-			return true
-		}
-	}
-	return false
-}
-
 // Validate checks combinations that individual keys cannot.
 func (c *Config) Validate() error {
-	if c.Confirm == "none" && c.Person == "" {
-		return fmt.Errorf("confirm = none needs person = <full name> in the configuration")
-	}
-	if c.Confirm == "none" && c.AddressFallback == "ask" {
-		c.AddressFallback = "blank"
-	}
-	if c.Website == "wikidata" {
-		c.Website = "auto" // older name of the same setting
-	}
-	if c.Confirm == "none" && c.Website == "ask" {
-		c.Website = "auto"
-	}
 	if c.Timeout <= 0 || c.Timeout > MaxTimeout {
 		return fmt.Errorf("timeout must be between 1s and 25m")
 	}

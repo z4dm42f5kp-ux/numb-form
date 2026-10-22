@@ -1,7 +1,6 @@
 package app
 
 import (
-	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -87,9 +86,6 @@ func (r *run) pickRoot() (string, error) {
 	}
 	if len(withOverview) == 1 {
 		return withOverview[0], nil
-	}
-	if r.cfg.Confirm == "none" {
-		return "", errors.New("several folders could be the working folder; use -root")
 	}
 	cands := withOverview
 	if len(cands) == 0 {
