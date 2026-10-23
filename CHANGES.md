@@ -8,6 +8,12 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.4.1
+
+* numb-commit: `numb-commit-request.txt` starts with a UTF-8 byte order
+  mark, so Windows PowerShell 5.1 (`Get-Content`) and Notepad show the
+  folder tree's lines and umlauts correctly instead of `â”œâ”€â”€`.
+
 ## v1.4.0
 
 * numb-commit compares a working copy with the real working folder:
