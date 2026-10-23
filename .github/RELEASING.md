@@ -54,6 +54,12 @@ desktop site if Settings is hidden):
   the Go tools in the workflows and opens a pull request
   `ci: update Go tools: ...` (if workflows may not open pull requests in
   Settings > Actions > General, it opens an issue instead).
+* It checks the operating systems the tests run on. When a pinned
+  container image (Debian, Fedora, Arch, Gentoo, Void, openSUSE,
+  Alpine, NixOS) has security updates, it opens a pull request
+  `ci: security updates of the test systems`. When a distribution or
+  FreeBSD, OpenBSD or NetBSD has a newer release, it opens or updates
+  the issue *Newer operating system releases to test*.
 * It also checks the binaries of the newest release and of the rolling
   build with govulncheck. When a newer stable Go fixes what it finds, it
   rebuilds the rolling build, and proposes the next patch version of the

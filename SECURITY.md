@@ -198,6 +198,7 @@ PGP is not used because the ecosystems involved no longer rely on it
 | Python tools in CI (zizmor, Argos Translate) | every package pinned with SHA-256 (`--require-hashes`), wheels only (`--only-binary :all:`), no dependency resolution at install time (`--no-deps`) |
 | Argos Translate models | index read at a pinned commit; each model's SHA-256 is pinned in `.github/translate/models.sha256`, recorded on first use and enforced afterwards |
 | Container base image | none: images are built `FROM scratch` |
+| Test systems (container images of the Linux distributions, the BSD virtual machines) | images pinned by digest; a daily check proposes new digests (the distributions' security updates) and reports newer releases (`scripts/check-systems.sh`) |
 
 **Releases.**
 Release binaries are built by GitHub Actions from a tag, with
