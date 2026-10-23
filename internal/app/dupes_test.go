@@ -1,8 +1,10 @@
 package app
 
 import (
+	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -54,5 +56,47 @@ func TestListFolders(t *testing.T) {
 		if got[not] {
 			t.Errorf("%s listed", not)
 		}
+	}
+}
+
+// A new folder of a company the real folder already has under its
+// customer id is not copied, and the review and the tree say so.
+func TestSkipKnownCompanies(t *testing.T) {
+	real, cp, rc, q := scanned(t)
+	if err := os.Mkdir(filepath.Join(real, "D00000 Foo Ltd"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	q.skipKnownCompanies(rc)
+	foo := "Foo Ltd/Appendix A - Risk Assesment - Foo Ltd.docx"
+	for _, c := range q.Changes {
+		switch {
+		case c.rel == foo && (c.kind != kDup || c.dup != "D00000 Foo Ltd"):
+			t.Errorf("%s: %s %q", c.rel, c.kind, c.dup)
+		case c.rel == foo && c.reason != `not copied: the real folder already has "D00000 Foo Ltd" for Foo Ltd (it starts with the customer id D00000)`:
+			t.Errorf("reason %q", c.reason)
+		case c.rel != foo && c.kind == kDup:
+			t.Errorf("%s is a duplicate", c.rel)
+		}
+	}
+	v := reviewRequest(q, rc)
+	if ok, _ := has(v, "ok", `"Foo Ltd" is not copied: the real folder already has "D00000 Foo Ltd" for that company`); !ok || v.count("fail") != 0 {
+		t.Errorf("review:\n%s", dump(v))
+	}
+	if !strings.Contains(q.tree(), `= unchanged; "Foo Ltd" of the working copy is the same company, not copied`) {
+		t.Errorf("tree:\n%s", q.tree())
+	}
+
+	// More than numb-form's form in that folder asks for a look.
+	if err := os.WriteFile(filepath.Join(cp, "Foo Ltd", "notes.txt"), []byte("notes"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	q, err := scanRequest(context.Background(), cp, real, rc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	q.skipKnownCompanies(rc)
+	v = reviewRequest(q, rc)
+	if ok, _ := has(v, "warn", "holds more than numb-form's form (notes.txt)"); !ok {
+		t.Errorf("review:\n%s", dump(v))
 	}
 }

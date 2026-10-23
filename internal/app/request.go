@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -174,6 +175,33 @@ func scanRequest(ctx context.Context, from, to string, rc reviewConfig) (*reques
 	}
 	q.Others = othersAtTop(to, q)
 	return q, nil
+}
+
+// skipKnownCompanies turns the files of each new folder whose company the
+// real folder already has (under its customer id, for example) into dup:
+// numb-form only made the form there because the working copy lacked
+// that folder.
+func (q *request) skipKnownCompanies(rc reviewConfig) {
+	var folders []realFolder
+	listed := false
+	for i, c := range q.Changes {
+		if c.kind != kAdd || c.top == "" {
+			continue
+		}
+		if !listed {
+			ov, _ := findOverview(q.To, rc.overviewDir)
+			folders, listed = listFolders(q.To, ov), true
+		}
+		base := path.Base(c.top)
+		company, id := base, ""
+		if n, ok := rc.names[strings.ToLower(base)]; ok {
+			company, id = n, rc.ids[strings.ToLower(base)]
+		}
+		if f, why, ok := companyFolder(folders, company, id); ok {
+			q.Changes[i].kind, q.Changes[i].dup = kDup, f.rel
+			q.Changes[i].reason = fmt.Sprintf("not copied: the real folder already has %q for %s (%s)", f.rel, company, why)
+		}
+	}
 }
 
 // othersAtTop counts the entries at the top of the real folder that the

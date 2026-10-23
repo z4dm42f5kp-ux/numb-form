@@ -8,6 +8,14 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.5.2
+
+* Internal: numb-commit can mark the new folder of a company that the
+  real folder already has as not to be copied, and its review explains
+  each such folder and asks for a look when it holds more than
+  numb-form's form.
+  Nothing marks folders yet. No change in behaviour.
+
 ## v1.5.1
 
 * Internal: finding the folder that the real working folder already has
