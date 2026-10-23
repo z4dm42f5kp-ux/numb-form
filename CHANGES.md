@@ -8,6 +8,15 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.3.4
+
+* Internal: the numb-commit request file, `numb-commit-request.txt`:
+  the list of changes and the real folder's tree before and after, for
+  people, followed by the same data for numb-commit.
+  The reader refuses files over 16 MB and paths that leave the folder,
+  and is fuzzed.
+  Nothing uses it yet. No change in behaviour.
+
 ## v1.3.3
 
 * Internal: numb-commit's comparison of a working copy with the real
