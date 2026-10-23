@@ -31,6 +31,7 @@ jobs:
     runs-on: macos-latest
     permissions:
       contents: write # commit the translations
+      actions: write  # start the rolling build, which this push cannot start
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -56,6 +57,9 @@ jobs:
           git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
             commit -m "docs: update Spanish and German translations (Argos Translate)"
           git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main
+          # A push with the workflow token starts no workflow: rebuild the
+          # rolling release so it includes the translations.
+          gh workflow run edge.yml --repo "$GITHUB_REPOSITORY" --ref main
       - name: Remove downloaded models
         if: always()
         run: rm -rf "$HOME/.local/share/argos-translate" "$HOME/.local/cache/argos-translate" "$HOME/Library/Caches/pip"

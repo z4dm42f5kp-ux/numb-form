@@ -132,3 +132,12 @@ Legal forms were missed in names written with their city or country
 Colombian BIC and E.S.P., Argentine and Paraguayan combinations).
 Trailing places are now removed before the form is looked for, accents
 are ignored when matching, and the list was extended.
+
+## The rolling build is never behind stable
+
+Translations are committed by the translate workflow with the workflow
+token, and such pushes start no other workflow, so the rolling build
+skipped them; a stable release tagged on the translation commit was then
+newer than rolling.
+The rolling build now always builds the newest `main`, and runs after a
+release is published and after translations are committed.
