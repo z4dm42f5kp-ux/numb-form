@@ -83,6 +83,9 @@ func (q *request) text() string {
 // data in lines for numb-commit.
 func (q *request) write(path string) error {
 	var b bytes.Buffer
+	// The byte order mark makes Windows PowerShell 5.1 (Get-Content) and
+	// old Notepad read the file as UTF-8, so the tree stays readable.
+	b.WriteString("\ufeff")
 	b.WriteString(q.text())
 	b.WriteString("\n" + requestData + "\n")
 	fmt.Fprintf(&b, "from\t%s\nto\t%s\nstage\t%s\nmade\t%s\nstatus\t%s\nsheet\t%s\nothers\t%d\n",

@@ -221,7 +221,9 @@ prepared.
 ## FILES
 
 `<working copy>/numb-commit-request.txt`
-: The request: what would be copied. UTF-8.
+: The request: what would be copied.
+  UTF-8 with a byte order mark, so Notepad and Windows PowerShell 5.1
+  (`Get-Content`) show the tree correctly.
 
 `Downloads/numb-form-runs/<run>/numb-commit.log`
 : Review runs: log of the commit.
