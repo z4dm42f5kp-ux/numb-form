@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/z4dm42f5kp-ux/numb-form/internal/installdoc"
 )
@@ -33,22 +34,11 @@ func run(args []string) error {
 		if err != nil {
 			return err
 		}
-		p, err := installdoc.ParsePins(append([]byte(fmt.Sprintf("version %s\nprograms %s\n", args[1], joinFields(args[3:]))), sums...))
+		p, err := installdoc.ParsePins(append([]byte(fmt.Sprintf("version %s\nprograms %s\n", args[1], strings.Join(args[3:], " "))), sums...))
 		if err != nil {
 			return err
 		}
 		return os.WriteFile(filepath.Join(installdoc.Dir, "pins.txt"), p.Format(), 0o644) // #nosec G306 -- documentation.
 	}
-	return fmt.Errorf("usage: install render | install pin vX.Y.Z SHA256SUMS program...")
-}
-
-func joinFields(f []string) string {
-	s := ""
-	for i, x := range f {
-		if i > 0 {
-			s += " "
-		}
-		s += x
-	}
-	return s
+	return fmt.Errorf("usage: install render, or install pin vX.Y.Z SHA256SUMS program [program]")
 }
