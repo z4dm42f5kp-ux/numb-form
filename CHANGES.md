@@ -8,6 +8,14 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.5.1
+
+* Internal: finding the folder that the real working folder already has
+  for a company: one that starts with its customer ID (for example
+  `D10629 Foo S.A.`), one with its name after a customer ID, or one with
+  its name in another spelling.
+  Nothing uses it yet. No change in behaviour.
+
 ## v1.5.0
 
 * numb-commit copies a working copy into the real working folder.
