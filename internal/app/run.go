@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/z4dm42f5kp-ux/numb-form/internal/config"
@@ -232,6 +233,9 @@ func (r *run) summary() {
 	}
 	r.ui.Printf("\nDone: %d accepted, %d already had a folder, %d rejected, %d skipped, %d errors.\n",
 		counts["accepted"], counts["exists"], counts["rejected"], counts["skipped"], counts["error"])
+	if n := byYes(r.man.Companies); n > 0 {
+		r.ui.Printf("%d of those folders were taken with -y because their names are similar; check them in the log.\n", n)
+	}
 	if r.cfg.Mode == "review" {
 		r.ui.Printf("Review copy: %s\n", r.workRoot)
 	}
@@ -249,6 +253,19 @@ func where(idHeader, id string, row int) string {
 		return fmt.Sprintf("row %d", row)
 	}
 	return fmt.Sprintf("%s %s, row %d", idHeader, id, row)
+}
+
+// byY starts the reason of a similar folder taken with -y.
+const byY = "similar folder, accepted with -y: "
+
+func byYes(cs []runlog.Company) int {
+	n := 0
+	for _, c := range cs {
+		if c.Status == "exists" && strings.HasPrefix(c.Reason, byY) {
+			n++
+		}
+	}
+	return n
 }
 
 func rel(root, p string) string {

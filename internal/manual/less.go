@@ -62,17 +62,17 @@ func (p *pager) key(k string) bool {
 	switch k {
 	case "q", "Q", "\x03":
 		return true
-	case " ", "f", "\x06", "\x1b[6~":
+	case " ", "f", "F", "\x06", "\x1b[6~":
 		p.scroll(p.page())
-	case "b", "\x02", "\x1b[5~":
+	case "b", "B", "\x02", "\x1b[5~":
 		p.scroll(-p.page())
-	case "\r", "\n", "j", "e", "\x0e", "\x1b[B", "\x1bOB":
+	case "\r", "\n", "j", "J", "e", "E", "\x0e", "\x1b[B", "\x1bOB":
 		p.scroll(1)
-	case "k", "y", "\x10", "\x1b[A", "\x1bOA":
+	case "k", "K", "y", "Y", "\x10", "\x1b[A", "\x1bOA":
 		p.scroll(-1)
-	case "d", "\x04":
+	case "d", "D", "\x04":
 		p.scroll(p.page() / 2)
-	case "u", "\x15":
+	case "u", "U", "\x15":
 		p.scroll(-p.page() / 2)
 	case "g", "<", "\x1b[H", "\x1b[1~", "\x1bOH":
 		p.top = 0
@@ -102,7 +102,8 @@ func fit(s string, width int) string {
 func softWrap(lines []string, width int) []string {
 	var out []string
 	for _, l := range lines {
-		r := []rune(l)
+		// A tab would take up to eight columns.
+		r := []rune(strings.ReplaceAll(l, "\t", "    "))
 		for len(r) > width {
 			out = append(out, string(r[:width]))
 			r = r[width:]
@@ -154,7 +155,7 @@ func readKey(r *bufio.Reader) (string, error) {
 		return "\x1b", err
 	}
 	if n != '[' && n != 'O' {
-		return string([]byte{c, n}), nil
+		return string(n), nil // Esc and then a key: the key
 	}
 	seq := []byte{c, n}
 	for len(seq) < 8 {
@@ -184,6 +185,10 @@ func readLine(r *bufio.Reader, w io.Writer) (string, error) {
 		case k == "\x03" || k == "\x1b":
 			return "", nil
 		case (k == "\x7f" || k == "\b") && len(s) > 0:
+			// Remove a whole character, including all bytes of an accented one.
+			for len(s) > 1 && s[len(s)-1] >= 0x80 && s[len(s)-1] < 0xc0 {
+				s = s[:len(s)-1]
+			}
 			s = s[:len(s)-1]
 			fmt.Fprint(w, "\b \b")
 		case len(k) == 1 && k[0] >= 0x20 && k[0] < 0x7f, len(k) == 1 && k[0] >= 0x80:

@@ -1,6 +1,7 @@
 package manual
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"strings"
@@ -61,5 +62,20 @@ func TestLongLinesWrap(t *testing.T) {
 		if n := strings.Count(row, "y"); n > 39 {
 			t.Fatalf("row of %d characters in a 40-column window", n)
 		}
+	}
+}
+
+func TestEscBackspaceTabs(t *testing.T) {
+	if got := softWrap([]string{"a\tb"}, 79); got[0] != "a    b" {
+		t.Errorf("tab: %q", got)
+	}
+	r := bufio.NewReader(strings.NewReader("\x1bq"))
+	if k, _ := readKey(r); k != "q" {
+		t.Errorf("Esc q gave %q", k)
+	}
+	var out bytes.Buffer
+	s, _ := readLine(bufio.NewReader(strings.NewReader("Mé\x7fx\r")), &out)
+	if got := utf8Bytes(s); got != "Mx" {
+		t.Errorf("backspace over é gave %q", got)
 	}
 }
