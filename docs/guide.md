@@ -104,6 +104,8 @@ companies, its customer number and its row in the Excel list.
 The legal form is taken from the company name without asking.
 numb-form then asks you for the address and the representatives; it
 does not look anything up online.
+To find them, give an AI assistant [the AI prompt](ai-prompt.md) and
+the company's name, and check its answer against your internal sources.
 *Commercial Registry Number* always gets the sentence "No commercial
 registry number was found online consult internal sources for further
 information"; to put the number instead, choose `e` (edit) and field 4
