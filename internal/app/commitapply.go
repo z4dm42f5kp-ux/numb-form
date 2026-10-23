@@ -101,14 +101,14 @@ func applyRequest(ctx context.Context, u *ui.UI, q *request, logDir string, lg *
 	}
 	for _, c := range q.of(kReplace) {
 		dst := filepath.Join(q.To, filepath.FromSlash(c.rel))
-		data, err := os.ReadFile(q.staged(c.rel)) // #nosec G304 -- listed in the request.
+		data, err := readSheetFile(q.staged(c.rel))
 		if err != nil {
 			return err
 		}
 		if fsutil.SHA256Bytes(data) != c.sha {
 			return fmt.Errorf("%s changed after the request was made", c.rel)
 		}
-		old, err := os.ReadFile(dst) // #nosec G304 -- listed in the request.
+		old, err := readSheetFile(dst)
 		if err != nil {
 			return err
 		}
