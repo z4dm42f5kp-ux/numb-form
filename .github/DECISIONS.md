@@ -150,3 +150,17 @@ skipped them; a stable release tagged on the translation commit was then
 newer than rolling.
 The rolling build now always builds the newest `main`, and runs after a
 release is published and after translations are committed.
+
+## numb-commit from a working copy, with a request file
+
+The real GWG folder is on a network drive, and people work on a copy in
+Downloads.
+numb-commit (with `commit_to` or `-to`) compares the copy with the real
+folder, writes every change to `numb-commit-request.txt` in the copy,
+reviews it and copies only after a yes: new folders and files, and the
+spreadsheet when only report dates changed.
+The template, logs and lock files are never copied; nothing is deleted.
+The review is a subcommand (`numb-commit review`) rather than a fourth
+program, so installs and updates stay as they are.
+Review runs (`mode = review`) work as before.
+Each program now has its own manual page.

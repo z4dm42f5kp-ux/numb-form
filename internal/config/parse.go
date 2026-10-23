@@ -51,6 +51,7 @@ func keyTable(c *Config) map[string]setter {
 		"date_format":       str(&c.DateFormat),
 		"downloads":         str(&c.Downloads),
 		"log_dir":           str(&c.LogDir),
+		"commit_to":         str(&c.CommitTo),
 		"soffice":           str(&c.Soffice),
 		"pages_converter":   oneOf(&c.PagesConverter, "auto", "pages-app", "libreoffice"),
 		"pages_write":       boolean(&c.PagesWrite),

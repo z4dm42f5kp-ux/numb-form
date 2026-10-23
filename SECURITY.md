@@ -21,10 +21,16 @@ numb-form handles customer documents, so the design rules are strict.
 * With `mode = review`, the real working folder is not written at all:
   the whole tree is copied to Downloads first and every change is made in
   the copy.
-* **numb-commit** (review mode) only adds new folders.
-  It never overwrites or deletes, refuses folders that appeared in the
-  meantime, copies to a temporary name, verifies every file with SHA-256
-  and then renames.
+* **numb-commit** only adds new folders and files, and from a working
+  copy also replaces the overview spreadsheet when numb-date added report
+  dates; it never deletes, never overwrites anything else, and never
+  copies the template, logs or lock files.
+  It first writes the full list of changes (`numb-commit-request.txt`)
+  into the working copy and reviews it: every file's SHA-256, that the
+  real folder did not change in the meantime, and that the spreadsheet
+  only gains report dates.
+  New folders are copied under a temporary name, verified with SHA-256
+  and renamed; the replaced spreadsheet is kept in the log folder.
 * numb-form and numb-commit open the spreadsheet in `3. Übersichten`
   read-only and never write it.
   Its SHA-256 checksum is compared before the copy, after the copy and

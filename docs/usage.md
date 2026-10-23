@@ -2,7 +2,8 @@
 
 ## NAME
 
-**numb-form**, **numb-commit**, **numb-date** — fill risk assessment forms
+**numb-form** — fill risk assessment forms (with **numb-commit** and
+**numb-date**)
 
 ## SYNOPSIS
 
@@ -12,9 +13,10 @@ numb-form [-f conf] check-template template [sample]
 numb-form [-f conf] config [init | set key value]
 numb-form [-f conf] update [stable | rolling | v1.2.3]
 numb-form rollback
-numb-commit [-f conf] [-run dir] [-downloads dir]
-numb-date [-f conf] [-y] [-root dir] [-timeout duration]
 ```
+
+numb-commit and numb-date have their own pages:
+[numb-commit.md](numb-commit.md), [numb-date.md](numb-date.md).
 
 ## DESCRIPTION
 
@@ -95,46 +97,12 @@ When the representatives are left empty, the field reads:
 
 > No representatives were found online, please consult other internal sources for more accurate information
 
-**numb-commit** applies to review runs only.
-It copies the accepted folders of a run back into the real working
-folder.
-It only adds new folders, never overwrites or deletes anything, and
-refuses folders that appeared in the real tree in the meantime.
-Each folder is copied to a temporary name, verified with SHA-256 and then
-renamed.
-Documents edited during review are listed before the user confirms.
-Afterwards it offers to delete the review copy; the logs are kept.
+**numb-commit** copies the new forms into the real working folder, from
+a working copy or a review run, after showing and checking exactly what
+changes: see [numb-commit.md](numb-commit.md).
 
-**numb-date** fills the report-date column of the spreadsheet.
-It is started like numb-form, in or above the working folder, and finds
-the same overview spreadsheet, which must be `.xlsx` or `.xlsm`.
-
-1. The company column is found by `header`, then by common names
-   (`Customer Name`, `Customer`, `Company Name`, `Kunde`, `Cliente` and
-   others, ignoring case); the date column in the same header row by
-   `Report created AB`, `Report created`, `Report date`, `Created` and
-   similar names, or any heading that mentions a report and its creation
-   or date.
-2. Rows whose date cell contains a digit are skipped: they already have
-   a date.
-3. For the other rows, the company's folder is found as numb-form finds
-   it (near matches are asked).
-   The `.docx`, `.odt`, `.fodt` or `.rtf` forms in the folder (and one
-   level below) are read, the risk assessment form first: the *Date of
-   the evaluation* of section A, or, in forms laid out differently, the
-   date written after a date label.
-   Dates such as `16/10/2026`, `16.10.2026`, `2026-10-16` and
-   `16 October 2026` are understood.
-   When no date is found, the user types it or skips the company.
-4. The dates are listed, written as `DD-MM-YYYY` after the user agrees,
-   read back from disk and shown; the user accepts them or undoes the
-   write.
-
-Only the listed cells change; see [../SECURITY.md](../SECURITY.md) for
-the checks.
-Forms are only read.
-The file must not be open in Excel or LibreOffice.
-The log is `numb-date.log` in the per-user state folder (or `log_dir`).
+**numb-date** fills the *Report created* column of the spreadsheet from
+the forms: see [numb-date.md](numb-date.md).
 
 ## COMMANDS
 
@@ -170,8 +138,9 @@ The log is `numb-date.log` in the per-user state folder (or `log_dir`).
   On macOS, Linux and the BSDs the installed `less` is used when there
   is one.
   Without a topic the whole manual is shown, starting with the guide.
-  Topics: `guide`, `usage`, `configuration`, `install`, `formats`,
-  `containers`, `security`; `numb-form man topics` lists them.
+  Topics: `guide`, `usage`, `numb-commit`, `numb-date`, `configuration`,
+  `install`, `formats`, `containers`, `security`; `numb-form man topics`
+  lists them.
   The language follows `LANG`, or is given.
   `numb-form man -install` makes `man numb-form` work: on Linux, macOS
   and the BSDs it writes the manual page to `~/.local/share/man/man1`
@@ -202,7 +171,7 @@ The log is `numb-date.log` in the per-user state folder (or `log_dir`).
 : Read *file* after the system and per-user configuration files.
 
 `-y`
-: (numb-form, numb-date) Take a folder with a similar name as the
+: Take a folder with a similar name as the
   company's folder instead of asking "Is the existing folder … this
   company's folder?".
   The folder is named on screen and in the log.
@@ -220,10 +189,6 @@ The log is `numb-date.log` in the per-user state folder (or `log_dir`).
 `-timeout duration`
 : Stop safely after *duration*, for example `30m`; overrides a longer
   `timeout` in the configuration. Without it there is no time limit.
-
-`-run dir`
-: (numb-commit) Commit this run folder instead of the newest uncommitted
-  one.
 
 `-allow-non-tty`
 : Read answers from a pipe. For automated tests only.
@@ -250,15 +215,13 @@ The log is `numb-date.log` in the per-user state folder (or `log_dir`).
 `<log folder>/<run>/manifest.json`
 : Machine-readable record of the run.
 
-`<log folder>/<run>_date/numb-date.log`
-: Log of a numb-date run, with the SHA-256 of the spreadsheet before
-  and after.
-
 `Downloads/numb-form-runs/<run>/<working folder>/`
 : Review mode: the copy.
 
 `Downloads/numb-form-runs/<run>/numb-commit.log`
 : Review mode: log of the commit.
+
+The files of numb-commit and numb-date are listed on their pages.
 
 No cache or temporary files are left behind.
 Documents are written through
@@ -314,6 +277,7 @@ cd "H:\GWG"; numb-form -f review.conf; if ($?) { numb-commit }
 
 ## SEE ALSO
 
+[numb-commit.md](numb-commit.md), [numb-date.md](numb-date.md),
 [configuration.md](configuration.md), [formats.md](formats.md),
 [install.md](install.md), [containers.md](containers.md),
 [../SECURITY.md](../SECURITY.md), [../AGENTS.md](../AGENTS.md)

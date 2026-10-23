@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/z4dm42f5kp-ux/numb-form/internal/config"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/fsutil"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/runlog"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/ui"
@@ -21,10 +22,15 @@ import (
 type CommitOptions struct {
 	Downloads string
 	RunDir    string
-	In        io.Reader
-	Out       io.Writer
-	Now       func() time.Time
-	Timeout   time.Duration
+	// Folder mode: copy a working copy (From, default Parent) into the
+	// real folder (To, default commit_to in the configuration).
+	Parent, From, To string
+	Review           bool // only review the request
+	Config           *config.Config
+	In               io.Reader
+	Out              io.Writer
+	Now              func() time.Time
+	Timeout          time.Duration
 }
 
 type plan struct {
@@ -46,7 +52,17 @@ func Commit(opt CommitOptions) int {
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
 	defer stop()
 	u := ui.New(ctx, opt.In, opt.Out)
-	err := commit(ctx, u, opt)
+	if opt.Config == nil {
+		c := config.Defaults()
+		opt.Config = &c
+	}
+	var err error
+	if folderMode(opt) {
+		u.Printf("numb-commit %s — copy the new forms from the working copy into the real folder\n\n", Version)
+		err = commitFolders(ctx, u, opt)
+	} else {
+		err = commit(ctx, u, opt)
+	}
 	switch {
 	case err == nil:
 		return ExitOK
