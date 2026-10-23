@@ -8,6 +8,15 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.4.3
+
+* Internal: numb-commit's copy of new folders and files from the staged
+  copy into the real folder.
+  A new folder is built under a temporary name and renamed when
+  complete, every file is checked with SHA-256, and nothing is
+  overwritten.
+  Nothing uses it yet. No change in behaviour.
+
 ## v1.4.2
 
 * Internal: numb-commit's staged copy, a folder in Downloads that holds
