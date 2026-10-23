@@ -8,6 +8,12 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.2.8
+
+* numb-form: `-` leaves the address and the legal form blank, as it
+  already did for the representatives; Enter still leaves them blank.
+  Before, `-` was written into the form.
+
 ## v1.2.7
 
 * Internal: the standard texts for a missing address and legal form, and
