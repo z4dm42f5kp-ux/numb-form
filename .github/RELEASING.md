@@ -21,6 +21,11 @@ Each release is one pull request titled `vX.Y.Z: what it changes`.
    the documented install commands install the new release; merging it
    releases nothing.
 
+A minor release (`vX.Y.0:`) also runs the **linux** workflow on its pull
+request: the tests and the documented commands on every listed Linux
+distribution. It takes up to an hour and a half; wait for it before
+merging.
+
 A pull request with another title (no `vX.Y.Z:` at the start) releases
 nothing. To release the newest `main` without a pull request, run
 Actions > release approval > Run workflow with the version; it waits for

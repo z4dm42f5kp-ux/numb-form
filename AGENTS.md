@@ -145,4 +145,4 @@ cd "/path/to/working-folder" && numb-form
 | `internal/ui` | terminal prompts with the run deadline |
 | `internal/update` | `numb-form update`: checksummed self-update from GitHub releases |
 | `container/`, `k8s/` | image and Kubernetes manifests |
-| `.github/workflows` | CI, security, release, edge (rolling build), translation, scorecard, install-docs (pins) |
+| `.github/workflows` | CI, security, release, edge (rolling build), translation, scorecard, install-docs (pins), linux (distributions, minor releases) |

@@ -8,6 +8,13 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.7.5
+
+* CI: before every minor release, the tests and the documented install
+  commands run on Debian 13, Fedora 44, Arch Linux, Gentoo, Void Linux,
+  openSUSE Tumbleweed and Leap 16, Alpine Linux, NixOS and Guix, each
+  with its own Go (`.github/workflows/linux.yml`).
+
 ## v1.7.4
 
 * Install: what each Linux distribution needs for the install command

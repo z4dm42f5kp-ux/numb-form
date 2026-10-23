@@ -81,6 +81,10 @@ install it first:
 | Guix System | `guix shell curl tar gzip coreutils` (a shell with them; run the command inside it) |
 <!-- /install:linux-tools -->
 
+These distributions are tested before every minor release (vX.Y.0):
+Debian 13, Fedora 44, Arch Linux, Gentoo, Void Linux, openSUSE
+Tumbleweed and Leap 16, Alpine Linux, NixOS and Guix.
+
 ### macOS
 
 Apple silicon (M1 and later):
