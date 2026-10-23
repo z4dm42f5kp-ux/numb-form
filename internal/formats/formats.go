@@ -216,3 +216,13 @@ func LoadSheet(ctx context.Context, p string, cfg config.Config) (rows []sheet.R
 	rows, warns, err = sheet.Read(x, ".xlsx", opt)
 	return rows, append(warns, "the .numbers spreadsheet was converted in memory; the original is untouched"), false, err
 }
+
+// AsFilled reports whether doc is this template filled by numb-form and
+// unchanged since. Only templates filled directly (.docx, .odt, .fodt,
+// .rtf) can tell; for the others it returns an error.
+func (t *Template) AsFilled(doc []byte) (bool, error) {
+	if t.finish != nil || t.toCheck != nil {
+		return false, errors.New("forms of converted templates cannot be compared")
+	}
+	return form.AsFilled(t.filler, t.data, doc)
+}
