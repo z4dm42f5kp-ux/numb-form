@@ -8,6 +8,13 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.7.8
+
+* CI checks the languages every day: the newest Go is proposed for the
+  build instructions, and a Go minimum or CI Go that no longer gets
+  security fixes, or a known vulnerability in a pinned Python package
+  (OSV database), is reported in an issue.
+
 ## v1.7.7
 
 * CI: every day, the updates workflow proposes new digests of the test
