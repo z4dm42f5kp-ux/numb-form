@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -97,9 +98,21 @@ func (q *request) write(path string) error {
 	return os.Rename(tmp, path)
 }
 
+// safeRel accepts a slash-separated path inside a folder: no empty, "."
+// or ".." parts, and no backslash, which Windows reads as a separator.
 func safeRel(rel string) bool {
-	return rel != "" && !strings.HasPrefix(rel, "/") && !strings.Contains("/"+rel+"/", "/../") && !filepath.IsAbs(filepath.FromSlash(rel))
+	if rel == "" || filepath.IsAbs(filepath.FromSlash(rel)) {
+		return false
+	}
+	for _, part := range strings.Split(rel, "/") {
+		if part == "" || part == "." || part == ".." || strings.ContainsRune(part, '\\') {
+			return false
+		}
+	}
+	return true
 }
+
+var reSHA256 = regexp.MustCompile(`^[0-9a-f]{64}$`)
 
 // readRequest reads and parses a request file.
 func readRequest(path string) (*request, error) {
@@ -149,8 +162,13 @@ func parseRequest(name string, b []byte) (*request, error) {
 			if !safeRel(c.rel) || (c.dup != "" && !safeRel(c.dup)) {
 				return nil, fmt.Errorf("unsafe path %q in the request", c.rel)
 			}
-			if c.top != "" && !strings.HasPrefix(c.rel, c.top+"/") {
+			if c.top != "" && (!safeRel(c.top) || !strings.HasPrefix(c.rel, c.top+"/")) {
 				return nil, fmt.Errorf("unsafe folder %q in the request", c.top)
+			}
+			// What is copied must carry its checksum, or the review
+			// would compare nothing with nothing.
+			if (c.kind == kAdd || c.kind == kReplace) && !reSHA256.MatchString(c.sha) || c.kind == kReplace && !reSHA256.MatchString(c.old) {
+				return nil, fmt.Errorf("%s: %s has no SHA-256 checksum in the request", name, c.rel)
 			}
 			q.Changes = append(q.Changes, c)
 		case strings.TrimSpace(sc.Text()) == "":
