@@ -8,6 +8,13 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.6.3
+
+* Internal: reading the company names of the overview spreadsheet with
+  each cell's position and exact text, without needing a report-date
+  column, for a later program.
+  Nothing uses it yet. No change in behaviour.
+
 ## v1.6.2
 
 * numb-form knows nearly 600 spellings of cities and countries that are
