@@ -59,7 +59,7 @@ func (q *request) stage(ctx context.Context, dir string) error {
 		if err := copyChecked(filepath.Join(q.From, filepath.FromSlash(c.rel)), dst, c.sha); err != nil {
 			return err
 		}
-		if err := os.Chmod(dst, 0o444); err != nil {
+		if err := os.Chmod(dst, 0o444); err != nil { // #nosec G302 -- read-only on purpose: the staged copy must not be edited.
 			return err
 		}
 	}

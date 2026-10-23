@@ -24,9 +24,9 @@ const (
 )
 
 // folderMode reports whether numb-commit copies a working copy into the
-// real folder rather than committing a review run (mode = review). It
-// does unless -run is given, or nothing names a folder and review runs
-// are waiting in Downloads.
+// real folder rather than committing a review run. It does unless -run
+// is given, or nothing names a folder and either mode = review or review
+// runs are waiting in Downloads.
 func folderMode(opt CommitOptions) bool {
 	if opt.RunDir != "" {
 		return false
@@ -34,6 +34,9 @@ func folderMode(opt CommitOptions) bool {
 	cfg := opt.Config
 	if opt.Review || opt.From != "" || opt.To != "" || (cfg != nil && (cfg.CommitFrom != "" || cfg.CommitTo != "")) {
 		return true
+	}
+	if cfg != nil && cfg.Mode == "review" {
+		return false
 	}
 	dl := opt.Downloads
 	if dl == "" {

@@ -46,9 +46,9 @@ numb-form config set commit_to "F:\14. GWG"
 numb-form makes the copy itself in `Downloads\numb-form-runs`, and
 numb-commit commits the newest run.
 This is the older way; see [usage.md](usage.md).
-numb-commit does this when review runs are waiting and neither `-from`,
-`-to`, `commit_from`, `commit_to` nor `review` names a folder; `-run`
-always does it.
+numb-commit does this when `mode = review` is set or review runs are
+waiting, and neither `-from`, `-to`, `commit_from`, `commit_to` nor
+`review` names a folder; `-run` always does it.
 
 ## WHAT NUMB-COMMIT DOES WITH A WORKING COPY
 
