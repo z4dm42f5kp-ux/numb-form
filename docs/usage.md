@@ -259,26 +259,45 @@ when stopped by the time limit, by Ctrl+C or by the user.
 
 ## EXAMPLES
 
+Commands are shown for both kinds of system.
+Windows PowerShell 5.1 has no `&&`: commands are separated with `;`, and
+`if ($?) { ... }` runs the next one only when the first succeeded.
+
 Check the real template and write a sample, without touching the
-template:
+template (all systems):
 
 ```
 numb-form check-template "Appendix A - Risk Assesment.docx" sample.docx
 ```
 
-Fill the forms directly in the working folder:
+Fill the forms directly in the working folder, then the report dates.
+
+**Unix-like** (macOS, Linux, BSD), in Terminal:
 
 ```
-cd /path/to/GWG && numb-form
+cd /path/to/GWG && numb-form && numb-date
 ```
 
-Review first, then commit (numb-commit waits for confirmation):
+**Windows** (10, 11), in PowerShell:
+
+```
+cd "H:\GWG"; numb-form; if ($?) { numb-date }
+```
+
+Review first, then commit (numb-commit waits for confirmation), where
+`review.conf` contains `mode = review`.
+
+**Unix-like** (macOS, Linux, BSD), in Terminal:
 
 ```
 cd /path/to/GWG && numb-form -f review.conf && numb-commit
 ```
 
-where `review.conf` contains `mode = review`.
+**Windows** (10, 11), in PowerShell:
+
+```
+cd "H:\GWG"; numb-form -f review.conf; if ($?) { numb-commit }
+```
 
 ## SEE ALSO
 

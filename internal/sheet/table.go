@@ -29,6 +29,7 @@ type TableRow struct {
 	NameRef string
 	DateRef string
 	Date    string // current text of the date cell, "" when empty
+	ID      string // customer id from the idHeader column, "" when none
 }
 
 // NameHeaders are tried, in order, to find the company column after the
@@ -114,8 +115,9 @@ func openWorkbook(b []byte) (*workbook, error) {
 
 // ReadTable finds, in an .xlsx or .xlsm workbook, the first sheet with a
 // company-name header (header first, then NameHeaders) and a report-date
-// header in the same row, and returns every company below it.
-func ReadTable(b []byte, header string) (*Table, error) {
+// header in the same row, and returns every company below it with its
+// customer id from the idHeader column.
+func ReadTable(b []byte, header, idHeader string) (*Table, error) {
 	wb, err := openWorkbook(b)
 	if err != nil {
 		return nil, err
@@ -153,10 +155,20 @@ func ReadTable(b []byte, header string) (*Table, error) {
 		}
 		t := &Table{Sheet: sh.name, Part: sh.target, HeaderRow: nh.Row, NameCol: nh.Col, DateCol: dh.Col,
 			NameHeader: strings.TrimSpace(nh.Val), DateHeader: strings.TrimSpace(dh.Val)}
-		dates := map[int]string{}
+		idCol := -1
+		for _, c := range hdr {
+			if same(c.Val, idHeader) {
+				idCol = c.Col
+			}
+		}
+		dates, ids := map[int]string{}, map[int]string{}
 		for _, c := range cells {
-			if c.Col == dh.Col && c.Row > nh.Row {
+			switch {
+			case c.Row <= nh.Row:
+			case c.Col == dh.Col:
 				dates[c.Row] = strings.TrimSpace(c.Val)
+			case c.Col == idCol:
+				ids[c.Row] = strings.TrimSpace(c.Val)
 			}
 		}
 		for _, c := range cells {
@@ -164,7 +176,7 @@ func ReadTable(b []byte, header string) (*Table, error) {
 				continue
 			}
 			t.Rows = append(t.Rows, TableRow{Row: c.Row, Name: strings.TrimSpace(c.Val), NameRef: c.Ref,
-				DateRef: Ref(dh.Col, c.Row), Date: dates[c.Row]})
+				DateRef: Ref(dh.Col, c.Row), Date: dates[c.Row], ID: ids[c.Row]})
 		}
 		return t, nil
 	}

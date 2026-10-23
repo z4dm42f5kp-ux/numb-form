@@ -48,84 +48,106 @@ numb-form config set person "Erika Mustermann"
 ```
 
 Create a commented per-user file with every default, and show the
-effective settings:
+effective settings.
+
+**Unix-like** (macOS, Linux, BSD), in Terminal:
 
 ```
 numb-form config init && numb-form config
 ```
 
+**Windows** (10, 11), in PowerShell:
+
+```
+numb-form config init; numb-form config
+```
+
 ## KEYS
 
-### Workflow
+The programs that use a key are named in brackets: **form**
+(numb-form), **commit** (numb-commit), **date** (numb-date), **update**
+(numb-form update).
+`numb-form config` lists every key with its effective value and the file
+that set it.
 
-`mode = direct` | `review`
-: **direct** (default): folders and forms are created in the working
-  folder itself, after each confirmation.
-  **review**: the whole working folder is first copied to Downloads, all
-  work happens in the copy, and `numb-commit` copies the accepted
-  folders back.
+### Finding the files
 
-`online = yes` | `no`
-: Let `numb-form update` contact GitHub (default yes).
-  Companies are never looked up online.
-
-`timeout = none`
-: Stop safely after this long, for example `30m` or `2h`; **none**
-  (default) means no time limit.
-
-`max_write_mb = 100`
-: Most megabytes of documents one run may write (1-100).
-
-### Folders and files
-
-`overview_dir = Übersicht`
+`overview_dir = Übersicht` [form, date]
 : Pattern of the folder that holds the spreadsheet.
   Case, accents and punctuation are ignored, and umlauts match both
   spellings, so `Übersicht` matches `3. Übersichten` and `Uebersicht`.
 
-`header = Customer Name`, `id_header = Customer ID`
-: Spreadsheet column headers.
+`header = Customer Name` [form, date]
+: Heading of the company-name column.
+  numb-date also tries common names (`Customer`, `Company Name`,
+  `Kunde`, `Cliente` and others) and finds the *Report created* column
+  by itself.
 
-`template_name = Appendix A - Risk Assesment`
+`id_header = Customer ID` [form, date]
+: Heading of the customer-number column, shown next to each company.
+
+`template_name = Appendix A - Risk Assesment` [form, date]
 : Template file name without extension; `Assessment` also matches.
 
-`downloads =`
-: Review mode: folder for the copy; empty means your Downloads folder.
+### Values written into the form
 
-`log_dir =`
-: Direct mode: folder for logs and manifests; empty means the per-user
-  state folder (`%LOCALAPPDATA%\numb-form\runs`, `~/Library/Logs/numb-form`
-  or `~/.local/state/numb-form/runs`).
-
-### Values
-
-`person =`
+`person =` [form]
 : Name of the person processing the form; empty means ask once per run.
 
-`date_format = DD/MM/YYYY`
+`date_format = DD/MM/YYYY` [form]
 : Evaluation date; tokens `DD`, `MM`, `YYYY`, `YY`.
+  numb-date always writes `DD-MM-YYYY`.
 
-`fuzzy_threshold = 0.85`
+### How a run works
+
+`mode = direct` | `review` [form, commit]
+: **direct** (default): folders and forms are created in the working
+  folder itself.
+  **review**: the whole working folder is first copied to Downloads, all
+  work happens in the copy, and `numb-commit` copies the accepted
+  folders back.
+
+`fuzzy_threshold = 0.85` [form, date]
 : How similar a folder name must be to be offered as a match (0.5-1).
+
+`timeout = none` [form, commit, date]
+: Stop safely after this long, for example `30m` or `2h`; **none**
+  (default) means no time limit.
+
+`max_write_mb = 100` [form]
+: Most megabytes of documents one run may write (1-100).
+
+`downloads =` [form, commit]
+: Review mode: folder for the copy; empty means your Downloads folder.
+
+`log_dir =` [form, date]
+: Folder for logs; empty means the per-user state folder
+  (`%LOCALAPPDATA%\numb-form\runs`, `~/Library/Logs/numb-form` or
+  `~/.local/state/numb-form/runs`).
+  Review-mode logs stay with the copy in Downloads.
+
+`online = yes` | `no` [update]
+: Let `numb-form update` contact GitHub.
+  Nothing else goes online.
 
 ### Formats
 
-`soffice =`
+`soffice =` [form]
 : Path to LibreOffice or Apache OpenOffice; empty means search.
 
-`pages_converter = auto` | `pages-app` | `libreoffice`
-`numbers_converter = auto` | `numbers-app` | `libreoffice`
+`pages_converter = auto` | `pages-app` | `libreoffice`,
+`numbers_converter = auto` | `numbers-app` | `libreoffice` [form]
 : How `.pages` and `.numbers` files are converted.
   **auto** uses Apple's app on macOS when installed, else LibreOffice.
 
-`pages_write = no`
+`pages_write = no` [form]
 : EXPERIMENTAL, macOS only: save filled forms as `.pages` through Apple
   Pages.
 
-`legacy_formats = no`
+`legacy_formats = no` [form]
 : SYSTEM FILE ONLY: allow `.doc` templates and `.xls` spreadsheets.
 
-`legacy_output = docx` | `same`
+`legacy_output = docx` | `same` [form]
 : Filled forms from a `.doc` template are `.docx`, or `.doc` again.
 
 ## EXAMPLES

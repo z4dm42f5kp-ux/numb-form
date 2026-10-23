@@ -25,11 +25,17 @@ It needs no technical knowledge.
 * AI agents: [AGENTS.md](AGENTS.md)
 
 Start it inside the working folder (the one that contains
-`3. Übersichten` and the template):
+`3. Übersichten` and the template).
+
+**Unix-like** (macOS, Linux, BSD), in Terminal:
 
 ```
 cd /path/to/GWG && numb-form
 ```
 
-On Windows, open the folder in File Explorer, type `powershell` in the
-address bar, press Enter, then type `numb-form`.
+**Windows** (10, 11): open the folder in File Explorer, type `powershell` in the
+address bar, press Enter, then type:
+
+```
+numb-form
+```

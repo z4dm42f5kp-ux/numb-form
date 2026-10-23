@@ -88,7 +88,7 @@ func (r *run) dateMain() error {
 		return err
 	}
 	have := fsutil.SHA256Bytes(b)
-	t, err := sheet.ReadTable(b, r.cfg.Header)
+	t, err := sheet.ReadTable(b, r.cfg.Header, r.cfg.IDHeader)
 	if err != nil {
 		return err
 	}
@@ -110,7 +110,7 @@ func (r *run) dateMain() error {
 		if err := r.ctx.Err(); err != nil {
 			return err
 		}
-		r.ui.Printf("\n[%d/%d] %s  (%s)\n", i+1, len(t.Rows), ui.Safe(row.Name), row.NameRef)
+		r.ui.Printf("\n[%d/%d] %s  (%s)\n", i+1, len(t.Rows), ui.Safe(row.Name), ui.Safe(where(r.cfg.IDHeader, row.ID, row.Row)))
 		if hasDigit(row.Date) {
 			r.ui.Printf("  already has a date: %s\n", ui.Safe(row.Date))
 			counts["dated"]++
@@ -229,7 +229,7 @@ func (r *run) writeDates(path string, before []byte, have string, t *sheet.Table
 	if err != nil {
 		return err
 	}
-	nt, err := sheet.ReadTable(got, r.cfg.Header)
+	nt, err := sheet.ReadTable(got, r.cfg.Header, r.cfg.IDHeader)
 	if err != nil {
 		return err
 	}

@@ -229,5 +229,11 @@ func headerError(want string, sheets [][]Cell) error {
 		msg, strings.Join(hints, ", "), hints[len(hints)-1])
 }
 
+// RowNumber returns the row of an A1-style reference: 315 for "B315".
+func RowNumber(ref string) int {
+	_, r, _ := parseRef(ref)
+	return r
+}
+
 // Ref builds an A1-style reference from 1-based column and row.
 func Ref(col, row int) string { return colName(col) + strconv.Itoa(row) }
