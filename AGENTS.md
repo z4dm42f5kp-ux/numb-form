@@ -128,7 +128,7 @@ cd "/path/to/working-folder" && numb-form
 | Path | Purpose |
 | --- | --- |
 | `cmd/numb-form`, `cmd/numb-commit`, `cmd/numb-date` | entry points and flags |
-| `internal/app` | the run, modes, the per-company dialogue, numb-date, numb-commit (`request.go`, `requestfile.go`, `tree.go`, `reviewreq.go`, `foldercommit.go`) |
+| `internal/app` | the run, modes, the per-company dialogue, numb-date, numb-commit (`request.go`, `requestfile.go`, `tree.go`, `stage.go`, `reviewreq.go`, `foldercommit.go`, `commitapply.go`) |
 | `internal/config` | numb-form.conf: locations, parsing, defaults |
 | `internal/form` | fields, locating section A, splicing and the self-check |
 | `internal/docx`, `internal/odt`, `internal/rtf` | template fillers |
