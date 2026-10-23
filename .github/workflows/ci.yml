@@ -202,6 +202,7 @@ jobs:
           docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges numb-form:ci -version
           docker run --rm --read-only --cap-drop ALL --entrypoint /numb-commit numb-form:ci -version
           docker run --rm --read-only --cap-drop ALL --entrypoint /numb-date numb-form:ci -version
+          docker run --rm --read-only --cap-drop ALL --entrypoint /numb-typo numb-form:ci -version
           # Must refuse to run without a terminal.
           if docker run --rm numb-form:ci; then echo "ran without a TTY" >&2; exit 1; fi
       - name: Podman smoke test

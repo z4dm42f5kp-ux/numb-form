@@ -172,3 +172,19 @@ The review is a subcommand (`numb-commit review`) rather than a fourth
 program, so installs and updates stay as they are.
 Review runs (`mode = review`) work as before.
 Each program now has its own manual page.
+
+## numb-typo corrects places in company names
+
+Customer names often end in a misspelt or cut-off city or country
+("Ciudad de Me").
+numb-typo corrects only those parts after the first comma, from a list
+of countries and cities with their accents, never the name itself or
+its legal form.
+A cut-off part is completed only at the end of a cell; a typo is
+corrected only when one place is clearly closest (no corrections below
+five letters, extra letters only from seven, two errors only from nine;
+the first letter must match), and several candidates are asked.
+Many real mid-size cities are listed so that they are never "corrected".
+Names of companies that already have a folder are left alone, since
+renaming them would part them from their forms.
+It writes through the same checked path as numb-date.

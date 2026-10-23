@@ -47,8 +47,9 @@ cd "/path/to/working-folder" && numb-form
   needs an administrator, the second is experimental.
 * Never modify the spreadsheet in `3. Übersichten`, not even to save it
   unchanged.
-  The only exception is numb-date, which writes digit-free cells of the
-  *Report created* column after the person agrees; never answer its
+  The only exceptions are numb-date, which writes digit-free cells of
+  the *Report created* column, and numb-typo, which corrects places in
+  company names, both after the person agrees; never answer their
   questions for the person either.
 * Never add formatting to documents.
   Never touch section B or anything outside section A.
@@ -120,7 +121,7 @@ cd "/path/to/working-folder" && numb-form
 
 | Path | Purpose |
 | --- | --- |
-| `cmd/numb-form`, `cmd/numb-commit`, `cmd/numb-date` | entry points and flags |
+| `cmd/numb-form`, `cmd/numb-commit`, `cmd/numb-date`, `cmd/numb-typo` | entry points and flags |
 | `internal/app` | the run, modes, the per-company dialogue, numb-date, numb-commit (`request.go`, `reviewreq.go`, `foldercommit.go`) |
 | `internal/config` | numb-form.conf: locations, parsing, defaults |
 | `internal/form` | fields, locating section A, splicing and the self-check |
@@ -129,7 +130,7 @@ cd "/path/to/working-folder" && numb-form
 | `internal/convert` | LibreOffice/OpenOffice and Apple Pages/Numbers conversion |
 | `internal/sheet` | spreadsheet readers (xlsx, ods, csv, xls); `table.go` and `setcells.go` serve numb-date |
 | `internal/reportdate` | numb-date: finding and parsing the date in a form |
-| `internal/match` | legal-form extraction and folder matching |
+| `internal/match` | legal-form extraction, folder matching, places and their typos (`places.go`, `typo.go`) |
 | `internal/manual` | `numb-form man` and the Unix manual page |
 | `internal/fsutil` | Downloads folder, tree copy, safe names |
 | `internal/runlog` | log and manifest |
