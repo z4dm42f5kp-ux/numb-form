@@ -130,7 +130,7 @@ func reviewSetup(ctx context.Context, from, to string, cfg config.Config) (rc re
 			rc.tpls = append(rc.tpls, t)
 		}
 	}
-	if b, err := os.ReadFile(sp); err == nil { // #nosec G304 -- the overview spreadsheet.
+	if b, err := readSheetFile(sp); err == nil {
 		if rows, _, err := sheet.Read(b, filepath.Ext(sp), sheet.Options{Header: cfg.Header, IDHeader: cfg.IDHeader, Legacy: cfg.LegacyFormats}); err == nil {
 			for _, r := range rows {
 				n, _ := fsutil.SafeName(r.Name, false)
