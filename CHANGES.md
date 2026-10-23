@@ -8,6 +8,18 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.2.5
+
+* Problem reports: GitHub forms for bugs and for documentation errors,
+  and a section of the guide on reporting a problem without customer
+  data.
+* Security: a disclosure process after the Go project's (tracks,
+  response times, what is not a vulnerability), secure coding rules and
+  an audit checklist in [.github/SECURE-CODING.md](.github/SECURE-CODING.md).
+  `scripts/check-deps.sh` now also refuses `math/rand`, cgo, and
+  `unsafe` outside the Windows system calls.
+* The guide explains the words it uses.
+
 ## v1.2.4
 
 * Documentation standard after OpenBSD and FreeBSD: a change to what a
