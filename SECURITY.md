@@ -2,12 +2,66 @@
 
 ## Reporting a vulnerability
 
-Use GitHub's private vulnerability reporting:
-*Security* → *Report a vulnerability* on this repository.
-Do not open a public issue.
-Do not attach customer data; describe the problem with made-up names.
+Report it privately on GitHub: open the repository's *Security* tab and
+choose *Report a vulnerability*
+(<https://github.com/z4dm42f5kp-ux/numb-form/security/advisories/new>).
+Do not open a public issue for a vulnerability.
+
+Keep the report short:
+
+* What the problem is, and which program and version (`numb-form
+  -version`) has it.
+* How it can be exploited.
+* A small file, command or test that shows it.
+
+Send one problem per report.
+Never attach customer data: describe the problem with made-up names
+(`Foo GmbH`), and replace real files with small made-up ones.
+
+Reports written by AI tools are welcome only after a person has checked
+that each finding is real and is a security problem.
+
+## What happens next
+
+The process follows the [Go project's](https://go.dev/doc/security/policy).
+
+* The report is acknowledged within 7 days.
+* It is fixed, or made public, within 90 days after that.
+* Every confirmed vulnerability gets a GitHub security advisory and, if
+  it qualifies, a CVE.
+  The reporter is credited unless they ask not to be.
+
+Each report is put on one of three tracks:
+
+| Track | When | How it is fixed |
+| --- | --- | --- |
+| **URGENT** | exploited, or customer data can leak or be destroyed without any action by the person running the program | in private, released at once as a patch release |
+| **PRIVATE** | exploitable with a crafted file or download, but needs the person to use it | in private, released as a patch release |
+| **PUBLIC** | hard to exploit, or hardening | in a public pull request, in the next release |
 
 Only the latest release is supported.
+Updating is `numb-form update`.
+
+## What is not a vulnerability
+
+These are outside the threat model:
+
+* Someone who can already change the programs, the configuration
+  files or the working folder on the computer.
+* The person running the programs confirming a wrong form or a wrong
+  date. Every change is shown and must be accepted.
+* Answers of an AI assistant used with the [AI prompt](docs/ai-prompt.md).
+  The prompt asks for a check against internal sources.
+* Office software that numb-form starts for conversions behaving as it
+  is documented to.
+
+Bugs that are not security problems go to the bug report form
+(*Issues* → *New issue*).
+
+## Secure coding and audits
+
+The rules the code follows, the review checklist and the audit routine
+are in [.github/SECURE-CODING.md](.github/SECURE-CODING.md).
 
 ## What the programs promise
 
@@ -160,7 +214,8 @@ Pull requests run a fast gate (formatting, vet, staticcheck, tests on
 Linux, macOS and Windows, govulncheck, gosec, zizmor, the history scan
 and dependency review).
 Pushes to `main` and agent branches, and a nightly schedule, run
-everything:
+everything (the LibreOffice format tests run once per pull request
+change rather than for each push):
 
 | Check | Tool |
 | --- | --- |

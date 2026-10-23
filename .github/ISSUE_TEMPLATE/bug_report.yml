@@ -1,0 +1,83 @@
+name: Bug report
+description: A program does something wrong, stops, or shows an error.
+title: "bug: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This repository is public. Never paste customer names, people's names, addresses or files.
+        Replace them with made-up ones, for example Foo GmbH or Bar S.A.
+        Security problems go to the private form instead (see SECURITY.md).
+  - type: dropdown
+    id: program
+    attributes:
+      label: Program
+      options:
+        - numb-form
+        - numb-commit
+        - numb-date
+        - numb-form update, rollback or man
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Type `numb-form -version` and copy what it prints.
+      placeholder: numb-form v1.2.4
+    validations:
+      required: true
+  - type: dropdown
+    id: system
+    attributes:
+      label: Operating system
+      options:
+        - Windows 11
+        - Windows 10
+        - macOS
+        - Linux
+        - FreeBSD, OpenBSD or NetBSD
+        - Container (Docker, Podman, Kubernetes)
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Every step from the start, with the exact command and every answer you typed. "It does not work" is not enough.
+      placeholder: |
+        1. Opened PowerShell in F:\14. GWG
+        2. Typed numb-form
+        3. At "Headquarters / Address" typed: Calle Foo 1, Quito
+        4. ...
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: What the program printed
+      description: Copy the text from the window, including every error message, even if it does not seem to matter. Replace customer names first.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Log
+      description: The end of the log file whose path the program printed (Log:). Replace customer names first. Leave empty if there is none.
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: The text above contains no real customer names, people's names, addresses or files.
+          required: true
+        - label: It still happens with the newest version (`numb-form update`).

@@ -39,10 +39,13 @@ for t in $targets; do
 			-C "$out" -cf - numb-form numb-commit numb-date README.md LICENSE | gzip -n -9 > "dist/$name.tar.gz"
 	fi
 done
+# The AI prompt is a separate download, checksummed like the archives.
+cp docs/ai-prompt.txt dist/
+touch -d "@$SOURCE_DATE_EPOCH" dist/ai-prompt.txt 2>/dev/null || true
 cd dist
-sha256sum ./*.tar.gz ./*.zip | sed 's| \./| |' > SHA256SUMS
+sha256sum ./*.tar.gz ./*.zip ./ai-prompt.txt | sed 's| \./| |' > SHA256SUMS
 : > SHA256
-for f in *.tar.gz *.zip; do
+for f in *.tar.gz *.zip ai-prompt.txt; do
 	printf 'SHA256 (%s) = %s\n' "$f" "$(sha256sum "$f" | cut -d' ' -f1)" >> SHA256
 done
 cat SHA256SUMS
