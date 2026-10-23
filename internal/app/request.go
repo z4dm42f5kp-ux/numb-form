@@ -32,6 +32,7 @@ type change struct {
 	old    string // replace: of the real folder's file
 	size   int64
 	reason string // keep
+	top    string // add: the new folder it belongs to, "" for an existing folder
 }
 
 // request is what numb-commit will do: copy files from a working copy
@@ -151,24 +152,37 @@ func scanRequest(ctx context.Context, from, to, sheetRel, templateRel string) (*
 		return nil
 	})
 	sort.SliceStable(q.Changes, func(i, j int) bool { return q.Changes[i].rel < q.Changes[j].rel })
+	// Which new folder each file belongs to is fixed now, before copying
+	// makes the folders exist.
+	for i, c := range q.Changes {
+		if c.kind == "add" {
+			q.Changes[i].top = firstMissing(to, c.rel)
+		}
+	}
 	return q, err
 }
 
-// newFolders groups the added files by the first folder that does not
-// exist in the real folder yet; "" holds files added to existing folders.
+// firstMissing returns the first folder of rel that does not exist in
+// root, or "" when the file's folder exists.
+func firstMissing(root, rel string) string {
+	parts := strings.Split(rel, "/")
+	for i := 1; i < len(parts); i++ {
+		dir := strings.Join(parts[:i], "/")
+		if _, err := os.Lstat(filepath.Join(root, filepath.FromSlash(dir))); errors.Is(err, fs.ErrNotExist) {
+			return dir
+		}
+	}
+	return ""
+}
+
+// newFolders groups the added files by the new folder they belong to, as
+// decided when the request was made; "" holds files added to existing
+// folders.
 func (q *request) newFolders() (map[string][]change, []string) {
 	groups := map[string][]change{}
 	var order []string
 	for _, c := range q.of("add") {
-		top := ""
-		parts := strings.Split(c.rel, "/")
-		for i := 1; i < len(parts); i++ {
-			dir := strings.Join(parts[:i], "/")
-			if _, err := os.Lstat(filepath.Join(q.To, filepath.FromSlash(dir))); errors.Is(err, fs.ErrNotExist) {
-				top = dir
-				break
-			}
-		}
+		top := c.top
 		if _, ok := groups[top]; !ok {
 			order = append(order, top)
 		}
@@ -217,7 +231,11 @@ func (q *request) write(path string) error {
 	b.WriteString(requestData + "\n")
 	fmt.Fprintf(&b, "from\t%s\nto\t%s\nmade\t%s\nstatus\t%s\nsheet\t%s\n", q.From, q.To, q.Made.Format(time.RFC3339), q.Status, q.Sheet)
 	for _, c := range q.Changes {
-		fmt.Fprintf(&b, "%s\t%s\t%s\t%s\t%d\t%s\n", c.kind, c.rel, c.sha, c.old, c.size, c.reason)
+		extra := c.reason
+		if c.kind == "add" {
+			extra = "folder:" + c.top
+		}
+		fmt.Fprintf(&b, "%s\t%s\t%s\t%s\t%d\t%s\n", c.kind, c.rel, c.sha, c.old, c.size, extra)
 	}
 	tmp := path + ".tmp"
 	if err := os.WriteFile(tmp, b.Bytes(), 0o644); err != nil { // #nosec G306 -- read by the team.
@@ -257,7 +275,14 @@ func readRequest(path string) (*request, error) {
 			if rel == "" || strings.HasPrefix(rel, "/") || strings.Contains("/"+rel+"/", "/../") || filepath.IsAbs(filepath.FromSlash(rel)) {
 				return nil, fmt.Errorf("unsafe path %q in the request", rel)
 			}
-			q.Changes = append(q.Changes, change{kind: f[0], rel: rel, sha: f[2], old: f[3], size: n, reason: f[5]})
+			c := change{kind: f[0], rel: rel, sha: f[2], old: f[3], size: n, reason: f[5]}
+			if c.kind == "add" {
+				c.reason, c.top = "", strings.TrimPrefix(f[5], "folder:")
+				if c.top != "" && !strings.HasPrefix(c.rel, c.top+"/") {
+					return nil, fmt.Errorf("unsafe folder %q in the request", c.top)
+				}
+			}
+			q.Changes = append(q.Changes, c)
 		case strings.TrimSpace(sc.Text()) == "":
 		default:
 			return nil, fmt.Errorf("%s: unreadable line %q", filepath.Base(path), sc.Text())
