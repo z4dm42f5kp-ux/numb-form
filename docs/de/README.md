@@ -18,10 +18,16 @@ Español: [docs/es/README.md](../es/README.md) · Deutsch: [docs/de/README.md](R
 * Sicherheit: [SECURITY.md](SECURITY.md)
 * KI-Agenten: [AGENTS.md](../../AGENTS.md)
 
-Starten Sie es im Arbeitsordner (derjenige, der `3. Übersichten` und die Vorlage enthält):
+Starten Sie es im Arbeitsordner (derjenige, der `3. Übersichten` und die Vorlage enthält).
+
+**Unix-like** (macOS, Linux, BSD), im Terminal:
 
 ```
 cd /path/to/GWG && numb-form
 ```
 
-Öffnen Sie unter Windows den Ordner in File Explorer, geben Sie `powershell` in der Adressleiste ein, drücken Sie Enter und geben Sie dann `numb-form` ein.
+**Windows** (10, 11): Öffnen Sie den Ordner in File Explorer, geben Sie `powershell` in der Adressleiste ein, drücken Sie Enter, und geben Sie dann:
+
+```
+numb-form
+```

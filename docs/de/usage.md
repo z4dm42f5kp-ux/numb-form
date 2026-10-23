@@ -156,25 +156,41 @@ Kein Cache oder temporäre Dateien bleiben zurück. Dokumente werden durch eine 
 
 ## EXAMPLES
 
-Überprüfen Sie die echte Vorlage und schreiben Sie ein Beispiel, ohne die Vorlage zu berühren:
+Befehle werden für beide Arten von System angezeigt. Windows PowerShell 5.1 hat keinen `&&`: Befehle werden mit `;` getrennt, und `if ($?) { ... }` führt den nächsten nur aus, wenn der erste erfolgreich ist.
+
+Überprüfen Sie die echte Vorlage und schreiben Sie ein Beispiel, ohne die Vorlage zu berühren (alle Systeme):
 
 ```
 numb-form check-template "Appendix A - Risk Assesment.docx" sample.docx
 ```
 
-Füllen Sie die Formulare direkt im Arbeitsordner aus:
+Füllen Sie die Formulare direkt im Arbeitsordner aus, dann das Berichtsdatum.
+
+**Unix-like** (macOS, Linux, BSD), im Terminal:
 
 ```
-cd /path/to/GWG && numb-form
+cd /path/to/GWG && numb-form && numb-date
 ```
 
-Überprüfen Sie zuerst, dann Commit (numb-commit wartet auf Bestätigung):
+**Windows** (10, 11), in PowerShell:
+
+```
+cd "H:\GWG"; numb-form; if ($?) { numb-date }
+```
+
+Überprüfen Sie zuerst, dann Commit (numb-commit wartet auf Bestätigung), wobei `review.conf` `mode = review` enthält.
+
+**Unix-like** (macOS, Linux, BSD), im Terminal:
 
 ```
 cd /path/to/GWG && numb-form -f review.conf && numb-commit
 ```
 
-wobei `review.conf` `mode = review` enthält.
+**Windows** (10, 11), in PowerShell:
+
+```
+cd "H:\GWG"; numb-form -f review.conf; if ($?) { numb-commit }
+```
 
 ## SEE ALSO
 

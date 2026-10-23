@@ -156,25 +156,41 @@ No hay caché ni archivos temporales detrás. Los documentos se escriben a trav�
 
 ## EXAMPLES
 
-Compruebe la plantilla real y escriba una muestra, sin tocar la plantilla:
+Los comandos se muestran para ambos tipos de sistema. Windows PowerShell 5.1 no tiene `&&`: los comandos están separados con `;`, y `if ($?) { ... }` ejecuta el siguiente sólo cuando el primero tuvo éxito.
+
+Compruebe la plantilla real y escriba una muestra, sin tocar la plantilla (todos los sistemas):
 
 ```
 numb-form check-template "Appendix A - Risk Assesment.docx" sample.docx
 ```
 
-Llene los formularios directamente en la carpeta de trabajo:
+Llene los formularios directamente en la carpeta de trabajo, luego el informe data.
+
+**Unix-like** (macOS, Linux, BSD), en Terminal:
 
 ```
-cd /path/to/GWG && numb-form
+cd /path/to/GWG && numb-form && numb-date
 ```
 
-Revisar primero, luego comprometer (numb-commit espera confirmación):
+**Windows** (10, 11), en PowerShell:
+
+```
+cd "H:\GWG"; numb-form; if ($?) { numb-date }
+```
+
+Revisar primero, luego comprometer (numb-commit espera confirmación), donde `review.conf` contiene `mode = review`.
+
+**Unix-like** (macOS, Linux, BSD), en Terminal:
 
 ```
 cd /path/to/GWG && numb-form -f review.conf && numb-commit
 ```
 
-donde `review.conf` contiene `mode = review`.
+**Windows** (10, 11), en PowerShell:
+
+```
+cd "H:\GWG"; numb-form -f review.conf; if ($?) { numb-commit }
+```
 
 ## SEE ALSO
 
