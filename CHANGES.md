@@ -8,6 +8,13 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.3.2
+
+* Internal: numb-form can tell a form it filled and nobody edited since
+  from one changed by hand, by filling the template again with the
+  values the form holds and comparing.
+  Nothing uses it yet. No change in behaviour.
+
 ## v1.3.1
 
 * Documentation: numb-date has its own manual page,
