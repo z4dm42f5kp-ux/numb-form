@@ -8,6 +8,14 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.6.5
+
+* Internal: the dialogue of a program that corrects misspelt or cut-off
+  places in the company names of the Excel list, after you agree to
+  each one, and writes them as numb-date writes dates.
+  Names of companies that already have a folder are left alone.
+  No program runs it yet. No change in behaviour.
+
 ## v1.6.4
 
 * numb-commit's review accepts the correction of a misspelt or cut-off
