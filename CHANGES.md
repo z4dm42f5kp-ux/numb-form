@@ -8,6 +8,14 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.3.0
+
+* numb-form: Enter on an empty address writes "No address was found
+  online due to little to no information available", and Enter on the
+  legal form of a name without one writes "No legal form was found
+  online due to little to no information available".
+  `-` still leaves the field blank.
+
 ## v1.2.4
 
 * Documentation standard after OpenBSD and FreeBSD: a change to what a
