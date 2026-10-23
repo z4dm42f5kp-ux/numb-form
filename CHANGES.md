@@ -8,6 +8,17 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.4.4
+
+* Internal: numb-commit's replacement of the overview spreadsheet in the
+  real folder: only when the real spreadsheet still has the checksum it
+  had when the request was made, after keeping the old version in the
+  log folder, through a checked temporary copy.
+  Nothing uses it yet. No change in behaviour.
+* numb-date's temporary copy beside the spreadsheet is now named
+  `.numb-replace-…` instead of `.numb-date-tmp-…`, as numb-commit will
+  use the same code.
+
 ## v1.4.3
 
 * Internal: numb-commit's copy of new folders and files from the staged

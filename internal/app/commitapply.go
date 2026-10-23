@@ -53,8 +53,9 @@ func copyChecked(src, dst, sha string) error {
 }
 
 // applyRequest copies new folders whole (built under a temporary name and
-// renamed, so a folder appears complete or not at all), then new files.
-func applyRequest(ctx context.Context, u *ui.UI, q *request, lg *runlog.Logger) error {
+// renamed, so a folder appears complete or not at all), then new files,
+// then replaces the spreadsheet after keeping its old version.
+func applyRequest(ctx context.Context, u *ui.UI, q *request, logDir string, lg *runlog.Logger) error {
 	groups, order := q.newFolders()
 	for _, top := range order {
 		if err := ctx.Err(); err != nil {
@@ -97,6 +98,35 @@ func applyRequest(ctx context.Context, u *ui.UI, q *request, lg *runlog.Logger) 
 		}
 		lg.Printf("added folder %s (%d files, sha256 verified)", top, len(groups[top]))
 		u.Printf("  ✓ %s\n", ui.Safe(filepath.FromSlash(top)))
+	}
+	for _, c := range q.of(kReplace) {
+		dst := filepath.Join(q.To, filepath.FromSlash(c.rel))
+		data, err := os.ReadFile(q.staged(c.rel)) // #nosec G304 -- listed in the request.
+		if err != nil {
+			return err
+		}
+		if fsutil.SHA256Bytes(data) != c.sha {
+			return fmt.Errorf("%s changed after the request was made", c.rel)
+		}
+		old, err := os.ReadFile(dst) // #nosec G304 -- listed in the request.
+		if err != nil {
+			return err
+		}
+		if fsutil.SHA256Bytes(old) != c.old {
+			return fmt.Errorf("%s in the real folder changed after the request was made", c.rel)
+		}
+		keep := filepath.Join(logDir, "replaced", filepath.FromSlash(c.rel))
+		if err := os.MkdirAll(filepath.Dir(keep), 0o750); err != nil {
+			return err
+		}
+		if err := fsutil.WriteNew(keep, old); err != nil {
+			return err
+		}
+		if err := fsutil.ReplaceVerified(dst, c.old, data); err != nil {
+			return err
+		}
+		lg.Printf("replaced %s sha256 %s -> %s; old version kept at %s", c.rel, c.old, c.sha, keep)
+		u.Printf("  ✓ %s (old version kept in the log folder)\n", ui.Safe(filepath.FromSlash(c.rel)))
 	}
 	return nil
 }
