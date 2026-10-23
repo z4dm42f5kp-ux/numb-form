@@ -8,6 +8,13 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.7.7
+
+* CI: every day, the updates workflow proposes new digests of the test
+  systems' container images (the distributions' security updates) and
+  reports newer releases of the distributions and of FreeBSD, OpenBSD
+  and NetBSD (`scripts/check-systems.sh`).
+
 ## v1.7.6
 
 * CI: the tests run on OpenBSD 8.0 and NetBSD 11.0, the newest

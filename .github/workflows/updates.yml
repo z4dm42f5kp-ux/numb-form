@@ -12,6 +12,10 @@ name: updates
 #   gosec). A newer stable version (no pre-release, out for at least
 #   14 days, as with Dependabot) is proposed as a pull request.
 #
+# - The operating systems the tests run on (job systems): new digests of
+#   the pinned container images as a pull request, newer releases of the
+#   distributions and of FreeBSD, OpenBSD and NetBSD as an issue.
+#
 # Dependabot checks the actions and the translation tools every day
 # (.github/dependabot.yml).
 
@@ -94,6 +98,68 @@ jobs:
           # A push with the workflow token starts no workflow.
           gh workflow run ci.yml --repo "$REPO" --ref "$branch"
           gh workflow run security.yml --repo "$REPO" --ref "$branch"
+
+  systems:
+    # Operating systems: refresh the digests of the pinned container
+    # images (security updates of the distributions) and report newer
+    # releases to test (scripts/check-systems.sh).
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write      # push the update branch
+      pull-requests: write # open the pull request
+      issues: write        # report newer releases, or the branch
+      actions: write       # run the checks on the branch
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check the images and the BSD versions
+        run: sh scripts/check-systems.sh
+      - name: Propose the new digests
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -eu
+          if git diff --quiet -- .github/workflows; then
+            echo "Every image is current."
+            exit 0
+          fi
+          branch=updates/system-images
+          title="ci: security updates of the test systems"
+          git checkout -b "$branch"
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -m "$title" -- .github/workflows
+          git push --force "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" "HEAD:refs/heads/$branch"
+          body="New digests of the container images pinned in the workflows, found by the daily updates workflow (scripts/check-systems.sh). They carry the distributions' security updates. Merge when the checks pass; merging releases nothing."
+          if [ -z "$(gh pr list --repo "$REPO" --head "$branch" --state open --json number --jq '.[].number')" ]; then
+            if ! gh pr create --repo "$REPO" --head "$branch" --base main --title "$title" --body "$body"; then
+              gh issue create --repo "$REPO" --title "$title" \
+                --body "$body The branch $branch is ready; open a pull request from it (workflows may not open pull requests in this repository)."
+            fi
+          fi
+          # A push with the workflow token starts no workflow.
+          gh workflow run formats.yml --repo "$REPO" --ref "$branch"
+          gh workflow run linux.yml --repo "$REPO" --ref "$branch"
+      - name: Report newer releases to test
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -eu
+          [ -s systems-report.txt ] || { echo "No newer releases."; exit 0; }
+          title="Newer operating system releases to test"
+          body="The daily updates workflow (scripts/check-systems.sh) found:
+
+          $(cat systems-report.txt)
+
+          Update the versions in .github/workflows (linux.yml, ci.yml), scripts/install/templates and CHANGES.md in one pull request."
+          n=$(gh issue list --repo "$REPO" --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$n" ]; then
+            gh issue edit "$n" --repo "$REPO" --body "$body"
+          else
+            gh issue create --repo "$REPO" --title "$title" --body "$body"
+          fi
 
   go-release:
     runs-on: ubuntu-latest
