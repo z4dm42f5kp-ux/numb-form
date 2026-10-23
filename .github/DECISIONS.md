@@ -288,3 +288,12 @@ They are written by `scripts/install` from templates and
 After each stable release, `install-docs.yml` checks the release's
 Sigstore signature, pins it and opens a pull request; it also runs
 daily.
+
+## Linux is tested before minor releases
+
+The Linux distributions the team uses are tested in containers with
+their own Go and the documented commands, only for minor releases
+(pull requests titled `vX.Y.0:`), because the check takes long.
+Patch releases, `main` and the rolling build are not held up by it.
+The images are pinned by digest rather than letting tests run on
+whatever `latest` is.
