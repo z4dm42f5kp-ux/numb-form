@@ -8,6 +8,18 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.6.2
+
+* numb-form knows nearly 600 spellings of cities and countries that are
+  written after company names, up from about 200, so it finds the legal
+  form in more names such as `Foo S.A. Machala` or `Foo S.A. Cartago`.
+* Internal: finding misspelt or cut-off places after a company name
+  (`Foo SAS, Bogta, Colomiba`, `Foo S.A. de C.V., Ciudad de Me`), for a
+  later program.
+  Names longer than 400 characters or with more than 12 parts are left
+  alone.
+  Nothing uses it yet.
+
 ## v1.6.1
 
 * numb-date: the check after writing lists each cell with the company
