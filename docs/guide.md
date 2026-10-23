@@ -8,6 +8,39 @@ On **macOS, Linux or BSD**, install with [install.md](install.md); the
 questions and answers are the same, and commands joined with `;` here
 are joined with `&&` there.
 
+## Words used in this guide
+
+**working folder**
+: The team's folder with the empty form, the Excel list and one folder
+  per company, for example `F:\14. GWG`.
+  The guide calls it GWG.
+
+**template**
+: The empty form, `Appendix A - Risk Assesment.docx`, directly in GWG.
+
+**Excel list**
+: The spreadsheet in the folder `3. Übersichten`, with one company per
+  row in the column *Customer Name*.
+
+**PowerShell**
+: The blue window where you type commands.
+  Open it in a folder by typing `powershell` in the address bar of File
+  Explorer and pressing **Enter**.
+
+**command**
+: A line you type or paste into PowerShell and confirm with **Enter**,
+  for example `numb-form`.
+
+**path**
+: Where a file or folder is, written out in full, for example
+  `C:\Users\you\Downloads\14. GWG`.
+  In File Explorer, hold **Shift**, right-click the folder and choose
+  *Copy as path*.
+
+**log**
+: A text file in which the programs note what they did.
+  They print where it is at the end, after `Log:`.
+
 ## What numb-form does
 
 Your team keeps a working folder, for example **GWG**.
@@ -104,6 +137,8 @@ companies, its customer number and its row in the Excel list.
 The legal form is taken from the company name without asking.
 numb-form then asks you for the address and the representatives; it
 does not look anything up online.
+To find them, give an AI assistant [the AI prompt](ai-prompt.md) and
+the company's name, and check its answer against your internal sources.
 *Commercial Registry Number* always gets the sentence "No commercial
 registry number was found online consult internal sources for further
 information"; to put the number instead, choose `e` (edit) and field 4
@@ -371,3 +406,26 @@ running `numb-form man -install` once.
 
 For everything else, see the [reference manual](usage.md) and the
 [settings](configuration.md).
+
+## Reporting a problem
+
+If something goes wrong and this guide does not help, report it on
+GitHub: *Issues*, *New issue*, *Bug report*.
+A wrong or unclear sentence in this guide is a problem too: choose
+*Documentation error*.
+
+The form asks for:
+
+1. the version: type `numb-form -version` and copy what it prints,
+2. every step you took, with what you typed,
+3. the text in the window, copied, including every error message,
+4. what you expected instead,
+5. the end of the log, if the program printed one.
+
+The reports are public.
+Before you send one, replace every customer name, person's name and
+address with a made-up one, for example `Foo GmbH`.
+Never attach a form or the Excel list.
+
+A problem that could expose or damage customer data is a security
+problem: report it privately as [SECURITY.md](../SECURITY.md) says.

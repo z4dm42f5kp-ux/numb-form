@@ -70,6 +70,7 @@ jobs:
           subject-path: |
             dist/*.tar.gz
             dist/*.zip
+            dist/ai-prompt.txt
             dist/bin/*/numb-form
             dist/bin/*/numb-commit
             dist/bin/*/numb-date
@@ -89,13 +90,13 @@ jobs:
             gh api --method PATCH "repos/$REPO/git/refs/tags/edge" -f sha="$SHA" -F force=true > /dev/null
             # Archives first, checksums last: a download in between fails
             # the checksum check instead of installing a mismatched file.
-            gh release upload edge --repo "$REPO" --clobber dist/*.tar.gz dist/*.zip
+            gh release upload edge --repo "$REPO" --clobber dist/*.tar.gz dist/*.zip dist/ai-prompt.txt
             gh release upload edge --repo "$REPO" --clobber dist/SHA256SUMS dist/SHA256 dist/SHA256SUMS.sigstore.json
             gh release edit edge --repo "$REPO" --prerelease --latest=false --title "rolling (newest build of main)" --notes "$notes"
           else
             gh release create edge --repo "$REPO" --target "$SHA" --prerelease --latest=false \
               --title "rolling (newest build of main)" --notes "$notes" \
-              dist/*.tar.gz dist/*.zip dist/SHA256SUMS dist/SHA256 dist/SHA256SUMS.sigstore.json
+              dist/*.tar.gz dist/*.zip dist/ai-prompt.txt dist/SHA256SUMS dist/SHA256 dist/SHA256SUMS.sigstore.json
           fi
       - name: Remove build output
         if: always()

@@ -54,6 +54,24 @@ jobs:
             echo "go=false" >> "$GITHUB_OUTPUT"
           fi
 
+  changes-listed:
+    # A pull request that changes the programs lists the change in
+    # CHANGES.md (.github/DOCUMENTATION.md).
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: CHANGES.md lists the change
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: sh scripts/check-changes.sh "$BASE" "$HEAD"
+
   lint:
     needs: changes
     if: needs.changes.outputs.go == 'true'

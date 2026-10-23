@@ -31,12 +31,14 @@ var Topics = []Topic{
 	{"numb-typo", "docs/numb-typo.md", "numb-typo: correct misspelt places in company names"},
 	{"configuration", "docs/configuration.md", "Settings (numb-form.conf)"},
 	{"install", "docs/install.md", "Installing and updating"},
+	{"ai-prompt", "docs/ai-prompt.md", "The AI prompt for the address and representatives"},
 	{"formats", "docs/formats.md", "File formats"},
 	{"containers", "docs/containers.md", "Docker, Podman and Kubernetes"},
 	{"security", "SECURITY.md", "Security"},
+	{"changes", "CHANGES.md", "Changes in each release"},
 }
 
-var aliases = map[string]string{"numb-form": "usage", "commit": "numb-commit", "date": "numb-date", "typo": "numb-typo", "config": "configuration", "settings": "configuration", "conf": "configuration", "update": "install", "docker": "containers", "kubernetes": "containers", "podman": "containers", "help": "guide", "start": "guide"}
+var aliases = map[string]string{"numb-form": "usage", "commit": "numb-commit", "date": "numb-date", "typo": "numb-typo", "config": "configuration", "settings": "configuration", "conf": "configuration", "update": "install", "docker": "containers", "kubernetes": "containers", "podman": "containers", "help": "guide", "start": "guide", "prompt": "ai-prompt", "ai": "ai-prompt"}
 
 // Find returns the topic called name.
 func Find(name string) (Topic, bool) {

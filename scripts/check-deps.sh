@@ -24,4 +24,19 @@ if [ -n "$nonstd" ]; then
 	echo "$nonstd" >&2
 	exit 1
 fi
+# Packages that bypass Go's safety or its secure defaults
+# (.github/SECURE-CODING.md): no cgo, no math/rand, and unsafe only for
+# Windows system calls.
+bad=$(grep -rlE --include='*.go' '^[[:space:]]*import "C"|"math/rand(/v2)?"' . || true)
+if [ -n "$bad" ]; then
+	echo "check-deps: cgo or math/rand used in:" >&2
+	echo "$bad" >&2
+	exit 1
+fi
+bad=$(grep -rl --include='*.go' '"unsafe"' . | grep -v '_windows\.go$' || true)
+if [ -n "$bad" ]; then
+	echo "check-deps: unsafe outside Windows system calls in:" >&2
+	echo "$bad" >&2
+	exit 1
+fi
 echo "check-deps: OK, standard library only"
