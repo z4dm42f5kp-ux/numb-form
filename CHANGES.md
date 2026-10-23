@@ -8,6 +8,13 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.4.2
+
+* Internal: numb-commit's staged copy, a folder in Downloads that holds
+  exactly the files to copy, each checked with SHA-256 and read-only,
+  and that numb-commit removes again.
+  Nothing uses it yet. No change in behaviour.
+
 ## v1.4.1
 
 * numb-commit: `numb-commit-request.txt` starts with a UTF-8 byte order
