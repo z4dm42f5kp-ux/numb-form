@@ -49,6 +49,10 @@ Press **Ctrl+C** to leave.
   only gains report dates in cells without one, every new company
   folder holds a filled form, and residue and the template stay behind.
   Nothing uses it yet. No change in behaviour.
+* Internal: the request reader refuses files to copy without a SHA-256
+  checksum and paths with empty, `.` or `..` parts or a backslash; the
+  comparison refuses file names with a backslash; forms and the
+  spreadsheet are read with a size limit (50 MB and 256 MB).
 
 ## v1.3.4
 

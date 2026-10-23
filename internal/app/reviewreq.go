@@ -162,8 +162,8 @@ type reviewConfig struct {
 // reviewSheet allows only report dates written into empty or digit-free
 // cells of the report-date column.
 func reviewSheet(v *reqReview, oldPath, newPath string, cfg reviewConfig) {
-	ob, err1 := os.ReadFile(oldPath) // #nosec G304 -- the overview spreadsheet.
-	nb, err2 := os.ReadFile(newPath) // #nosec G304 -- the overview spreadsheet.
+	ob, err1 := readSheetFile(oldPath)
+	nb, err2 := readSheetFile(newPath)
 	if err1 != nil || err2 != nil {
 		v.add("fail", "the spreadsheet cannot be read")
 		return
@@ -257,7 +257,7 @@ func reviewFolders(v *reqReview, q *request, cfg reviewConfig) {
 			v.add("warn", "new folder %q has no risk assessment form", top)
 			continue
 		}
-		b, err := os.ReadFile(q.staged(formRel)) // #nosec G304 -- a form to copy.
+		b, err := fsutil.ReadFileMax(q.staged(formRel), maxForm)
 		if err != nil {
 			v.add("fail", "%s cannot be read", formRel)
 			continue
