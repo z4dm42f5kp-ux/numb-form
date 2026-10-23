@@ -8,6 +8,13 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.2.7
+
+* Internal: the standard texts for a missing address and legal form, and
+  one helper for questions where Enter writes a standard text and `-`
+  leaves the field blank, used for the representatives as before.
+  No change in behaviour.
+
 ## v1.2.6
 
 * CI: the LibreOffice format tests run in Debian 13 and install
