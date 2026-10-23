@@ -35,7 +35,7 @@ The prompt tells the assistant:
   parent, subsidiary or similar name),
 * which sources to trust, in order: official registers, the company's
   own legal notices, the LEI index, then business information sites
-  and news, with the registers that work for each country;
+  and news, with the registers that work for each country,
 * how to write each field: the legal form as the name writes it
   (`GmbH`, `S.A.`, `Ltda.`), the address on one line, the
   representatives as `Full Name (Role 1, Role 2)` with the roles in
