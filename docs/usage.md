@@ -192,14 +192,7 @@ The log is `numb-date.log` in the per-user state folder (or `log_dir`).
   before anything is replaced.
   Without an argument the channel of the running build is used.
   Settings are kept.
-  Refused with `-y`
-: (numb-form, numb-date) Take a folder with a similar name as the
-  company's folder instead of asking "Is the existing folder … this
-  company's folder?".
-  The folder is named on screen and in the log.
-  Every document is still shown and must be accepted.
-
-`-offline`, with `online = no`, and for builds from source.
+  Refused with `-offline`, with `online = no`, and for builds from source.
   On Windows the old program is renamed to `numb-form.old.exe` and removed
   at the next start.
 
@@ -207,6 +200,13 @@ The log is `numb-date.log` in the per-user state folder (or `log_dir`).
 
 `-f file`
 : Read *file* after the system and per-user configuration files.
+
+`-y`
+: (numb-form, numb-date) Take a folder with a similar name as the
+  company's folder instead of asking "Is the existing folder … this
+  company's folder?".
+  The folder is named on screen and in the log.
+  Every document is still shown and must be accepted.
 
 `-offline`
 : With `update`: refuse to contact GitHub.
