@@ -17,7 +17,7 @@ Deutsch: [docs/de/README.md](docs/de/README.md)
 It needs no technical knowledge.
 
 * Install: [docs/install.md](docs/install.md)
-* Use: [docs/usage.md](docs/usage.md)
+* Use: [numb-form](docs/usage.md), [numb-date](docs/numb-date.md)
 * Configure: [docs/configuration.md](docs/configuration.md)
 * Find the address and representatives with an AI assistant:
   [docs/ai-prompt.md](docs/ai-prompt.md)
