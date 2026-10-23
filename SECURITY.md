@@ -131,9 +131,9 @@ PGP is not used because the ecosystems involved no longer rely on it
 
 | Component | Verification |
 | --- | --- |
-| Go toolchain in CI | downloaded by `actions/setup-go` from go.dev and checked against the published SHA-256 |
-| Go tools in CI (staticcheck, govulncheck, gosec) | exact versions, verified by `go run` against the Go checksum database, a public transparency log |
-| GitHub Actions | pinned to full commit SHAs; Dependabot proposes updates after a 14-day cooldown |
+| Go toolchain in CI | the newest stable Go, downloaded by `actions/setup-go` from go.dev and checked against the published SHA-256; a daily check proposes a rebuild of the newest release when a newer Go fixes a vulnerability in its binaries |
+| Go tools in CI (staticcheck, govulncheck, gosec) | exact versions, verified by `go run` against the Go checksum database, a public transparency log; a daily check proposes newer stable versions after 14 days |
+| GitHub Actions | pinned to full commit SHAs; Dependabot checks daily and proposes stable updates after a 14-day cooldown, security updates at once |
 | Python tools in CI (zizmor, Argos Translate) | every package pinned with SHA-256 (`--require-hashes`), wheels only (`--only-binary :all:`), no dependency resolution at install time (`--no-deps`) |
 | Argos Translate models | index read at a pinned commit; each model's SHA-256 is pinned in `.github/translate/models.sha256`, recorded on first use and enforced afterwards |
 | Container base image | none: images are built `FROM scratch` |
@@ -141,6 +141,8 @@ PGP is not used because the ecosystems involved no longer rely on it
 **Releases.**
 Release binaries are built by GitHub Actions from a tag, with
 `-trimpath` and a fixed timestamp, so they are reproducible.
+A release is published only after the owner approves it in the
+`release` environment (see [.github/RELEASING.md](.github/RELEASING.md)).
 Each release has:
 
 * `SHA256SUMS` (GNU format) and `SHA256` (BSD format) checksums;

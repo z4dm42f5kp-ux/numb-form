@@ -1,0 +1,196 @@
+name: updates
+
+# Daily check for updates that Dependabot does not cover:
+#
+# - Go itself. The builds always use the newest stable Go, but a release
+#   keeps the Go it was built with. When a newer stable Go fixes a
+#   vulnerability that govulncheck finds in the newest release's binaries,
+#   this proposes a patch release of the same code rebuilt with that Go
+#   (it waits for approval like any release, see release-approval.yml),
+#   and rebuilds the rolling pre-release.
+# - The Go tools pinned in the workflows (staticcheck, govulncheck,
+#   gosec). A newer stable version (no pre-release, out for at least
+#   14 days, as with Dependabot) is proposed as a pull request.
+#
+# Dependabot checks the actions and the translation tools every day
+# (.github/dependabot.yml).
+
+on:
+  schedule:
+    - cron: "23 5 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: updates
+  cancel-in-progress: false
+
+jobs:
+  go-tools:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write      # push the update branch
+      pull-requests: write # open the pull request
+      issues: write        # or an issue, when pull requests by workflows are off
+      actions: write       # run ci and security on the branch
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Look for newer stable versions
+        id: tools
+        run: |
+          set -eu
+          now=$(date -u +%s)
+          changes=""
+          for mod in honnef.co/go/tools golang.org/x/vuln github.com/securego/gosec/v2; do
+            pinned=$(grep -rhoE "${mod}/cmd/[a-z]+@v[0-9][0-9A-Za-z.+-]*" .github/workflows | head -n 1 | sed 's/.*@//')
+            [ -n "$pinned" ] || continue
+            info=$(curl -fsS "https://proxy.golang.org/${mod}/@latest")
+            latest=$(printf '%s' "$info" | python3 -c 'import json,sys; print(json.load(sys.stdin)["Version"])')
+            when=$(printf '%s' "$info" | python3 -c 'import json,sys; print(json.load(sys.stdin)["Time"])')
+            age=$(( (now - $(date -u -d "$when" +%s)) / 86400 ))
+            case "$latest" in *-*) echo "$mod: $latest is a pre-release, skipped"; continue ;; esac
+            if [ "$latest" = "$pinned" ]; then
+              echo "$mod: $pinned is the newest"
+            elif [ "$(printf '%s\n%s\n' "$pinned" "$latest" | sort -V | tail -n 1)" != "$latest" ]; then
+              echo "$mod: pinned $pinned is newer than $latest, kept"
+            elif [ "$age" -lt 14 ]; then
+              echo "$mod: $latest is only $age days old, waiting until it is 14"
+            else
+              echo "$mod: $pinned -> $latest"
+              grep -rlE "${mod}/cmd/[a-z]+@${pinned}" .github/workflows | while read -r f; do
+                sed -i -E "s#(${mod}/cmd/[a-z]+)@${pinned}#\1@${latest}#g" "$f"
+              done
+              changes="$changes ${mod##*/} $latest,"
+            fi
+          done
+          echo "changes=${changes%,}" >> "$GITHUB_OUTPUT"
+      - name: Propose the update
+        if: steps.tools.outputs.changes != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          CHANGES: ${{ steps.tools.outputs.changes }}
+        run: |
+          set -eu
+          branch=updates/go-tools
+          title="ci: update Go tools:$CHANGES"
+          git checkout -b "$branch"
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -a -m "$title"
+          git push --force "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" "HEAD:refs/heads/$branch"
+          body="Newer stable versions of the Go tools pinned in the workflows, found by the daily updates workflow. Each is out for at least 14 days. ci and security run on this branch; merge when they pass."
+          if [ -z "$(gh pr list --repo "$REPO" --head "$branch" --state open --json number --jq '.[].number')" ]; then
+            if ! gh pr create --repo "$REPO" --head "$branch" --base main --title "$title" --body "$body"; then
+              # Settings > Actions > General can forbid pull requests by workflows.
+              gh issue create --repo "$REPO" --title "$title" \
+                --body "$body The branch $branch is ready; open a pull request from it (workflows may not open pull requests in this repository)."
+            fi
+          else
+            gh pr edit --repo "$REPO" "$branch" --title "$title"
+          fi
+          # A push with the workflow token starts no workflow.
+          gh workflow run ci.yml --repo "$REPO" --ref "$branch"
+          gh workflow run security.yml --repo "$REPO" --ref "$branch"
+
+  go-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write # rebuild the rolling pre-release
+      issues: write  # report a release that cannot be rebuilt by itself
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+      sha: ${{ steps.check.outputs.sha }}
+    steps:
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+          check-latest: true
+          cache: false
+      - name: Install govulncheck (verified by the Go checksum database)
+        run: GOBIN="$RUNNER_TEMP/bin" go install golang.org/x/vuln/cmd/govulncheck@v1.9.0
+      - name: Check the binaries of the newest release and of the rolling build
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -eu
+          go=$(go env GOVERSION)
+          echo "Newest stable Go: $go"
+          # vulnerable TAG: download the Linux binaries of a release; true when
+          # they were built with an older Go and govulncheck finds something.
+          vulnerable() {
+            d="$RUNNER_TEMP/rel-$1"
+            rm -rf "$d" && mkdir -p "$d"
+            gh release download "$1" --repo "$REPO" --dir "$d" --pattern numb-form_linux_amd64.tar.gz --pattern SHA256SUMS || return 1
+            (cd "$d" && grep ' numb-form_linux_amd64.tar.gz$' SHA256SUMS | sha256sum -c -) || return 1
+            tar -xzf "$d/numb-form_linux_amd64.tar.gz" -C "$d"
+            built=$(go version "$d/numb-form" | awk '{print $2}')
+            echo "$1 was built with $built"
+            if [ "$built" = "$go" ]; then
+              return 1
+            fi
+            found=1
+            for b in "$d"/numb-*; do
+              [ -x "$b" ] || continue
+              status=0
+              "$RUNNER_TEMP/bin/govulncheck" -mode=binary "$b" || status=$?
+              [ "$status" -eq 3 ] && found=0
+            done
+            return $found
+          }
+          if vulnerable edge; then
+            echo "The rolling build has vulnerabilities fixed in $go: rebuilding it."
+            gh workflow run edge.yml --repo "$REPO" --ref main
+          fi
+          tag=$(gh api "repos/$REPO/tags?per_page=100" --jq '.[].name' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1)
+          [ -n "$tag" ] || exit 0
+          if ! vulnerable "$tag"; then
+            echo "$tag needs no rebuild."
+            exit 0
+          fi
+          if [ "$(gh api "repos/$REPO/actions/runs?status=waiting" --jq '[.workflow_runs[] | select(.path | endswith("updates.yml"))] | length')" != 0 ]; then
+            echo "A rebuild of $tag is already waiting for approval."
+            exit 0
+          fi
+          sha=$(gh api "repos/$REPO/commits/$tag" --jq .sha)
+          if ! gh api "repos/$REPO/contents/.github/workflows/release.yml?ref=$tag" --jq .content | base64 -d | grep -q workflow_dispatch; then
+            title="$tag has vulnerabilities fixed in $go: publish the next release"
+            if [ -z "$(gh issue list --repo "$REPO" --state open --search "in:title \"$title\"" --json number --jq '.[].number')" ]; then
+              gh issue create --repo "$REPO" --title "$title" \
+                --body "govulncheck finds vulnerabilities in the binaries of $tag that $go fixes. $tag predates rebuilds by approval, so publish the next release from main (every release is built with the newest Go)."
+            fi
+            exit 0
+          fi
+          version=$(printf '%s\n' "${tag#v}" | awk -F. '{ printf "v%d.%d.%d", $1, $2, $3 + 1 }')
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          {
+            echo "### $version is waiting for your approval"
+            echo
+            echo "The binaries of $tag have vulnerabilities that $go fixes. $version is the same code (\`$sha\`) built with $go."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  rebuild:
+    needs: go-release
+    if: needs.go-release.outputs.version != ''
+    runs-on: ubuntu-latest
+    environment: release # approved by the owner, like every release
+    permissions:
+      contents: write # create the tag
+      actions: write  # start release.yml on it
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          VERSION: ${{ needs.go-release.outputs.version }}
+          SHA: ${{ needs.go-release.outputs.sha }}
+        run: |
+          set -eu
+          gh api "repos/$REPO/git/refs" -f "ref=refs/tags/$VERSION" -f "sha=$SHA" > /dev/null
+          gh workflow run release.yml --repo "$REPO" --ref "$VERSION"
+          echo "Tagged $SHA as $VERSION and started the release build." >> "$GITHUB_STEP_SUMMARY"

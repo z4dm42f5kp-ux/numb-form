@@ -1,0 +1,53 @@
+# Releasing
+
+Releases are numbered `vX.Y.Z` ([semantic versioning](https://semver.org)):
+a fix is a patch (`v1.4.1`), a new feature a minor release (`v1.5.0`).
+Each release is one pull request titled `vX.Y.Z: what it changes`.
+
+## What happens
+
+1. The pull request is merged into `main`.
+2. ci runs on `main`. When it passes, the **release approval** workflow
+   checks the title, that `vX.Y.Z` is not taken and is newer than the
+   newest release, and then waits.
+3. GitHub sends you a mail, *Review pending deployments*. Open it (or the
+   run under Actions > release approval), tap **Review deployments**, tick
+   **release** and tap **Approve and deploy**. **Reject** releases nothing.
+4. The commit that ci tested is tagged `vX.Y.Z`, and the normal release
+   build runs: archives, checksums, Sigstore signature, provenance,
+   container image. The rolling build already contains it.
+
+A pull request with another title (no `vX.Y.Z:` at the start) releases
+nothing. To release the newest `main` without a pull request, run
+Actions > release approval > Run workflow with the version; it waits for
+your approval the same way.
+
+## One-time setup
+
+The approval comes from the `release` environment. Until it has you as
+required reviewer, the workflow refuses to release (it never releases
+without asking). On github.com (works in Safari on a phone; use the
+desktop site if Settings is hidden):
+
+1. Settings > Environments > New environment, name `release`,
+   Configure environment.
+2. Tick **Required reviewers** and add yourself. Leave
+   **Prevent self-review** unticked, since you merge and approve.
+3. Under **Deployment branches and tags**, choose Selected branches and
+   tags and add the branch `main`.
+4. Save protection rules.
+
+## Daily update checks
+
+* Dependabot checks the actions and the translation tools every day
+  (`.github/dependabot.yml`).
+* The **updates** workflow checks every day for newer stable versions of
+  the Go tools in the workflows and opens a pull request
+  `ci: update Go tools: ...` (if workflows may not open pull requests in
+  Settings > Actions > General, it opens an issue instead).
+* It also checks the binaries of the newest release and of the rolling
+  build with govulncheck. When a newer stable Go fixes what it finds, it
+  rebuilds the rolling build, and proposes the next patch version of the
+  newest release, the same code built with that Go, which waits for your
+  approval like any release. If you reject it, it asks again the next
+  day; publishing any newer release ends it.

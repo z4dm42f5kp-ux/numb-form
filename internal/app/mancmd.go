@@ -92,7 +92,7 @@ func Man(out io.Writer, args []string) int {
 		if restore, rows, cols, err := manual.RawTerminal(); err == nil {
 			text, err := render(cols - 1)
 			if err == nil {
-				err = manual.Less(os.Stdout, os.Stdin, text, rows)
+				err = manual.Less(os.Stdout, os.Stdin, text, rows, cols)
 			}
 			restore()
 			if err != nil {

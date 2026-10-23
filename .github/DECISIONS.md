@@ -151,6 +151,32 @@ newer than rolling.
 The rolling build now always builds the newest `main`, and runs after a
 release is published and after translations are committed.
 
+## The manual viewer wraps long lines itself
+
+Code blocks keep their long commands on one line; a terminal wraps such
+a line over several rows, so a page overflowed the window and the view
+jumped.
+The viewer now cuts every line to the window width (continuing on the
+next row) and redraws by overwriting rows instead of clearing the
+screen, which also stops the flicker.
+
+## Releases wait for approval
+
+Merging a pull request titled `vX.Y.Z: ...` proposes that release once ci
+passes on main; it is tagged and published only after the owner approves
+the `release` environment (one tap in the mail or on the run page).
+A tag created with the workflow token starts no workflow, so the approval
+starts `release.yml` on the tag explicitly; the signing identity stays
+`release.yml@refs/tags/v...`, so the verification commands are unchanged.
+
+## Daily update checks
+
+Dependabot runs daily (stable versions after 14 days, security updates
+at once). Go and the pinned Go tools have no Dependabot support here:
+`updates.yml` checks them daily, proposes newer tools as a pull request,
+and, when a newer Go fixes a vulnerability in the newest release's
+binaries, proposes a patch release of the same code built with that Go.
+
 ## Standard texts for a missing address or legal form
 
 Enter on an empty address, or on the legal form of a name that has

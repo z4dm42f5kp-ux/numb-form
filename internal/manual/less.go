@@ -27,6 +27,7 @@ type pager struct {
 	pattern string // last search, lower case
 	status  string // a message instead of the position, once
 	help    bool
+	width   int // characters per row, one less than the window
 }
 
 func (p *pager) page() int { return max(1, p.rows-1) }
@@ -61,17 +62,17 @@ func (p *pager) key(k string) bool {
 	switch k {
 	case "q", "Q", "\x03":
 		return true
-	case " ", "f", "\x06", "\x1b[6~":
+	case " ", "f", "F", "\x06", "\x1b[6~":
 		p.scroll(p.page())
-	case "b", "\x02", "\x1b[5~":
+	case "b", "B", "\x02", "\x1b[5~":
 		p.scroll(-p.page())
-	case "\r", "\n", "j", "e", "\x0e", "\x1b[B", "\x1bOB":
+	case "\r", "\n", "j", "J", "e", "E", "\x0e", "\x1b[B", "\x1bOB":
 		p.scroll(1)
-	case "k", "y", "\x10", "\x1b[A", "\x1bOA":
+	case "k", "K", "y", "Y", "\x10", "\x1b[A", "\x1bOA":
 		p.scroll(-1)
-	case "d", "\x04":
+	case "d", "D", "\x04":
 		p.scroll(p.page() / 2)
-	case "u", "\x15":
+	case "u", "U", "\x15":
 		p.scroll(-p.page() / 2)
 	case "g", "<", "\x1b[H", "\x1b[1~", "\x1bOH":
 		p.top = 0
@@ -87,19 +88,46 @@ func (p *pager) key(k string) bool {
 	return false
 }
 
-// draw writes the window: the visible lines and the status line.
+// fit cuts a line to the window width, in characters.
+func fit(s string, width int) string {
+	if r := []rune(s); len(r) > width {
+		return string(r[:width])
+	}
+	return s
+}
+
+// softWrap breaks lines longer than width into several, so that every
+// line takes exactly one row of the window; long commands in code blocks
+// would otherwise wrap by themselves and push the window out of place.
+func softWrap(lines []string, width int) []string {
+	var out []string
+	for _, l := range lines {
+		// A tab would take up to eight columns.
+		r := []rune(strings.ReplaceAll(l, "\t", "    "))
+		for len(r) > width {
+			out = append(out, string(r[:width]))
+			r = r[width:]
+		}
+		out = append(out, string(r))
+	}
+	return out
+}
+
+// draw writes the window: the visible lines and the status line. It
+// overwrites the rows in place instead of clearing the screen, so the
+// window does not flicker, and hides the cursor while it does.
 func (p *pager) draw(w io.Writer) {
 	var b strings.Builder
-	b.WriteString("\x1b[H\x1b[2J")
+	b.WriteString("\x1b[?25l\x1b[H")
 	body := p.lines[p.top:min(len(p.lines), p.top+p.page())]
 	if p.help {
 		body = strings.Split(lessHelp, "\n")
 	}
 	for _, l := range body {
-		b.WriteString(l + "\r\n")
+		b.WriteString(fit(l, p.width) + "\x1b[K\r\n")
 	}
 	for i := len(body); i < p.page(); i++ {
-		b.WriteString("~\r\n")
+		b.WriteString("~\x1b[K\r\n")
 	}
 	status := p.status
 	if status == "" {
@@ -111,7 +139,7 @@ func (p *pager) draw(w io.Writer) {
 		status = fmt.Sprintf("lines %d-%d of %d  %s  (h: help, q: quit)", p.top+1, end, len(p.lines), pos)
 	}
 	p.status = ""
-	b.WriteString("\x1b[7m" + status + "\x1b[0m")
+	b.WriteString("\x1b[7m" + fit(status, p.width) + "\x1b[0m\x1b[K\x1b[?25h")
 	_, _ = io.WriteString(w, b.String())
 }
 
@@ -120,14 +148,16 @@ func (p *pager) draw(w io.Writer) {
 func readKey(r *bufio.Reader) (string, error) {
 	c, err := r.ReadByte()
 	if err != nil || c != 0x1b {
-		return string(c), err
+		// One byte, not the character with that number: bytes of an
+		// accented letter arrive one by one.
+		return string([]byte{c}), err
 	}
 	n, err := r.ReadByte()
 	if err != nil {
 		return "\x1b", err
 	}
 	if n != '[' && n != 'O' {
-		return string([]byte{c, n}), nil
+		return string(n), nil // Esc and then a key: the key
 	}
 	seq := []byte{c, n}
 	for len(seq) < 8 {
@@ -157,6 +187,10 @@ func readLine(r *bufio.Reader, w io.Writer) (string, error) {
 		case k == "\x03" || k == "\x1b":
 			return "", nil
 		case (k == "\x7f" || k == "\b") && len(s) > 0:
+			// Remove a whole character, including all bytes of an accented one.
+			for len(s) > 1 && s[len(s)-1] >= 0x80 && s[len(s)-1] < 0xc0 {
+				s = s[:len(s)-1]
+			}
 			s = s[:len(s)-1]
 			fmt.Fprint(w, "\b \b")
 		case len(k) == 1 && k[0] >= 0x20 && k[0] < 0x7f, len(k) == 1 && k[0] >= 0x80:
@@ -168,12 +202,15 @@ func readLine(r *bufio.Reader, w io.Writer) (string, error) {
 	}
 }
 
-// Less shows text like less(1) in a terminal already in raw mode: keys
-// move without Enter, and the screen is redrawn after each one.
-func Less(w io.Writer, in io.Reader, text string, rows int) error {
-	p := &pager{lines: strings.Split(strings.TrimRight(text, "\n"), "\n"), rows: max(rows, 3)}
+// Less shows text like less(1) in a terminal of rows by cols that is
+// already in raw mode: keys move without Enter, and the window is redrawn
+// after each one.
+func Less(w io.Writer, in io.Reader, text string, rows, cols int) error {
+	width := max(cols-1, 20)
+	p := &pager{lines: softWrap(strings.Split(strings.TrimRight(text, "\n"), "\n"), width), rows: max(rows, 3), width: width}
 	r := bufio.NewReader(in)
-	defer fmt.Fprint(w, "\x1b[H\x1b[2J")
+	fmt.Fprint(w, "\x1b[2J")
+	defer fmt.Fprint(w, "\x1b[0m\x1b[?25h\x1b[H\x1b[2J")
 	for {
 		p.draw(w)
 		k, err := readKey(r)

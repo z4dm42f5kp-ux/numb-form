@@ -197,10 +197,18 @@ Siehe [containers.md](containers.md) für Docker, Podman (rootless, keine Admini
 
 ## Nach der Installation
 
-Speichern Sie Ihren Namen einmal und starten Sie dann numb-form im Arbeitsordner:
+Speichern Sie Ihren Namen einmal und starten Sie dann numb-form im Arbeitsordner.
+
+**Unix-like** (macOS, Linux, BSD), im Terminal:
 
 ```
 numb-form config set person "Your Name" && cd /path/to/GWG && numb-form
+```
+
+**Windows** (10, 11), in PowerShell:
+
+```
+numb-form config set person "Your Name"; cd "H:\GWG"; numb-form
 ```
 
 Die [Schritt-für-Schritt-Anleitung](guide.md) erklärt jede Frage, die sie stellt.

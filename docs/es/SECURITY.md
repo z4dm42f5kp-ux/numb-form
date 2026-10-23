@@ -50,14 +50,14 @@ Una ejecución de formularios no hace conexiones de red. Los nombres de las empr
 
 | Componente | Verificación |
 | --- | --- |
-| Go toolchain in CI | descargado por `actions/setup-go` de go.dev y chequeado contra el publicado SHA-256 |
-| Herramientas en el CI (estático, govulncheck, gosec) | versiones exactas, verificadas por `go run` contra la base de datos Go checksum, un registro de transparencia pública |
-| GitHub Actions | sujetado a SHAs de compromiso completo; Dependabot propone actualizaciones después de una refrigeración de 14 días |
+| Go toolchain in CI | el más nuevo estable Go, descargado por `actions/setup-go` de go.dev y comprobado contra el publicado SHA-256; un cheque diario propone una reconstrucción de la más reciente liberación cuando un nuevo Go arregla una vulnerabilidad en sus binarios |
+| Herramientas en el CI (estático, govulncheck, gosec) | versiones exactas, verificadas por `go run` contra la base de datos Go checksum, un registro de transparencia pública; un cheque diario propone nuevas versiones estables después de 14 días |
+| GitHub Actions | afinado a SHAs de compromiso completo; Dependabot revisa diariamente y propone actualizaciones estables después de una refrigeración de 14 días, actualizaciones de seguridad a la vez |
 | Python tools in CI (zizmor, Argos Translate) | todos los paquetes conectados con SHA-256 (`--require-hashes`), ruedas solamente (`--only-binary :all:`), sin resolución de dependencia en el tiempo de instalación (`--no-deps`) |
 | Modelos Argos Translate | índice leído en un compromiso de pinned; el SHA-256 de cada modelo se fija en `.github/translate/models.sha256`, grabado en el primer uso y aplicado después |
 | Imagen de base de contenedores | ninguna: las imágenes se construyen `FROM scratch` |
 
-**Releases.** Los binarios de liberación son construidos por GitHub Actions de una etiqueta, con `-trimpath` y un timetamp fijo, por lo que son reproducibles. Cada versión tiene:
+**Releases.** Los binarios de liberación son construidos por GitHub Actions de una etiqueta, con `-trimpath` y un timetamp fijo, por lo que son reproducibles. Un lanzamiento se publica sólo después de que el propietario lo apruebe en el entorno `release` (ver [.github/RELEASING.md](../../.github/RELEASING.md)). Cada versión tiene:
 
 * `SHA256SUMS` (formato GNU) y `SHA256` (formato BSD) sumas de comprobación;
 * `SHA256SUMS.sigstore.json`, una firma Sigstore sin llave de las sumas de comprobación, vinculada a la identidad del flujo de trabajo de liberación;

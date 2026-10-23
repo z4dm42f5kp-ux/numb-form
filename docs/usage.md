@@ -178,8 +178,10 @@ the forms: see [numb-date.md](numb-date.md).
 : Take a folder with a similar name as the
   company's folder instead of asking "Is the existing folder … this
   company's folder?".
-  The folder is named on screen and in the log.
+  The folder is named on screen and in the log, and the summary says how
+  many folders were taken this way.
   Every document is still shown and must be accepted.
+  `-Y` is the same.
 
 `-offline`
 : With `update`: refuse to contact GitHub.

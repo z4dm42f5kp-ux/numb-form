@@ -9,13 +9,13 @@
 ## SYNOPSIS
 
 ```
-numb-form [-f conf] [-offline] [-root dir] [-downloads dir] [-timeout duration]
+numb-form [-f conf] [-y] [-offline] [-root dir] [-downloads dir] [-timeout duration]
 numb-form [-f conf] check-template template [sample]
 numb-form [-f conf] config [init | set key value]
 numb-form [-f conf] update [stable | rolling | v1.2.3]
 numb-form rollback
 numb-commit [-f conf] [-run dir] [-downloads dir]
-numb-date [-f conf] [-root dir] [-timeout duration]
+numb-date [-f conf] [-y] [-root dir] [-timeout duration]
 ```
 
 ## DESCRIPTION
@@ -89,7 +89,7 @@ Nur die aufgeführten Zellen ändern sich; siehe [../SECURITY.md](SECURITY.md) f
 : Wechseln Sie zurück zu der Version, die das letzte `update` ersetzt hat. Die zurückgerollte Version wird an ihrem Platz gehalten, so dass ein zweiter `rollback` zu ihr zurückkehrt. Ohne eine gespeicherte Version installieren Sie stattdessen ein Release nach Nummer: `numb-form update v0.1.1`.
 
 `man` [*topic*] [`en` | `es` | `de`]
-: Zeigen Sie dieses Handbuch im Terminal, jeweils einen Bildschirm (Enter: next screen; q und Enter: quit). Ohne ein Thema wird das gesamte Handbuch angezeigt, beginnend mit dem Leitfaden. Themen: `guide`, `usage`, `configuration`, `install`, `formats`, `containers`, `security`; `numb-form man topics` listet sie auf. Die Sprache folgt `LANG` oder wird angegeben. `numb-form man -install` lässt `man numb-form` funktionieren: Unter Linux, macOS und den BSDs schreibt es die Handbuchseite zu `~/.local/share/man/man1` (erneuert von `numb-form update`); Unter Windows schreibt es `man.cmd` neben `numb-form.exe` für Command Prompt. Windows PowerShell behält `man` für seine eigene Hilfe: dort, Typ `numb-form man`.
+: Zeigen Sie dieses Handbuch im Terminal, wie less(1): Tasten handeln sofort, ohne Enter. Space oder PageDown: next page; b oder PageUp: previous page; Enter, j oder Down: next line; k oder Up: previous line; g oder Home: start; G oder End: end; /text und Enter: search, n und N: next and previous match; h: help; q: quit. Unter macOS, Linux und den BSDs wird das installierte `less` verwendet, wenn es eines gibt. Ohne ein Thema wird das gesamte Handbuch angezeigt, beginnend mit dem Leitfaden. Themen: `guide`, `usage`, `configuration`, `install`, `formats`, `containers`, `security`; `numb-form man topics` listet sie auf. Die Sprache folgt `LANG` oder wird angegeben. `numb-form man -install` lässt `man numb-form` funktionieren: Unter Linux, macOS und den BSDs schreibt es die Handbuchseite zu `~/.local/share/man/man1` (erneuert von `numb-form update`); Unter Windows schreibt es `man.cmd` neben `numb-form.exe` für Command Prompt. Windows PowerShell behält `man` für seine eigene Hilfe: dort, Typ `numb-form man`.
 
 `update` [`stable` | `rolling` | *v1.2.3*]
 : Ersetzen Sie das installierte `numb-form` und `numb-commit`: **stable** durch das neueste stabile Release, **rolling** durch den aktuellen Rolling Build von `main` (nach jeder Änderung neu erstellt; `edge` wird als älterer Name akzeptiert), oder *v1.2.3* mit genau diesem Release. Die ersetzte Version wird neben den Programmen als `numb-form.previous` und `numb-commit.previous` für `rollback` beibehalten. Es funktioniert wie die Installationsbefehle: Das Archiv und `SHA256SUMS` werden nur von GitHub über HTTPS heruntergeladen, die Prüfsumme muss übereinstimmen und das neue `numb-form` muss starten, bevor etwas ersetzt wird. Ohne Argument wird der Kanal des laufenden Builds verwendet. Einstellungen werden beibehalten. Verweigert mit `-offline`, mit `online = no` und für Builds von der Quelle. Unter Windows wird das alte Programm in `numb-form.old.exe` umbenannt und beim nächsten Start entfernt.
@@ -98,6 +98,9 @@ Nur die aufgeführten Zellen ändern sich; siehe [../SECURITY.md](SECURITY.md) f
 
 `-f file`
 : Lesen Sie *Datei * nach dem System und den Konfigurationsdateien pro Benutzer.
+
+`-y`
+: (numb-form, numb-date) Nehmen Sie einen Ordner mit einem ähnlichen Namen wie den Ordner des Unternehmens, anstatt zu fragen: "Ist der vorhandene Ordner ... der Ordner dieses Unternehmens?". Der Ordner wird auf dem Bildschirm und im Protokoll benannt, und die Zusammenfassung sagt, wie viele Ordner auf diese Weise genommen wurden. Jedes Dokument wird noch gezeigt und muss akzeptiert werden. `-Y` ist das gleiche.
 
 `-offline`
 : Mit `update`: weigern Sie sich, GitHub zu kontaktieren.
@@ -156,25 +159,41 @@ Kein Cache oder temporäre Dateien bleiben zurück. Dokumente werden durch eine 
 
 ## EXAMPLES
 
-Überprüfen Sie die echte Vorlage und schreiben Sie ein Beispiel, ohne die Vorlage zu berühren:
+Befehle werden für beide Arten von System angezeigt. Windows PowerShell 5.1 hat keinen `&&`: Befehle werden mit `;` getrennt, und `if ($?) { ... }` führt den nächsten nur aus, wenn der erste erfolgreich ist.
+
+Überprüfen Sie die echte Vorlage und schreiben Sie ein Beispiel, ohne die Vorlage zu berühren (alle Systeme):
 
 ```
 numb-form check-template "Appendix A - Risk Assesment.docx" sample.docx
 ```
 
-Füllen Sie die Formulare direkt im Arbeitsordner aus:
+Füllen Sie die Formulare direkt im Arbeitsordner aus, dann das Berichtsdatum.
+
+**Unix-like** (macOS, Linux, BSD), im Terminal:
 
 ```
-cd /path/to/GWG && numb-form
+cd /path/to/GWG && numb-form && numb-date
 ```
 
-Überprüfen Sie zuerst, dann Commit (numb-commit wartet auf Bestätigung):
+**Windows** (10, 11), in PowerShell:
+
+```
+cd "H:\GWG"; numb-form; if ($?) { numb-date }
+```
+
+Überprüfen Sie zuerst, dann Commit (numb-commit wartet auf Bestätigung), wobei `review.conf` `mode = review` enthält.
+
+**Unix-like** (macOS, Linux, BSD), im Terminal:
 
 ```
 cd /path/to/GWG && numb-form -f review.conf && numb-commit
 ```
 
-wobei `review.conf` `mode = review` enthält.
+**Windows** (10, 11), in PowerShell:
+
+```
+cd "H:\GWG"; numb-form -f review.conf; if ($?) { numb-commit }
+```
 
 ## SEE ALSO
 
