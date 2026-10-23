@@ -8,6 +8,12 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.7.6
+
+* CI: the tests run on OpenBSD 8.0 and NetBSD 11.0, the newest
+  releases, instead of OpenBSD 7.9 and NetBSD 10.1. FreeBSD stays at
+  15.1.
+
 ## v1.7.5
 
 * CI: before every minor release, the tests and the documented install
