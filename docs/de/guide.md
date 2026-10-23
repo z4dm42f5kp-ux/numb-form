@@ -78,7 +78,7 @@ Die Rechtsform wird dem Firmennamen entnommen, ohne zu fragen. numb-form fragt S
 | numb-form fragt | Was es bedeutet | Was Sie normalerweise tun |
 | --- | --- | --- |
 | `Full name of the person processing the form:` | Nur gefragt, ob Sie Schritt 2 übersprungen haben | Geben Sie Ihren Namen ein; Enter bei der nächsten Frage verwendet es für jedes Formular in diesem Lauf |
-| `Is the existing folder "Foo Gmbh" this company's folder? (...) [y/N]` | Ein Ordner mit einem sehr ähnlichen Namen existiert bereits | `y`, wenn es sich um dieselbe Firma handelt (es wird nichts erstellt), andernfalls Enter |
+| `Is the existing folder "Foo Gmbh" this company's folder? (...) [y/N]` | Ein Ordner mit einem sehr ähnlichen Namen existiert bereits | `y`, wenn es sich um dieselbe Firma handelt (es wird nichts erstellt), andernfalls Enter. Beginnen Sie mit `numb-form -y`, um `y` auf alle diese zu beantworten: Jeder wird als `already has a folder: … (similar name, -y)` angezeigt. |
 | `Legal form (the name has none; Enter = blank):` | Gefragt nur, wenn der Firmenname keine Rechtsform hat wie `GmbH` oder `S.A.` | Geben Sie es ein oder geben Sie ein, um es leer zu lassen |
 | `Headquarters / Address (one line, Enter = blank):` | Die Adresse des Unternehmens, aus Ihren eigenen Quellen | Geben Sie es ein oder fügen Sie es in eine Zeile ein und drücken Sie Enter |
 | `Representatives (Enter = "No representatives were found…", '-' = blank):` | Die Leute, die für das Unternehmen unterschreiben können, schrieben `Full Name (Role 1, Role 2), Full Name (Role)` mit den Rollen in Englisch | Geben Sie sie ein oder fügen Sie sie ein; Enter allein schreibt "Keine Vertreter wurden online gefunden ..."; `-` lässt das Feld leer |
@@ -178,7 +178,7 @@ Wenn die rollende Linie `CHECKSUM MISMATCH` sagt, wurde in diesem Moment ein neu
 
 ## Lesen Sie dieses Handbuch im Fenster
 
-Geben Sie `numb-form man` ein, um alles im blauen Fenster zu lesen, jeweils einen Bildschirm (Enter: next screen; q und Enter: quit). `numb-form man guide` zeigt nur diese Anleitung; fügen Sie `de` oder `es` für Deutsch oder Spanisch hinzu: `numb-form man guide de`. In Command Prompt (dem schwarzen Fenster) funktioniert `man numb-form` auch, nachdem `numb-form man -install` einmal ausgeführt wurde.
+Geben Sie `numb-form man` ein, um alles im blauen Fenster zu lesen. Schlüssel funktionieren sofort, ohne Enter: **Space** nächste Seite, **b** vorherige Seite, **^ ↓** eine Zeile, **/** Suche, **q** beenden, **h** alle Schlüssel. `numb-form man guide` zeigt nur dieses Handbuch; fügen Sie `de` oder `es` für Deutsch oder Spanisch hinzu: `numb-form man guide de`. In Command Prompt (dem schwarzen Fenster) funktioniert `man numb-form` auch, nachdem `numb-form man -install` einmal ausgeführt wurde.
 
 ## Wenn etwas schief geht
 

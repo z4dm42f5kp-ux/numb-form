@@ -78,7 +78,7 @@ La forma legal se toma del nombre de la empresa sin preguntar. numb-form le pide
 | numb-form pregunta | Lo que significa | Lo que normalmente haces |
 | --- | --- | --- |
 | `Full name of the person processing the form:` | Sólo preguntaba si saltaste el paso 2 | Escriba su nombre; Ingrese en la siguiente pregunta lo utiliza para cada forma en esta carrera |
-| `Is the existing folder "Foo Gmbh" this company's folder? (...) [y/N]` | Una carpeta con un nombre muy similar ya existe | `y` si es la misma empresa (nada se crea), de lo contrario Enter |
+| `Is the existing folder "Foo Gmbh" this company's folder? (...) [y/N]` | Una carpeta con un nombre muy similar ya existe | `y` si es la misma empresa (nada se crea), de lo contrario Enter. Comience con `numb-form -y` para responder `y` a todos estos: cada uno se muestra como `already has a folder: … (similar name, -y)` |
 | `Legal form (the name has none; Enter = blank):` | Se le preguntó solamente cuando el nombre de la empresa no tiene forma legal como `GmbH` o `S.A.` | Escribelo o entra para dejarlo en blanco |
 | `Headquarters / Address (one line, Enter = blank):` | Dirección de la empresa, de sus propias fuentes | Escribe o pega en una línea y pulsa Enter |
 | `Representatives (Enter = "No representatives were found…", '-' = blank):` | La gente que puede firmar para la empresa, escribió `Full Name (Role 1, Role 2), Full Name (Role)` con los roles en inglés | Escribe o pega; Entra solo escribe "No se encontraron representantes en línea ..."; `-` deja el campo en blanco |
@@ -178,7 +178,7 @@ Si la línea de rodaje dice `CHECKSUM MISMATCH`, se estaba subiendo una nueva co
 
 ## Lea este manual en la ventana
 
-Escriba `numb-form man` para leer todo en la ventana azul, una pantalla a la vez (Enter: siguiente pantalla; q y Enter: dejar). `numb-form man guide` sólo muestra esta guía; añadir `de` o `es` para alemán o español: `numb-form man guide de`. En Command Prompt (la ventana negra) `man numb-form` funciona también, después de ejecutar `numb-form man -install` una vez.
+Type `numb-form man` to read everything in the blue window. Keys work at once, without Enter: **Space** next page, **b** previous page, **↑ ↓** one line, **/** search, **q** quit, **h** all keys. `numb-form man guide` shows only this guide; add `de` or `es` for German or Spanish: `numb-form man guide de`. In Command Prompt (the black window) `man numb-form` works too, after running `numb-form man -install` once.
 
 ## Cuando algo sale mal
 
