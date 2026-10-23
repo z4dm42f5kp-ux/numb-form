@@ -8,6 +8,16 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.5.0
+
+* numb-typo corrects misspelt or cut-off places at the end of company
+  names in the overview spreadsheet, for example "Ciudad de Me" to
+  "Ciudad de México", after you agree.
+  It leaves the names of companies that already have a folder alone.
+* numb-commit accepts numb-typo's corrections in the spreadsheet.
+  Any other change to a name still stops it.
+* `numb-form update` installs numb-typo with the other programs.
+
 ## v1.4.1
 
 * numb-commit: the request file starts with a UTF-8 byte order mark,
