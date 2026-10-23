@@ -2,7 +2,7 @@
 
 numb-form makes no online lookups.
 It asks you for the legal form, the address and the representatives.
-To find them, give an AI assistant with web search this prompt, then the
+To find them, give an AI assistant with web search this prompt and the
 company's name.
 Check the answer against your internal sources before you type it into
 numb-form.
@@ -13,17 +13,41 @@ It is plain text and is not part of the programs.
 ## Using it
 
 1. Open the prompt and copy all of it.
-2. Paste it into the AI assistant.
-3. Below it, add the company's name exactly as the spreadsheet writes
-   it, for example its *Customer Name*.
-4. Send it. The answer has three lines: *Legal Form*,
-   *Headquarters/Address* and *Authorized Representatives*.
-5. Give those values to numb-form when it asks for them.
+2. Paste it into an AI assistant that can search the web.
+3. At the end, after `Company name:`, add the company's name exactly as
+   the spreadsheet writes it.
+   After `Country`, add the country if you know it.
+4. Send it.
+   The answer is three lines:
 
-The standard texts in the prompt are the ones numb-form writes when you
-press Enter on an empty field.
-A line that starts with `Caution:` needs a check against internal
-sources.
+   ```
+   Legal Form: S.A. de C.V.
+   Headquarters/Address: Calle Foo 12, 06600, Ciudad de México, CDMX, Mexico
+   Authorized Representatives: Ana María Pérez Gómez (Legal Representative)
+   ```
+
+5. Check every line against your internal sources.
+6. Paste each value into numb-form when it asks for it.
+
+The prompt tells the assistant:
+
+* which entity counts (the exact legal name and legal form, never a
+  parent, subsidiary or similar name),
+* which sources to trust, in order: official registers, the company's
+  own legal notices, the LEI index, then business information sites
+  and news, with the registers that work for each country;
+* how to write each field: the legal form as the name writes it
+  (`GmbH`, `S.A.`, `Ltda.`), the address on one line, the
+  representatives as `Full Name (Role 1, Role 2)` with the roles in
+  English,
+* to end a field with
+  `Caution: This field might differ from internal sources or be inaccurate due to insufficient information online`
+  when no official source confirms it,
+* to write the standard text of numb-form when nothing is found,
+* to write plain text without em dashes, en dashes or semicolons.
+
+A line with `Caution:` needs a check against internal sources
+before you use it.
 
 ## Downloading it
 

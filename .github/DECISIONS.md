@@ -186,3 +186,16 @@ The prompt is kept in the repository (`docs/ai-prompt.txt`) and shipped
 with every release as its own file, checksummed in `SHA256SUMS`, so
 that everyone uses the same version.
 It is not built into the programs.
+
+## The AI prompt leaves nothing to interpret
+
+The prompt now defines the entity, ranks the sources (official registers
+first, aggregators and news only as leads), names the registers that
+work for little-known companies in Germany, Austria, Switzerland, Spain
+and Latin America, and fixes the format of every field.
+It matches numb-form: the legal form in its conventional casing
+(`GmbH`, `S.A.`) rather than in capitals, the representatives as
+`Full Name (Role)` with the roles in English, and numb-form's standard
+texts when nothing is found.
+The assistant writes no em dashes, en dashes or semicolons.
+"innacurate" in the caution became "inaccurate".
