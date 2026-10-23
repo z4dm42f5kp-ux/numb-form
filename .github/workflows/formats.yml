@@ -6,9 +6,10 @@ name: formats
 # change (not again for the push of the same commit), on main and
 # nightly.
 #
-# The Ubuntu mirror sometimes serves the ~105 MB of LibreOffice packages
-# at 25 kB/s (42 minutes). The packages are cached between runs; apt
-# still checks every cached file against the signed package index.
+# The job runs in Debian 13 and installs LibreOffice from deb.debian.org,
+# which a CDN serves quickly. Ubuntu's mirror for GitHub's runners
+# sometimes served the ~105 MB of packages at 25 kB/s (42 minutes).
+# apt verifies every package against the signed archive index.
 
 on:
   push:
@@ -36,6 +37,8 @@ jobs:
   libreoffice:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    container:
+      image: debian:13@sha256:4c25275446ca371766b8b093c696782eabce06263fccacb8d5d813b3dc44b308
     permissions:
       contents: read
     steps:
@@ -47,31 +50,16 @@ jobs:
           go-version: stable
           check-latest: true
           cache: false
-      - name: Runner image version
-        id: image
-        # ImageVersion changes when GitHub updates the runner image; an
-        # older cache still saves every package that did not change.
-        run: echo "version=${ImageVersion:-unknown}" >> "$GITHUB_OUTPUT"
-      - name: Restore the LibreOffice packages
-        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0
-        with:
-          path: ~/apt-archives
-          key: libreoffice-debs-${{ runner.os }}-${{ steps.image.outputs.version }}
-          restore-keys: libreoffice-debs-${{ runner.os }}-
-      - name: Install LibreOffice (Ubuntu packages)
+      - name: Install LibreOffice (Debian packages)
         run: |
-          mkdir -p "$HOME/apt-archives/partial"
-          apt="sudo apt-get -q -o Dir::Cache::Archives=$HOME/apt-archives -o APT::Keep-Downloaded-Packages=true -o Acquire::Retries=5 -o Acquire::http::Timeout=30"
+          apt="apt-get -q -o Acquire::Retries=5 -o Acquire::http::Timeout=30"
           $apt update
-          $apt install -y --no-install-recommends libreoffice-writer-nogui libreoffice-calc-nogui \
-            || $apt install -y --no-install-recommends libreoffice-writer libreoffice-calc
-          # Keep only the packages; let the cache step read them.
-          sudo rm -rf "$HOME/apt-archives/partial" "$HOME/apt-archives/lock"
-          sudo chown -R "$(id -u):$(id -g)" "$HOME/apt-archives"
+          DEBIAN_FRONTEND=noninteractive $apt install -y --no-install-recommends ca-certificates libreoffice-writer-nogui libreoffice-calc-nogui
           soffice --version
       - name: Format tests with LibreOffice
         env:
           NUMBFORM_TEST_SOFFICE: "1"
+          CGO_ENABLED: "0"
         run: |
           set +e
           go test -count=1 -v ./internal/formats/ > test.log 2>&1
