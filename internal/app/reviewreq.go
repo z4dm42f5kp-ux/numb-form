@@ -161,7 +161,8 @@ type reviewConfig struct {
 }
 
 // reviewSheet allows only report dates written into empty or digit-free
-// cells of the report-date column.
+// cells of the report-date column, and corrections of misspelt or
+// cut-off places after a company name in the name column.
 func reviewSheet(v *reqReview, oldPath, newPath string, cfg reviewConfig) {
 	ob, err1 := readSheetFile(oldPath)
 	nb, err2 := readSheetFile(newPath)
@@ -181,9 +182,10 @@ func reviewSheet(v *reqReview, oldPath, newPath string, cfg reviewConfig) {
 		v.add("fail", "the spreadsheet cannot be compared cell by cell")
 		return
 	}
-	dateCol := map[string]bool{}
+	dateCol, nameCol := map[string]bool{}, map[string]bool{}
 	for _, r := range t.Rows {
 		dateCol[t.Sheet+"!"+r.DateRef] = true
+		nameCol[t.Sheet+"!"+r.NameRef] = true
 	}
 	vals := func(m map[string][]sheet.Cell) map[string]string {
 		out := map[string]string{}
@@ -197,15 +199,17 @@ func reviewSheet(v *reqReview, oldPath, newPath string, cfg reviewConfig) {
 		return out
 	}
 	before, after := vals(oc), vals(nc)
-	dates := 0
+	dates, names := 0, 0
 	for ref, nv := range after {
 		ov := before[ref]
 		if ov == nv {
 			continue
 		}
 		switch {
+		case nameCol[ref] && match.PlaceFixed(ov, nv):
+			names++
 		case !dateCol[ref]:
-			v.add("fail", "spreadsheet cell %s changed from %q to %q; only report dates may change", ref, ov, nv)
+			v.add("fail", "spreadsheet cell %s changed from %q to %q; only report dates and place corrections may change", ref, ov, nv)
 		case hasDigit(ov):
 			v.add("fail", "spreadsheet cell %s already had a date (%q) and was changed to %q", ref, ov, nv)
 		case !reReportDate.MatchString(nv):
@@ -219,7 +223,7 @@ func reviewSheet(v *reqReview, oldPath, newPath string, cfg reviewConfig) {
 			v.add("fail", "spreadsheet cell %s (%q) was emptied", ref, ov)
 		}
 	}
-	v.add("ok", "the spreadsheet only gains %d report date(s) in column %q", dates, t.DateHeader)
+	v.add("ok", "the spreadsheet only gains %d report date(s) in column %q and %d place correction(s) in column %q", dates, t.DateHeader, names, t.NameHeader)
 }
 
 // reviewFolders checks every new top-level company folder.
