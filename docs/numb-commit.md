@@ -231,7 +231,8 @@ prepared.
 ## EXIT STATUS
 
 0 when the review passes or there is nothing to do; 1 on an error or a
-failed review; 2 on a usage error; 3 when stopped with Ctrl+C.
+failed review; 2 on a usage error; 3 when stopped with Ctrl+C or by
+closing the window.
 
 ## EXAMPLES
 

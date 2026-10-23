@@ -8,6 +8,14 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.4.5
+
+* numb-commit stops cleanly when its window is closed, as with Ctrl+C,
+  instead of being killed in the middle of a step.
+* Internal: removing staged copies that a killed numb-commit left in
+  Downloads more than a day ago.
+  Nothing uses it yet.
+
 ## v1.4.4
 
 * Internal: numb-commit's replacement of the overview spreadsheet in the

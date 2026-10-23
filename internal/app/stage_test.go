@@ -109,3 +109,41 @@ func TestCopyChecked(t *testing.T) {
 		t.Errorf("left behind: %v", es)
 	}
 }
+
+// Only staged copies older than a day are removed; other folders and
+// recent staged copies stay.
+func TestRemoveOldStages(t *testing.T) {
+	dl := t.TempDir()
+	now := time.Now()
+	old := now.Add(-48 * time.Hour)
+	mk := func(name string, at time.Time) string {
+		t.Helper()
+		p := filepath.Join(dl, name)
+		if err := os.MkdirAll(filepath.Join(p, "Foo"), 0o750); err != nil {
+			t.Fatal(err)
+		}
+		f := filepath.Join(p, "Foo", "form.docx")
+		if err := os.WriteFile(f, []byte("x"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Chtimes(p, at, at); err != nil {
+			t.Fatal(err)
+		}
+		return p
+	}
+	gone := mk(stagePrefix+"2026-10-21 10.00.00 abcd", old)
+	recent := mk(stagePrefix+"2026-10-23 10.00.00 ef01", now)
+	other := mk("14. GWG", old)
+	got := removeOldStages(dl, now)
+	if len(got) != 1 || got[0] != filepath.Base(gone) {
+		t.Errorf("removed %v", got)
+	}
+	if _, err := os.Stat(gone); !os.IsNotExist(err) {
+		t.Error("the old staged copy is still there")
+	}
+	for _, p := range []string{recent, other} {
+		if _, err := os.Stat(p); err != nil {
+			t.Errorf("%s was removed", p)
+		}
+	}
+}
