@@ -36,8 +36,9 @@ func printReview(u *ui.UI, title string, v *reqReview) {
 }
 
 // commitFolders runs numb-commit for a working copy: compare, stage the
-// files to copy in Downloads, write the request, review it, and after the
-// person agrees, copy the staged files into the real folder.
+// files to copy in Downloads, write the request, review it (by the person
+// or by numb-commit until it is correct), and after the person agrees,
+// copy the staged files into the real folder.
 func commitFolders(ctx context.Context, u *ui.UI, opt CommitOptions) error {
 	from, to, err := opt.folders(u)
 	if err != nil {
@@ -87,12 +88,22 @@ func commitFolders(ctx context.Context, u *ui.UI, opt CommitOptions) error {
 	u.Printf("\n%s\n", ui.Safe(q.text()))
 	u.Printf("Saved as %s\nThe files to copy are staged in %s; nothing is in %s yet.\n", reqPath, dir, to)
 
-	v := reviewRequest(q, rc)
-	printReview(u, "numb-commit's own checks", v)
-	if v.count("fail") > 0 {
-		return errReview
+	how, err := u.Choose("\nReview [m]anually, or let numb-commit [r]eview and correct it until it is right? ", "mr", 0)
+	if err != nil {
+		return err
 	}
-	u.Println("Look at the staged copy and the request now. To change something, answer no, change the working copy and run numb-commit again.")
+	if how == 'r' {
+		if q, err = autoReview(ctx, u, q, rc, reqPath); err != nil {
+			return err
+		}
+	} else {
+		v := reviewRequest(q, rc)
+		printReview(u, "numb-commit's own checks", v)
+		if v.count("fail") > 0 {
+			return errReview
+		}
+		u.Println("Look at the staged copy and the request now. To change something, answer no, change the working copy and run numb-commit again.")
+	}
 	ok, err := u.YesNo(fmt.Sprintf("\nCopy this into %s now?", to), false)
 	if err != nil {
 		return err

@@ -70,9 +70,20 @@ waiting, and neither `-from`, `-to`, `commit_from`, `commit_to` nor
 3. It writes **`numb-commit-request.txt`** into the working copy and
    shows it: the list of changes and the target's folder tree before and
    after (see THE REQUEST FILE).
-4. It reviews the request (see REVIEW) and refuses to continue when a
-   check fails.
-   Look at the staged copy and the request yourself, too.
+4. It asks how to review:
+
+   ```
+   Review [m]anually, or let numb-commit [r]eview and correct it until it is right?
+   ```
+
+   `m`: numb-commit runs its own checks (see REVIEW) and refuses to
+   continue when one fails; you look at the staged copy and the request
+   yourself.
+
+   `r`: numb-commit reviews the request, corrects what it can by itself
+   and reviews again, round after round, until the review passes,
+   something needs a person, or five rounds have passed.
+
 5. It asks `Copy this into F:\14. GWG now? [y/N]`.
    Only `y` copies.
 6. It copies the staged files into the target, checking every checksum
@@ -95,6 +106,17 @@ What is copied:
 
 What is never copied:
 
+* **A new folder of a company the target already has.**
+  In the target, company folders often start with the customer ID, for
+  example `D10629 Foo S.A.`.
+  When the working copy lacks that folder, numb-form makes a new
+  `Foo S.A.` with only the risk assessment.
+  numb-commit does not copy it when the target has a folder that starts
+  with the company's customer ID (from the Excel list), or whose name
+  after a customer ID is the company's, or that has the company's name
+  in another spelling (case, accents, punctuation).
+  If such a folder holds more than numb-form's form, the review asks you
+  to copy those files by hand.
 * **A file that exists in the target with other content**: numb-commit
   never overwrites a file except the spreadsheet.
   It lists these as differing, so you see what changed in the working
@@ -146,12 +168,14 @@ Replaced  3. Übersichten\Kundenliste.xlsx
 
 Left alone
   - Appendix A - Risk Assesment.docx  (not copied: the template)
+  - Foo S.A\Appendix A - Risk Assesment - Foo S.A.docx  (not copied: the real folder already has "D10629 Foo S.A." for Foo S.A. (it starts with the customer id D10629); made by numb-form, unchanged)
 
 Nothing in the real folder is deleted, and no file there is overwritten except the ones under Replaced.
 
 Before: F:\14. GWG
 ├── 3. Übersichten
 │   └── Kundenliste.xlsx
+├── D10629 Foo S.A.
 └── … 1204 more, unchanged
 
 After the commit:
@@ -159,6 +183,7 @@ After the commit:
 │   └── Kundenliste.xlsx                                ~ replaced
 ├── Bar Ltda                                            + new folder
 │   └── Appendix A - Risk Assesment - Bar Ltda.docx     + new, made by numb-form, unchanged
+├── D10629 Foo S.A.                                     = unchanged; "Foo S.A" of the working copy is the same company, not copied
 └── … 1204 more, unchanged
 ```
 
@@ -171,6 +196,7 @@ In the tree after the commit:
 | `+` | new: copied into the target |
 | `~` | replaced: the spreadsheet with its new report dates |
 | `≠` | differs in the working copy; the target's version stays |
+| `=` | the target's folder of a company whose new folder is not copied |
 
 *Status* is `waiting` until the copy is done, then `applied`.
 Below the readable part, a data section repeats the list for
@@ -205,6 +231,19 @@ Each line is marked `ok`, `check` (look at it before committing) or
 | `OK to commit.` | Every check passed. |
 | `commit after checking the lines marked check.` | Nothing is wrong with the files, but something deserves a look, for example a blank address. |
 | `do not commit.` | Something changed or does not belong; numb-commit refuses to copy. |
+
+With `r`, numb-commit corrects these failures by itself and reviews
+again:
+
+| Failure | Correction |
+| --- | --- |
+| a file changed in the working copy or the staged copy | compare and stage again |
+| a file appeared in the target meanwhile | leave it out: it is never overwritten |
+| a file that must stay behind is listed | leave it out |
+
+It stops, without copying, on anything else, for example a spreadsheet
+cell outside the report dates or a target spreadsheet that someone else
+changed: those need a person.
 
 `numb-commit review` runs the review on the request in the working copy
 at any time, without copying, for example on a request a colleague
@@ -305,7 +344,8 @@ numb-commit review
   path again.
 
 **`… changed after the request was made`**
-: A file was edited after it was staged. Run numb-commit again.
+: A file was edited after it was staged. With `r`, numb-commit stages it
+  again by itself; with `m`, run numb-commit again.
 
 **`… in the real folder changed after the request was made`**
 : Someone else changed the spreadsheet on the network drive.
@@ -313,7 +353,8 @@ numb-commit review
   into the working copy again, run numb-date there, then numb-commit.
 
 **`… already exists in the real folder and is never overwritten`**
-: A colleague created the same file meanwhile. Compare the two by hand.
+: A colleague created the same file meanwhile. With `r`, numb-commit
+  leaves it out; compare the two by hand.
 
 **`spreadsheet cell … changed; only report dates may change`**
 : The working copy's spreadsheet was edited by hand. numb-commit only
