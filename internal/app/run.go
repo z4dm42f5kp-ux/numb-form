@@ -49,6 +49,7 @@ type Options struct {
 	Downloads   string   // overrides config downloads
 	Timeout     time.Duration
 	AllowNonTTY bool
+	AssumeYes   bool // -y: a similar existing folder is the company's folder
 	In          io.Reader
 	Out         io.Writer
 	Now         func() time.Time

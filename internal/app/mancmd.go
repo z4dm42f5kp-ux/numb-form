@@ -63,34 +63,53 @@ func Man(out io.Writer, args []string) int {
 			topic = a
 		}
 	}
-	width := envInt("COLUMNS", 80, 40, 100) - 1
-	var text string
-	var err error
-	if topic == "" {
-		text, err = manual.Full(numbform.Docs, lang, width)
-	} else {
-		t, _ := manual.Find(topic)
-		var md string
-		if md, err = manual.Source(numbform.Docs, t, lang); err == nil {
-			text = manual.Text(md, width)
+	render := func(width int) (string, error) {
+		width = max(40, min(width, 100))
+		if topic == "" {
+			return manual.Full(numbform.Docs, lang, width)
 		}
+		t, _ := manual.Find(topic)
+		md, err := manual.Source(numbform.Docs, t, lang)
+		return manual.Text(md, width), err
 	}
-	if err != nil {
-		fmt.Fprintln(out, "man:", err)
-		return ExitError
-	}
-	if out != os.Stdout || !ui.IsTerminal(os.Stdout) || !ui.IsTerminal(os.Stdin) {
-		_, _ = io.WriteString(out, text)
-		return ExitOK
-	}
-	if runtime.GOOS != "windows" {
+	interactive := out == os.Stdout && ui.IsTerminal(os.Stdout) && ui.IsTerminal(os.Stdin)
+	if interactive && runtime.GOOS != "windows" {
 		if less, err := exec.LookPath("less"); err == nil {
+			text, err := render(envInt("COLUMNS", 80, 40, 200) - 1)
+			if err != nil {
+				fmt.Fprintln(out, "man:", err)
+				return ExitError
+			}
 			cmd := exec.Command(less, "-F", "-X") // #nosec G204 -- fixed program and arguments.
 			cmd.Stdin, cmd.Stdout, cmd.Stderr = strings.NewReader(text), os.Stdout, os.Stderr
 			if cmd.Run() == nil {
 				return ExitOK
 			}
 		}
+	}
+	if interactive {
+		// A less(1)-like view: keys act at once, without Enter.
+		if restore, rows, cols, err := manual.RawTerminal(); err == nil {
+			text, err := render(cols - 1)
+			if err == nil {
+				err = manual.Less(os.Stdout, os.Stdin, text, rows)
+			}
+			restore()
+			if err != nil {
+				fmt.Fprintln(out, "man:", err)
+				return ExitError
+			}
+			return ExitOK
+		}
+	}
+	text, err := render(envInt("COLUMNS", 80, 40, 200) - 1)
+	if err != nil {
+		fmt.Fprintln(out, "man:", err)
+		return ExitError
+	}
+	if !interactive {
+		_, _ = io.WriteString(out, text)
+		return ExitOK
 	}
 	if err := manual.Page(os.Stdout, os.Stdin, text, envInt("LINES", 24, 5, 200)); err != nil && !errors.Is(err, manual.ErrQuit) {
 		return ExitError

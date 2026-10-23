@@ -88,6 +88,13 @@ func (r *run) existing(row sheet.Row, c *runlog.Company) (bool, error) {
 		r.logf("exists %q -> %s", row.Name, exact[0].Rel)
 		return true, nil
 	}
+	if len(fuzzy) > 0 && r.opt.AssumeYes {
+		cand := fuzzy[0]
+		c.Status, c.Folder, c.Reason = "exists", cand.Folder.Rel, "similar folder, accepted with -y: "+cand.Reason
+		r.ui.Printf("  already has a folder: %s (similar name, -y) — nothing to do\n", ui.Safe(cand.Folder.Rel))
+		r.logf("fuzzy %q vs %s (%.2f): accepted with -y", row.Name, cand.Folder.Rel, cand.Score)
+		return true, nil
+	}
 	for _, cand := range fuzzy {
 		ok, err := r.ui.YesNo(fmt.Sprintf("  Is the existing folder %q this company's folder? (%s)", ui.Safe(cand.Folder.Rel), cand.Reason), false)
 		if err != nil {
