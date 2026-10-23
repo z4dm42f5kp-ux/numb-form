@@ -70,9 +70,11 @@ Any other country: its commercial register, its tax authority and its official g
 4.7 List only persons whose role is current. Leave out every person whose appointment ended, who resigned or who died.
 4.8 Write each person as: Full Name (Role). A person with several roles: Full Name (Role 1, Role 2). Separate persons with a comma and a space. Example: Ana María Pérez Gómez (Legal Representative, General Manager), Hans Müller (Managing Director)
 4.9 Write the full name exactly as the best source writes it, with all given names, surnames and accents. Never abbreviate a name. Never add titles such as Dr., Ing., Lic. or Mag.
-4.10 Write each role in English. Use these translations:
+4.10 Write only the name and the roles. Never explain why a person holds a role, and never add descriptions, dates, shares, sources or notes about a person.
+4.11 Write every role in English, always. Never leave a role in the company's language, even when it looks like English or has no exact translation: use the English title with the same meaning, in English word order. For example, "Director General" is "General Director". Use these translations:
 Geschäftsführer, Geschäftsführerin, gérant: Managing Director
 Gerente General: General Manager
+Director General, Directora General: General Director
 Gerente, Socio Gerente: Manager
 Representante Legal: Legal Representative
 Representante Legal Suplente: Alternate Legal Representative
@@ -125,6 +127,9 @@ Answer with exactly these three lines, with these labels, in this order, and not
 Legal Form: <the legal form of section 3, or its standard text>
 Headquarters/Address: <the address of section 4, or its standard text>
 Authorized Representatives: <the persons of section 4, or its standard text>
+
+The representatives line looks like this, with as many persons as there are:
+Authorized Representatives: Person Name (Role 1, Role 2), Person Name 2 (Role)
 
 
 COMPANY
