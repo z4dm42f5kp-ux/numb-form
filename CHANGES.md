@@ -8,6 +8,15 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.4.1
+
+* numb-commit: the request file starts with a UTF-8 byte order mark,
+  so its folder tree is readable in Windows PowerShell 5.1 and Notepad.
+* numb-commit removes its staged copy in Downloads also when the window
+  is closed.
+  A staged copy left by a numb-commit that was killed is removed by the
+  next run after one day.
+
 ## v1.4.0
 
 * numb-commit copies the new forms from a working copy (for example in
