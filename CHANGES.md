@@ -8,6 +8,14 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.5.3
+
+* Internal: numb-commit's automatic review, which corrects what it can
+  by itself (stages a file again when it changed, leaves out a file
+  that must not be copied) and reviews again, at most five rounds, and
+  stops at once on what needs a person.
+  Nothing uses it yet. No change in behaviour.
+
 ## v1.5.2
 
 * Internal: numb-commit can mark the new folder of a company that the
