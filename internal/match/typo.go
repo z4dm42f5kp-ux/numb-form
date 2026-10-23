@@ -190,3 +190,24 @@ func Apply(name string, fixes []PlaceFix) string {
 	}
 	return name
 }
+
+// PlaceFixed reports whether to is name with some of the place fixes
+// that FixPlaces offers for it, one choice per fix.
+func PlaceFixed(name, to string) bool {
+	fixes := FixPlaces(name)
+	set := make([]PlaceFix, len(fixes))
+	var try func(int) bool
+	try = func(i int) bool {
+		if i == len(fixes) {
+			return Apply(name, set) == to
+		}
+		set[i] = fixes[i]
+		for _, c := range append([]string{"", fixes[i].To}, fixes[i].Choices...) {
+			if set[i].To = c; try(i + 1) {
+				return true
+			}
+		}
+		return false
+	}
+	return name != to && try(0)
+}

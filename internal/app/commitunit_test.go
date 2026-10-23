@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/z4dm42f5kp-ux/numb-form/internal/config"
+	"github.com/z4dm42f5kp-ux/numb-form/internal/sheet"
+	"github.com/z4dm42f5kp-ux/numb-form/internal/testfix"
 )
 
 func TestCompanyFolder(t *testing.T) {
@@ -140,5 +142,36 @@ func TestAutoReviewCorrects(t *testing.T) {
 	}
 	if removeStage(cp) == nil {
 		t.Fatal("removed a folder that is not a staged copy")
+	}
+}
+
+// numb-typo's place corrections pass the spreadsheet review; any other
+// change to a name fails.
+func TestReviewSheetPlaceFixes(t *testing.T) {
+	dir := t.TempDir()
+	old := testfix.XLSX(t, []string{"D00000", "D00000"}, []string{"Foo SAS, Bogta", "Foo GmbH"})
+	tb, err := sheet.ReadTable(old, "Customer Name", "Customer ID")
+	if err != nil {
+		t.Fatal(err)
+	}
+	oldPath := filepath.Join(dir, "old.xlsx")
+	if err := os.WriteFile(oldPath, old, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	rc := reviewConfig{header: "Customer Name", idHeader: "Customer ID"}
+	for to, fails := range map[string]int{"Foo SAS, Bogotá": 0, "Bar SAS, Bogotá": 1} {
+		nb, err := sheet.SetText(old, tb.Part, map[string]string{tb.Rows[0].NameRef: to})
+		if err != nil {
+			t.Fatal(err)
+		}
+		newPath := filepath.Join(dir, "new.xlsx")
+		if err := os.WriteFile(newPath, nb, 0o600); err != nil {
+			t.Fatal(err)
+		}
+		var v reqReview
+		reviewSheet(&v, oldPath, newPath, rc)
+		if v.count("fail") != fails {
+			t.Errorf("%q: %+v", to, v.findings)
+		}
 	}
 }

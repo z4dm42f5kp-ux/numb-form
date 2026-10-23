@@ -129,7 +129,7 @@ func TestFolderCommitRefusesOtherSheetChanges(t *testing.T) {
 	})
 	before := treeHashes(t, real)
 	code, out := runCommit(t, cp, real, "r\ny\n", false)
-	if code != ExitError || !strings.Contains(out, "only report dates may change") || !strings.Contains(out, "need a person") {
+	if code != ExitError || !strings.Contains(out, "only report dates and place corrections may change") || !strings.Contains(out, "need a person") {
 		t.Fatalf("exit %d\n%s", code, out)
 	}
 	if after := treeHashes(t, real); len(after) != len(before) {

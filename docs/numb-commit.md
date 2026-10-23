@@ -342,11 +342,12 @@ numb-commit review
 : A colleague created the same file meanwhile. With `r`, numb-commit
   leaves it out; compare the two by hand.
 
-**`spreadsheet cell … changed; only report dates may change`**
+**`spreadsheet cell … changed; only report dates and place corrections may change`**
 : The working copy's spreadsheet was edited by hand. numb-commit only
-  carries report dates; make other changes in the real spreadsheet.
+  carries report dates from numb-date and place corrections from
+  numb-typo; make other changes in the real spreadsheet.
 
 ## SEE ALSO
 
-[numb-form](usage.md), [numb-date](numb-date.md),
+[numb-form](usage.md), [numb-date](numb-date.md), [numb-typo](numb-typo.md),
 [configuration.md](configuration.md), [the guide](guide.md)

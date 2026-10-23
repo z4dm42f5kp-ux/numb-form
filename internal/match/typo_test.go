@@ -46,3 +46,22 @@ func TestDistance(t *testing.T) {
 		}
 	}
 }
+
+func TestPlaceFixed(t *testing.T) {
+	for _, c := range []struct {
+		from, to string
+		want     bool
+	}{
+		{"Foo SAS, Bogta, Colomiba", "Foo SAS, Bogotá, Colombia", true},
+		{"Foo SAS, Bogta, Colomiba", "Foo SAS, Bogta, Colombia", true}, // a fix left out
+		{"Foo, Santa", "Foo, Santa Marta", true},                       // one of several choices
+		{"Foo SAS, Bogta, Colomiba", "Bar SAS, Bogotá, Colombia", false},
+		{"Foo SAS, Bogta", "Foo SAS, Bogta", false},
+		{"Foo GmbH", "Foo AG", false},
+		{"Foo, Santa", "Foo, Santa Cruz de la Nada", false},
+	} {
+		if got := PlaceFixed(c.from, c.to); got != c.want {
+			t.Errorf("PlaceFixed(%q, %q) = %v", c.from, c.to, got)
+		}
+	}
+}
