@@ -1,12 +1,15 @@
 package app
 
 import (
-	"os"
 	"path"
 	"strings"
 
 	"github.com/z4dm42f5kp-ux/numb-form/internal/formats"
+	"github.com/z4dm42f5kp-ux/numb-form/internal/fsutil"
 )
+
+// maxForm bounds the forms numb-commit reads.
+const maxForm = 50 << 20
 
 // isForm reports whether a file name is a risk assessment form: it starts
 // with the template's name and has a template extension.
@@ -30,8 +33,8 @@ func originOf(p, rel string, rc reviewConfig) string {
 	if len(rc.tpls) == 0 || !isForm(path.Base(rel), rc.templateBase) {
 		return otherFile
 	}
-	b, err := os.ReadFile(p) // #nosec G304 -- a form in the working copy.
-	if err != nil || len(b) > 50<<20 {
+	b, err := fsutil.ReadFileMax(p, maxForm)
+	if err != nil {
 		return otherFile
 	}
 	origin := otherFile

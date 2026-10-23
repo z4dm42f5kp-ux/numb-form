@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -69,5 +70,18 @@ func TestWriteNewRefusesOverwrite(t *testing.T) {
 	ents, _ := os.ReadDir(filepath.Dir(p))
 	if len(ents) != 1 {
 		t.Fatal("temporary file left behind")
+	}
+}
+
+func TestReadFileMax(t *testing.T) {
+	p := filepath.Join(t.TempDir(), "form.docx")
+	if err := os.WriteFile(p, make([]byte, 2<<20), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if b, err := ReadFileMax(p, 2<<20); err != nil || len(b) != 2<<20 {
+		t.Errorf("at the limit: %d bytes, %v", len(b), err)
+	}
+	if _, err := ReadFileMax(p, 2<<20-1); err == nil || !strings.Contains(err.Error(), "form.docx is larger than") {
+		t.Errorf("over the limit: %v", err)
 	}
 }
