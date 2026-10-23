@@ -100,7 +100,7 @@ func (r *run) pickRoot() (string, error) {
 		if err != nil {
 			return "", err
 		}
-		if a == "q" {
+		if strings.EqualFold(a, "q") {
 			return "", errAbort
 		}
 		var n int
