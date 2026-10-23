@@ -13,7 +13,8 @@ name: linux
 #
 # It runs for minor releases only: pull requests titled "vX.Y.0: ...".
 # Patch releases, pushes to main and the rolling build do not run it. It
-# also runs when the check itself changes, and by hand.
+# also runs when the check or the documented commands change on an agent
+# branch, and by hand.
 
 on:
   pull_request:
@@ -23,6 +24,7 @@ on:
     paths:
       - .github/workflows/linux.yml
       - scripts/linux-check.sh
+      - scripts/install/templates/**
   workflow_dispatch:
 
 permissions: {}
