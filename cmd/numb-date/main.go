@@ -25,10 +25,11 @@ func realMain() int {
 	conf := fs.String("f", "", "configuration file read after the system and per-user files")
 	root := fs.String("root", "", "working folder (default: the current folder if it is one, else the single folder inside it)")
 	timeout := fs.Duration("timeout", 0, "stop safely after this long, such as 30m (default: timeout in the configuration, none: no limit)")
+	yes := fs.Bool("y", false, "take a folder with a similar name as the company's folder without asking")
 	allowPipe := fs.Bool("allow-non-tty", false, "accept answers from a pipe (testing only)")
 	version := fs.Bool("version", false, "print the version and exit")
 	fs.Usage = func() {
-		fmt.Fprintf(fs.Output(), "usage: numb-date [-f conf] [-root dir] [-timeout d]\n\n")
+		fmt.Fprintf(fs.Output(), "usage: numb-date [-f conf] [-y] [-root dir] [-timeout d]\n\n")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(os.Args[1:]); err != nil {
@@ -63,6 +64,7 @@ func realMain() int {
 		Notes:       notes,
 		Timeout:     *timeout,
 		AllowNonTTY: *allowPipe,
+		AssumeYes:   *yes,
 		In:          os.Stdin,
 		Out:         os.Stdout,
 		Now:         time.Now,

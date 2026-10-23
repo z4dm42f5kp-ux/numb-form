@@ -7,13 +7,13 @@
 ## SYNOPSIS
 
 ```
-numb-form [-f conf] [-offline] [-root dir] [-downloads dir] [-timeout duration]
+numb-form [-f conf] [-y] [-offline] [-root dir] [-downloads dir] [-timeout duration]
 numb-form [-f conf] check-template template [sample]
 numb-form [-f conf] config [init | set key value]
 numb-form [-f conf] update [stable | rolling | v1.2.3]
 numb-form rollback
 numb-commit [-f conf] [-run dir] [-downloads dir]
-numb-date [-f conf] [-root dir] [-timeout duration]
+numb-date [-f conf] [-y] [-root dir] [-timeout duration]
 ```
 
 ## DESCRIPTION
@@ -161,8 +161,14 @@ The log is `numb-date.log` in the per-user state folder (or `log_dir`).
   `numb-form update v0.1.1`.
 
 `man` [*topic*] [`en` | `es` | `de`]
-: Show this manual in the terminal, one screen at a time (Enter: next
-  screen; q and Enter: quit).
+: Show this manual in the terminal, like less(1): keys act at once,
+  without Enter.
+  Space or PageDown: next page; b or PageUp: previous page; Enter, j or
+  Down: next line; k or Up: previous line; g or Home: start; G or End:
+  end; /text and Enter: search, n and N: next and previous match; h:
+  help; q: quit.
+  On macOS, Linux and the BSDs the installed `less` is used when there
+  is one.
   Without a topic the whole manual is shown, starting with the guide.
   Topics: `guide`, `usage`, `configuration`, `install`, `formats`,
   `containers`, `security`; `numb-form man topics` lists them.
@@ -194,6 +200,13 @@ The log is `numb-date.log` in the per-user state folder (or `log_dir`).
 
 `-f file`
 : Read *file* after the system and per-user configuration files.
+
+`-y`
+: (numb-form, numb-date) Take a folder with a similar name as the
+  company's folder instead of asking "Is the existing folder … this
+  company's folder?".
+  The folder is named on screen and in the log.
+  Every document is still shown and must be accepted.
 
 `-offline`
 : With `update`: refuse to contact GitHub.

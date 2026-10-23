@@ -19,7 +19,7 @@ func main() {
 	os.Exit(realMain())
 }
 
-const usage = `usage: numb-form [-f conf] [-offline] [-root dir] [-downloads dir] [-timeout d]
+const usage = `usage: numb-form [-f conf] [-y] [-offline] [-root dir] [-downloads dir] [-timeout d]
        numb-form [-f conf] check-template template [sample]
        numb-form [-f conf] config [init | set key value]
        numb-form [-f conf] update [stable | rolling | v1.2.3]
@@ -36,6 +36,7 @@ func realMain() int {
 	downloads := fs.String("downloads", "", "review mode: folder for the copy (default: the user's Downloads)")
 	offline := fs.Bool("offline", false, "update: do not contact GitHub")
 	timeout := fs.Duration("timeout", 0, "stop safely after this long, such as 30m (default: timeout in the configuration, none: no limit)")
+	yes := fs.Bool("y", false, "take a folder with a similar name as the company's folder without asking")
 	allowPipe := fs.Bool("allow-non-tty", false, "accept answers from a pipe (testing only)")
 	version := fs.Bool("version", false, "print the version and exit")
 	fs.Usage = func() {
@@ -101,6 +102,7 @@ func realMain() int {
 		Downloads:   *downloads,
 		Timeout:     *timeout,
 		AllowNonTTY: *allowPipe,
+		AssumeYes:   *yes,
 		In:          os.Stdin,
 		Out:         os.Stdout,
 		Now:         time.Now,

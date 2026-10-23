@@ -133,6 +133,15 @@ Colombian BIC and E.S.P., Argentine and Paraguayan combinations).
 Trailing places are now removed before the form is looked for, accents
 are ignored when matching, and the list was extended.
 
+## -y and a less-like manual
+
+`-y` (numb-form, numb-date) takes a similar existing folder as the
+company's folder without asking; documents are still confirmed one by
+one, and the choice is printed and logged.
+`numb-form man` reads single keys like less(1): the console is put into
+raw mode (SetConsoleMode on Windows 10 and later, stty elsewhere) and
+restored afterwards; the installed less is still preferred on Unix.
+
 ## The rolling build is never behind stable
 
 Translations are committed by the translate workflow with the workflow

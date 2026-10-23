@@ -112,7 +112,7 @@ at the end.
 | numb-form asks | What it means | What you usually do |
 | --- | --- | --- |
 | `Full name of the person processing the form:` | Only asked if you skipped step 2 | Type your name; Enter at the next question uses it for every form in this run |
-| `Is the existing folder "Foo Gmbh" this company's folder? (...) [y/N]` | A folder with a very similar name already exists | `y` if it is the same company (nothing is created), otherwise Enter |
+| `Is the existing folder "Foo Gmbh" this company's folder? (...) [y/N]` | A folder with a very similar name already exists | `y` if it is the same company (nothing is created), otherwise Enter. Start with `numb-form -y` to answer `y` to all of these: each one is shown as `already has a folder: … (similar name, -y)` |
 | `Legal form (the name has none; Enter = blank):` | Asked only when the company name has no legal form such as `GmbH` or `S.A.` | Type it, or Enter to leave it blank |
 | `Headquarters / Address (one line, Enter = blank):` | The company's address, from your own sources | Type or paste it on one line and press Enter |
 | `Representatives (Enter = "No representatives were found…", '-' = blank):` | The people who may sign for the company, written `Full Name (Role 1, Role 2), Full Name (Role)` with the roles in English | Type or paste them; Enter alone writes "No representatives were found online ..."; `-` leaves the field blank |
@@ -253,8 +253,9 @@ after the tool.
 
 ## Read this manual in the window
 
-Type `numb-form man` to read everything in the blue window, one screen
-at a time (Enter: next screen; q and Enter: quit).
+Type `numb-form man` to read everything in the blue window.
+Keys work at once, without Enter: **Space** next page, **b** previous
+page, **↑ ↓** one line, **/** search, **q** quit, **h** all keys.
 `numb-form man guide` shows only this guide; add `de` or `es` for German
 or Spanish: `numb-form man guide de`.
 In Command Prompt (the black window) `man numb-form` works too, after

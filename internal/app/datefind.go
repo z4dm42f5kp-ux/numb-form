@@ -127,6 +127,12 @@ func (r *run) companyFolder(name string) (string, error) {
 	if len(exact) > 0 {
 		return exact[0].Path, nil
 	}
+	if len(fuzzy) > 0 && r.opt.AssumeYes {
+		c := fuzzy[0]
+		r.ui.Printf("  folder %s (similar name, -y)\n", ui.Safe(c.Folder.Rel))
+		r.logf("fuzzy %q vs %s (%.2f): accepted with -y", name, c.Folder.Rel, c.Score)
+		return c.Folder.Path, nil
+	}
 	for _, c := range fuzzy {
 		ok, err := r.ui.YesNo(fmt.Sprintf("  Is the folder %q this company's folder? (%s)", ui.Safe(c.Folder.Rel), c.Reason), false)
 		if err != nil {

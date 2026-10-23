@@ -128,6 +128,27 @@ func TestStartInsideWorkingFolder(t *testing.T) {
 	}
 }
 
+// -y takes the similar folder "Fooo Inc" as Foo Inc's without asking.
+func TestAssumeYes(t *testing.T) {
+	parent, root, _ := setup(t)
+	in := []string{"Max Muster", ""}
+	in = append(in, newCompany("Av. 1", "a")...) // Foo C.A. de C.V.
+	in = append(in, newCompany("Calle 2", "r")...)
+	for i := 0; i < 3; i++ {
+		in = append(in, newCompany("Street", "a")...)
+	}
+	in = append(in, newCompany("London", "a")...) // Foo Ltd; no question for Foo Inc
+	var out bytes.Buffer
+	code := Run(Options{Parent: parent, AllowNonTTY: true, AssumeYes: true, Config: direct(t),
+		In: strings.NewReader(strings.Join(in, "\n") + "\n"), Out: &out, Now: fixedNow})
+	if code != ExitOK || strings.Contains(out.String(), "Is the existing folder") {
+		t.Fatalf("exit %d\n%s", code, out.String())
+	}
+	if _, err := os.Stat(filepath.Join(root, "Foo Inc")); !os.IsNotExist(err) {
+		t.Fatal("-y still created a folder for Foo Inc")
+	}
+}
+
 func TestWhere(t *testing.T) {
 	if got := where("Customer ID", "D1001", 315); got != "Customer ID D1001, row 315" {
 		t.Error(got)
