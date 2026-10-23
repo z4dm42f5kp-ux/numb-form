@@ -8,6 +8,15 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.5.2
+
+* CI checks the languages every day: the newest Go is proposed for the
+  build instructions, and a Go minimum or CI Go that no longer gets
+  security fixes, or a known vulnerability in a pinned Python package
+  (OSV database), is reported in an issue.
+* OpenSSF Scorecard runs every day instead of every week.
+* `.github/RELEASING.md` lists every daily check.
+
 ## v1.5.1
 
 * The install commands in the documentation install one named stable

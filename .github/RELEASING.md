@@ -60,9 +60,28 @@ desktop site if Settings is hidden):
   `ci: security updates of the test systems`. When a distribution or
   FreeBSD, OpenBSD or NetBSD has a newer release, it opens or updates
   the issue *Newer operating system releases to test*.
+* It checks the languages. When a newer stable Go is out, it opens a
+  pull request `docs: goX.Y.Z in the build instructions`. When Go no
+  longer fixes security bugs in the Go that `go.mod` allows or that CI
+  tests, or a pinned Python package has a known vulnerability (OSV
+  database), it opens or updates the issue *Languages and tools to
+  review*, and closes it when nothing is left.
 * It also checks the binaries of the newest release and of the rolling
   build with govulncheck. When a newer stable Go fixes what it finds, it
   rebuilds the rolling build, and proposes the next patch version of the
   newest release, the same code built with that Go, which waits for your
   approval like any release. If you reject it, it asks again the next
   day; publishing any newer release ends it.
+
+Everything that runs every day, in UTC:
+
+| Time | Workflow | What it checks |
+| --- | --- | --- |
+| 02:41 | ci | tests on Linux, macOS, Windows, FreeBSD, OpenBSD and NetBSD, containers, every release target |
+| 03:53 | formats | LibreOffice formats |
+| 04:17 | security | govulncheck, gosec, CodeQL, fuzzing, zizmor, the history scan |
+| 05:23 | updates | Go tools, Go and the published binaries, test systems, languages |
+| 05:29 | scorecard | OpenSSF Scorecard |
+| 06:37 | install-docs | the install commands against the newest stable release |
+| daily | Dependabot | actions, Argos Translate, security updates of every Python package |
+
