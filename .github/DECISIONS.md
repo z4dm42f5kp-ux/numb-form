@@ -218,3 +218,11 @@ The security policy follows the Go project's (private reports, tracks,
 `.github/SECURE-CODING.md` turns SECURITY.md's promises into rules,
 a review checklist and an audit every three months.
 
+## Standard texts for a missing address or legal form
+
+Enter on an empty address, or on the legal form of a name that has
+none, now writes a standard text like the one for representatives:
+"No address was found online due to little to no information available"
+and "No legal form was found online due to little to no information
+available". `-` still leaves the field blank.
+
