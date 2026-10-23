@@ -148,3 +148,12 @@ func TestAssumeYes(t *testing.T) {
 		t.Fatal("-y still created a folder for Foo Inc")
 	}
 }
+
+func TestWhere(t *testing.T) {
+	if got := where("Customer ID", "D1001", 315); got != "Customer ID D1001, row 315" {
+		t.Error(got)
+	}
+	if got := where("Customer ID", "", 7); got != "row 7" {
+		t.Error(got)
+	}
+}

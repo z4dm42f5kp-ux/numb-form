@@ -138,3 +138,16 @@ func TestSetUserValue(t *testing.T) {
 		}
 	}
 }
+
+// numb-form config shows every key.
+func TestValuesCoverEveryKey(t *testing.T) {
+	shown := map[string]bool{}
+	for _, kv := range Defaults().Values() {
+		shown[kv[0]] = true
+	}
+	for _, k := range Keys() {
+		if !shown[k] {
+			t.Errorf("%s missing from Values", k)
+		}
+	}
+}

@@ -5,7 +5,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/z4dm42f5kp-ux/numb-form/internal/config"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/form"
@@ -73,10 +72,13 @@ func ShowConfig(out io.Writer, cfg config.Config, notes []string) int {
 	for _, n := range notes {
 		fmt.Fprintln(out, "note:", n)
 	}
-	fmt.Fprintf(out, "\nmode = %s\nonline = %v\noverview_dir = %s\nheader = %s\ntemplate_name = %s\nperson = %s\ntimeout = %s\nlegacy_formats = %v\npages_write = %v\n",
-		cfg.Mode, cfg.Online, cfg.OverviewDir, cfg.Header, cfg.TemplateName, cfg.Person, timeoutText(cfg.Timeout), cfg.LegacyFormats, cfg.PagesWrite)
-	for k, o := range cfg.Origin {
-		fmt.Fprintf(out, "  (%s set in %s)\n", k, o)
+	fmt.Fprintln(out, "\nEffective settings (default unless a file is named):")
+	for _, kv := range cfg.Values() {
+		from := ""
+		if o := cfg.Origin[kv[0]]; o != "" {
+			from = "   # " + o
+		}
+		fmt.Fprintf(out, "  %s = %s%s\n", kv[0], kv[1], from)
 	}
 	return ExitOK
 }
@@ -116,12 +118,4 @@ func SetConfig(out io.Writer, key, value string) int {
 	}
 	fmt.Fprintf(out, "Saved %s = %s in %s\n", key, value, p)
 	return ExitOK
-}
-
-// timeoutText shows a time limit, or "none".
-func timeoutText(d time.Duration) string {
-	if d <= 0 {
-		return "none"
-	}
-	return d.String()
 }

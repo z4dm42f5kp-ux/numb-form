@@ -109,7 +109,10 @@ cd "/path/to/working-folder" && numb-form
   regenerates them from the English files.
 * Documentation follows the OpenBSD style: short declarative sentences,
   imperative instructions, no marketing.
-  Every procedure is a single command joined with `&&`.
+  Every procedure is a single command, labelled **Unix-like** (macOS,
+  Linux, BSD; joined with `&&`) or **Windows** (10, 11; PowerShell 5.1,
+  joined with `;` and `if ($?) { }`, or one `& { ... }` block), or
+  marked as the same on all systems.
 
 ## Map
 

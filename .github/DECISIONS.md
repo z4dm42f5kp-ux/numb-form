@@ -141,3 +141,12 @@ one, and the choice is printed and logged.
 `numb-form man` reads single keys like less(1): the console is put into
 raw mode (SetConsoleMode on Windows 10 and later, stty elsewhere) and
 restored afterwards; the installed less is still preferred on Unix.
+
+## The rolling build is never behind stable
+
+Translations are committed by the translate workflow with the workflow
+token, and such pushes start no other workflow, so the rolling build
+skipped them; a stable release tagged on the translation commit was then
+newer than rolling.
+The rolling build now always builds the newest `main`, and runs after a
+release is published and after translations are committed.

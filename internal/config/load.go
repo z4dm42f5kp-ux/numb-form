@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
@@ -129,6 +130,29 @@ func Load(explicit string) (Config, []string, error) {
 		}
 	}
 	return c, notes, c.Validate()
+}
+
+// Values returns every key with its effective value, in the order of the
+// template, for "numb-form config".
+func (c Config) Values() [][2]string {
+	yn := func(b bool) string {
+		if b {
+			return "yes"
+		}
+		return "no"
+	}
+	timeout := "none"
+	if c.Timeout > 0 {
+		timeout = c.Timeout.String()
+	}
+	return [][2]string{
+		{"mode", c.Mode}, {"online", yn(c.Online)}, {"overview_dir", c.OverviewDir}, {"header", c.Header},
+		{"id_header", c.IDHeader}, {"template_name", c.TemplateName}, {"person", c.Person}, {"date_format", c.DateFormat},
+		{"timeout", timeout}, {"max_write_mb", strconv.Itoa(c.MaxWriteMB)}, {"fuzzy_threshold", strconv.FormatFloat(c.Fuzzy, 'g', -1, 64)},
+		{"downloads", c.Downloads}, {"log_dir", c.LogDir}, {"soffice", c.Soffice}, {"pages_converter", c.PagesConverter},
+		{"pages_write", yn(c.PagesWrite)}, {"numbers_converter", c.NumbersConverter}, {"legacy_formats", yn(c.LegacyFormats)},
+		{"legacy_output", c.LegacyOutput},
+	}
 }
 
 // Template returns a commented configuration file with every default.

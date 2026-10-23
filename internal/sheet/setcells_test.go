@@ -12,23 +12,23 @@ import (
 
 func TestReadTable(t *testing.T) {
 	b := testfix.XLSX(t, fxIDs, fxNames)
-	tb, err := ReadTable(b, "Customer Name")
+	tb, err := ReadTable(b, "Customer Name", "Customer ID")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if tb.Sheet != "Table 1" || tb.NameHeader != "Customer Name" || tb.DateHeader != "Report created" || len(tb.Rows) != len(fxNames) {
 		t.Fatalf("table %+v", tb)
 	}
-	if r := tb.Rows[0]; r.Name != fxNames[0] || r.NameRef != "C3" || r.DateRef != "F3" || r.Date != "Ignore at all costs" {
+	if r := tb.Rows[0]; r.Name != fxNames[0] || r.NameRef != "C3" || r.DateRef != "F3" || r.Date != "Ignore at all costs" || r.ID != fxIDs[0] || RowNumber(r.NameRef) != 3 {
 		t.Fatalf("row %+v", r)
 	}
 	// Another spelling of both headers.
 	b2 := rezip(t, b, "Report created", "REPORT CREATED AB:")
-	if tb, err := ReadTable(b2, "Kunde"); err != nil || tb.DateHeader != "REPORT CREATED AB:" {
+	if tb, err := ReadTable(b2, "Kunde", "Customer ID"); err != nil || tb.DateHeader != "REPORT CREATED AB:" {
 		t.Fatalf("%v %+v", err, tb)
 	}
 	b3 := rezip(t, b, "Report created", "Currency 2")
-	if _, err := ReadTable(b3, "Customer Name"); err == nil || !strings.Contains(err.Error(), "Report created") {
+	if _, err := ReadTable(b3, "Customer Name", "Customer ID"); err == nil || !strings.Contains(err.Error(), "Report created") {
 		t.Fatalf("missing date column: %v", err)
 	}
 }
@@ -90,7 +90,7 @@ func TestSetCell(t *testing.T) {
 // Only the target cells change; every other zip entry keeps its bytes.
 func TestSetTextChangesOnlyTheCells(t *testing.T) {
 	b := testfix.XLSX(t, fxIDs, fxNames)
-	tb, err := ReadTable(b, "Customer Name")
+	tb, err := ReadTable(b, "Customer Name", "Customer ID")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -105,7 +105,7 @@ func TestSetTextChangesOnlyTheCells(t *testing.T) {
 	if err := CheckEdit(b, out, tb.Sheet, map[string]string{"F3": "16-10-2026"}); err == nil {
 		t.Error("an unexpected change was not noticed")
 	}
-	nt, err := ReadTable(out, "Customer Name")
+	nt, err := ReadTable(out, "Customer Name", "Customer ID")
 	if err != nil || nt.Rows[0].Date != "16-10-2026" || nt.Rows[1].Date != "Ignore at all costs" || nt.Rows[2].Date != "01-02-2026" {
 		t.Fatalf("%v %+v", err, nt)
 	}

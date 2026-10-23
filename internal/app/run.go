@@ -16,6 +16,7 @@ import (
 	"github.com/z4dm42f5kp-ux/numb-form/internal/fsutil"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/match"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/runlog"
+	"github.com/z4dm42f5kp-ux/numb-form/internal/sheet"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/ui"
 )
 
@@ -200,7 +201,7 @@ func (r *run) main() error {
 			runErr = err
 			break
 		}
-		r.ui.Printf("\n[%d/%d] %s  (%s!%s)\n", i+1, len(rows), ui.Safe(row.Name), row.Sheet, row.Cell)
+		r.ui.Printf("\n[%d/%d] %s  (%s)\n", i+1, len(rows), ui.Safe(row.Name), ui.Safe(where(r.cfg.IDHeader, row.CustomerID, sheet.RowNumber(row.Cell))))
 		c, err := r.company(row)
 		r.man.Companies = append(r.man.Companies, c)
 		_ = r.man.Save(r.runDir)
@@ -239,6 +240,15 @@ func (r *run) summary() {
 		r.ui.Println("\nNothing has been written to the real folder. After reviewing, run numb-commit to copy the accepted folders back.")
 	}
 	r.logf("summary %v", counts)
+}
+
+// where describes a spreadsheet row for people: "Customer ID D1001, row
+// 315", or "row 315" without an id.
+func where(idHeader, id string, row int) string {
+	if id == "" {
+		return fmt.Sprintf("row %d", row)
+	}
+	return fmt.Sprintf("%s %s, row %d", idHeader, id, row)
 }
 
 func rel(root, p string) string {

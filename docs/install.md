@@ -254,10 +254,18 @@ administrator rights) and Kubernetes.
 
 ## After installing
 
-Save your name once, then start numb-form inside the working folder:
+Save your name once, then start numb-form inside the working folder.
+
+**Unix-like** (macOS, Linux, BSD), in Terminal:
 
 ```
 numb-form config set person "Your Name" && cd /path/to/GWG && numb-form
+```
+
+**Windows** (10, 11), in PowerShell:
+
+```
+numb-form config set person "Your Name"; cd "H:\GWG"; numb-form
 ```
 
 The [step-by-step guide](guide.md) explains every question it asks.

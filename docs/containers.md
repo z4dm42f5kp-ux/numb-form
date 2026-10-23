@@ -39,16 +39,16 @@ git clone --depth 1 https://github.com/z4dm42f5kp-ux/numb-form.git && cd numb-fo
 
 ## Docker
 
-On Linux, macOS and the BSDs, started inside the working folder (or the
-folder above it):
+**Unix-like** (macOS, Linux, BSD), in Terminal, started inside the working folder (or
+the folder above it):
 
 ```
 mkdir -p "$HOME/Downloads/numb-form-logs" && docker run --rm -it --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges -e TZ=Europe/Berlin -e XDG_STATE_HOME=/downloads/numb-form-logs -v "$PWD:/data" -v "$HOME/Downloads:/downloads" ghcr.io/z4dm42f5kp-ux/numb-form:latest
 ```
 
-On Windows with Docker Desktop, in Windows PowerShell replace `%cd%` with
-`${PWD}` and `%USERPROFILE%` with `$env:USERPROFILE`.
-In Command Prompt:
+**Windows** (10, 11) with Docker Desktop, in Command Prompt (in
+PowerShell, write `${PWD}` for `%cd%` and `$env:USERPROFILE` for
+`%USERPROFILE%`):
 
 ```
 docker run --rm -it --read-only --cap-drop ALL --security-opt no-new-privileges -e TZ=Europe/Berlin -e XDG_STATE_HOME=/downloads/numb-form-logs -v "%cd%:/data" -v "%USERPROFILE%\Downloads:/downloads" ghcr.io/z4dm42f5kp-ux/numb-form:latest
@@ -57,7 +57,8 @@ docker run --rm -it --read-only --cap-drop ALL --security-opt no-new-privileges 
 ## Podman
 
 Rootless; `--userns=keep-id` keeps your own file ownership and `:Z`
-relabels the volumes on SELinux systems such as Fedora:
+relabels the volumes on SELinux systems such as Fedora.
+**Unix-like** (Linux, macOS, BSD), in Terminal:
 
 ```
 mkdir -p "$HOME/Downloads/numb-form-logs" && podman run --rm -it --userns=keep-id --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges -e TZ=Europe/Berlin -e XDG_STATE_HOME=/downloads/numb-form-logs -v "$PWD:/data:Z" -v "$HOME/Downloads:/downloads:Z" ghcr.io/z4dm42f5kp-ux/numb-form:latest
@@ -66,7 +67,8 @@ mkdir -p "$HOME/Downloads/numb-form-logs" && podman run --rm -it --userns=keep-i
 ## Review mode in a container
 
 Mount the working folder read-only for the run, read-write for the
-commit, and pass `mode = review` in a configuration file:
+commit, and pass `mode = review` in a configuration file.
+**Unix-like** (Linux, macOS, BSD), in Terminal:
 
 ```
 mkdir -p "$HOME/Downloads" && printf 'mode = review\n' > "$HOME/Downloads/review.conf" && docker run --rm -it --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges -e TZ=Europe/Berlin -v "$PWD:/data:ro" -v "$HOME/Downloads:/downloads" ghcr.io/z4dm42f5kp-ux/numb-form:latest -f /downloads/review.conf && docker run --rm -it --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges -v "$PWD:/data" -v "$HOME/Downloads:/downloads" --entrypoint /numb-commit ghcr.io/z4dm42f5kp-ux/numb-form:latest

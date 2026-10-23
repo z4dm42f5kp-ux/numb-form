@@ -46,7 +46,7 @@ func TestDateFillsOnlyTheDateCell(t *testing.T) {
 	// "Fooo Inc" is not Foo Inc's folder; write; accept.
 	out := runDate(t, parent, "n", "y", "a")
 	after, _ := os.ReadFile(path)
-	tb, err := sheet.ReadTable(after, "Customer Name")
+	tb, err := sheet.ReadTable(after, "Customer Name", "Customer ID")
 	if err != nil {
 		t.Fatal(err)
 	}
