@@ -29,13 +29,13 @@ git clone --depth 1 https://github.com/z4dm42f5kp-ux/numb-form.git && cd numb-fo
 
 ## Docker
 
-En Linux, macOS y BSD, comenzó dentro de la carpeta de trabajo (o la carpeta arriba):
+**Unix-like** (macOS, Linux, BSD), en Terminal, comenzó dentro de la carpeta de trabajo (o la carpeta encima):
 
 ```
 mkdir -p "$HOME/Downloads/numb-form-logs" && docker run --rm -it --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges -e TZ=Europe/Berlin -e XDG_STATE_HOME=/downloads/numb-form-logs -v "$PWD:/data" -v "$HOME/Downloads:/downloads" ghcr.io/z4dm42f5kp-ux/numb-form:latest
 ```
 
-En Windows con Docker Desktop, en Windows PowerShell reemplazar `%cd%` con `${PWD}` y `%USERPROFILE%` con `$env:USERPROFILE`. En Command Prompt:
+**Windows** (10, 11) con Docker Desktop, en Command Prompt (en PowerShell, escriba `${PWD}` para `%cd%` y `$env:USERPROFILE` para `%USERPROFILE%`):
 
 ```
 docker run --rm -it --read-only --cap-drop ALL --security-opt no-new-privileges -e TZ=Europe/Berlin -e XDG_STATE_HOME=/downloads/numb-form-logs -v "%cd%:/data" -v "%USERPROFILE%\Downloads:/downloads" ghcr.io/z4dm42f5kp-ux/numb-form:latest
@@ -43,7 +43,7 @@ docker run --rm -it --read-only --cap-drop ALL --security-opt no-new-privileges 
 
 ## Podman
 
-Rootless; `--userns=keep-id` mantiene su propia propiedad de archivos y `:Z` relabels los volúmenes en sistemas SELinux como Fedora:
+Rootless; `--userns=keep-id` mantiene su propia propiedad de archivos y `:Z` relabels los volúmenes en sistemas SELinux como Fedora. **Unix-like** (Linux, macOS, BSD), en Terminal:
 
 ```
 mkdir -p "$HOME/Downloads/numb-form-logs" && podman run --rm -it --userns=keep-id --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges -e TZ=Europe/Berlin -e XDG_STATE_HOME=/downloads/numb-form-logs -v "$PWD:/data:Z" -v "$HOME/Downloads:/downloads:Z" ghcr.io/z4dm42f5kp-ux/numb-form:latest
@@ -51,7 +51,7 @@ mkdir -p "$HOME/Downloads/numb-form-logs" && podman run --rm -it --userns=keep-i
 
 ## Modo de revisión en un contenedor
 
-Montar la carpeta de trabajo sólo para ejecutar, leer-escribir para el commit, y pasar `mode = review` en un archivo de configuración:
+Montar la carpeta de trabajo solo para ejecutar, leer-escribir para el commit, y pasar `mode = review` en un archivo de configuración. **Unix-like** (Linux, macOS, BSD), en Terminal:
 
 ```
 mkdir -p "$HOME/Downloads" && printf 'mode = review\n' > "$HOME/Downloads/review.conf" && docker run --rm -it --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges -e TZ=Europe/Berlin -v "$PWD:/data:ro" -v "$HOME/Downloads:/downloads" ghcr.io/z4dm42f5kp-ux/numb-form:latest -f /downloads/review.conf && docker run --rm -it --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges -v "$PWD:/data" -v "$HOME/Downloads:/downloads" --entrypoint /numb-commit ghcr.io/z4dm42f5kp-ux/numb-form:latest

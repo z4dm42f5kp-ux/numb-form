@@ -18,10 +18,16 @@ Español: [docs/es/README.md](README.md) · Deutsch: [docs/de/README.md](../de/R
 * Seguridad: [SECURITY.md](SECURITY.md)
 * Agentes de inteligencia artificial: [AGENTS.md](../../AGENTS.md)
 
-Comience dentro de la carpeta de trabajo (el que contiene `3. Übersichten` y la plantilla):
+Comience dentro de la carpeta de trabajo (el que contiene `3. Übersichten` y la plantilla).
+
+**Unix-like** (macOS, Linux, BSD), en Terminal:
 
 ```
 cd /path/to/GWG && numb-form
 ```
 
-En Windows, abra la carpeta en File Explorer, escriba `powershell` en la barra de direcciones, presione Enter, escriba `numb-form`.
+**Windows** (10, 11): abre la carpeta en File Explorer, escriba `powershell` en la barra de direcciones, presione Enter, escriba:
+
+```
+numb-form
+```

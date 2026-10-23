@@ -141,7 +141,7 @@ func TestAssumeYes(t *testing.T) {
 	var out bytes.Buffer
 	code := Run(Options{Parent: parent, AllowNonTTY: true, AssumeYes: true, Config: direct(t),
 		In: strings.NewReader(strings.Join(in, "\n") + "\n"), Out: &out, Now: fixedNow})
-	if code != ExitOK || strings.Contains(out.String(), "Is the existing folder") {
+	if code != ExitOK || strings.Contains(out.String(), "Is the existing folder") || !strings.Contains(out.String(), "1 of those folders were taken with -y") {
 		t.Fatalf("exit %d\n%s", code, out.String())
 	}
 	if _, err := os.Stat(filepath.Join(root, "Foo Inc")); !os.IsNotExist(err) {

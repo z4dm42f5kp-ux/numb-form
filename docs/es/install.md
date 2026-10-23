@@ -197,10 +197,18 @@ Ver [containers.md](containers.md) para Docker, Podman (sin raíces, sin derecho
 
 ## Después de instalar
 
-Guarda tu nombre una vez, y luego comienza numb-form dentro de la carpeta de trabajo:
+Guarda tu nombre una vez, y luego comienza numb-form dentro de la carpeta de trabajo.
+
+**Unix-like** (macOS, Linux, BSD), en Terminal:
 
 ```
 numb-form config set person "Your Name" && cd /path/to/GWG && numb-form
+```
+
+**Windows** (10, 11), en PowerShell:
+
+```
+numb-form config set person "Your Name"; cd "H:\GWG"; numb-form
 ```
 
 La guía [step-by-step](guide.md) explica cada pregunta que hace.

@@ -50,14 +50,14 @@ Ein Formularlauf macht keine Netzwerkverbindungen. Firmennamen, Adressen und Ver
 
 | Komponente | Überprüfung |
 | --- | --- |
-| Go Toolchain in CI | Heruntergeladen von `actions/setup-go` von go.dev und überprüft mit dem veröffentlichten SHA-256 |
-| Go Tools in CI (staticcheck, govulncheck, gosec) | genaue Versionen, verifiziert von `go run` gegen die Go-Checksum-Datenbank, ein öffentliches Transparenzprotokoll |
-| GitHub Aktionen | Angeheftet auf Full Commit SHAs; Dependabot schlägt Updates nach einer 14-tägigen Abklingzeit vor |
+| Go Toolchain in CI | das neueste stabile Go, das von `actions/setup-go` von go.dev heruntergeladen und mit dem veröffentlichten SHA-256 verglichen wurde; ein täglicher Check schlägt einen Umbau des neuesten Releases vor, wenn ein neuerer Go behebt eine Schwachstelle in seinen Binärdateien |
+| Go Tools in CI (staticcheck, govulncheck, gosec) | genaue Versionen, verifiziert durch `go run` gegen die Go-Checksum-Datenbank, ein öffentliches Transparenzprotokoll; eine tägliche Überprüfung schlägt neue stabile Versionen nach 14 Tagen vor |
+| GitHub Aktionen | Angeheftet auf vollständige Commit-SHAs; Dependabot prüft täglich und schlägt stabile Updates nach einer 14-tägigen Abklingzeit vor, Sicherheitsupdates sofort |
 | Python-Tools in CI (zizmor, Argos Translate) | jedes Paket mit SHA-256 (`--require-hashes`), nur Rädern (`--only-binary :all:`), keine Abhängigkeitsauflösung zum Zeitpunkt der Installation (`--no-deps`) |
 | Argos Translate Modelle | Index gelesen bei einem gepinnten Commit; SHA-256 jedes Modells wird in `.github/translate/models.sha256` gepinnt, bei der ersten Verwendung aufgezeichnet und danach durchgesetzt |
 | Containerbasisbild | keine: Bilder sind gebaut `FROM scratch` |
 
-**Releases.** Release-Binärdateien werden von GitHub Actions aus einem Tag mit `-trimpath` und einem festen Zeitstempel erstellt, so dass sie reproduzierbar sind. Jedes Release hat:
+**Releases.** Release-Binärdateien werden von GitHub Actions aus einem Tag mit `-trimpath` und einem festen Zeitstempel erstellt, so dass sie reproduzierbar sind. Ein Release wird erst veröffentlicht, nachdem der Besitzer es in der `release`-Umgebung genehmigt hat (siehe [.github/RELEASING.md](../../.github/RELEASING.md)). Jedes Release hat:
 
 * Prüfsummen für `SHA256SUMS` (GNU-Format) und `SHA256` (BSD-Format);
 * `SHA256SUMS.sigstore.json`, eine schlüssellose Sigstore-Signatur der Prüfsummen, gebunden an die Identität des Release-Workflows;

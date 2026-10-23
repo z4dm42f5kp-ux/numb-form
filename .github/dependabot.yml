@@ -1,12 +1,15 @@
 # Keeps the commit-SHA pins of actions and the hash-locked Python tools
-# up to date. Every update arrives as a pull request and runs the full
-# security pipeline before it can be merged.
+# up to date, checked every day. Every update arrives as a pull request
+# and runs the full security pipeline before it can be merged. Only
+# stable versions are proposed, and only after 14 days (the cooldown);
+# security updates come at once. Go itself and the Go tools pinned in the
+# workflows are checked by .github/workflows/updates.yml.
 version: 2
 updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: daily
     cooldown:
       default-days: 14
   # Only Argos Translate itself: its dependencies must fit together, so
@@ -16,7 +19,7 @@ updates:
   - package-ecosystem: pip
     directory: /.github/translate
     schedule:
-      interval: monthly
+      interval: daily
     cooldown:
       default-days: 14
     allow:
