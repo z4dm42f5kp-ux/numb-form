@@ -26,6 +26,7 @@ func realMain() int {
 	root := fs.String("root", "", "working folder (default: the current folder if it is one, else the single folder inside it)")
 	timeout := fs.Duration("timeout", 0, "stop safely after this long, such as 30m (default: timeout in the configuration, none: no limit)")
 	yes := fs.Bool("y", false, "take a folder with a similar name as the company's folder without asking")
+	fs.BoolVar(yes, "Y", false, "same as -y")
 	allowPipe := fs.Bool("allow-non-tty", false, "accept answers from a pipe (testing only)")
 	version := fs.Bool("version", false, "print the version and exit")
 	fs.Usage = func() {

@@ -150,3 +150,12 @@ skipped them; a stable release tagged on the translation commit was then
 newer than rolling.
 The rolling build now always builds the newest `main`, and runs after a
 release is published and after translations are committed.
+
+## The manual viewer wraps long lines itself
+
+Code blocks keep their long commands on one line; a terminal wraps such
+a line over several rows, so a page overflowed the window and the view
+jumped.
+The viewer now cuts every line to the window width (continuing on the
+next row) and redraws by overwriting rows instead of clearing the
+screen, which also stops the flicker.

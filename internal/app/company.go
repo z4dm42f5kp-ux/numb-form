@@ -90,7 +90,7 @@ func (r *run) existing(row sheet.Row, c *runlog.Company) (bool, error) {
 	}
 	if len(fuzzy) > 0 && r.opt.AssumeYes {
 		cand := fuzzy[0]
-		c.Status, c.Folder, c.Reason = "exists", cand.Folder.Rel, "similar folder, accepted with -y: "+cand.Reason
+		c.Status, c.Folder, c.Reason = "exists", cand.Folder.Rel, byY+cand.Reason
 		r.ui.Printf("  already has a folder: %s (similar name, -y) — nothing to do\n", ui.Safe(cand.Folder.Rel))
 		r.logf("fuzzy %q vs %s (%.2f): accepted with -y", row.Name, cand.Folder.Rel, cand.Score)
 		return true, nil
