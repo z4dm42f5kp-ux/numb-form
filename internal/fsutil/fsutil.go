@@ -164,6 +164,20 @@ func CopyTree(ctx context.Context, src, dst string, logf func(string, ...any)) (
 	return st, nil
 }
 
+// CopyFile copies one regular file to dst, which must not exist, keeping
+// its modification time.
+func CopyFile(src, dst string) error {
+	info, err := os.Stat(src)
+	if err != nil {
+		return err
+	}
+	if !info.Mode().IsRegular() {
+		return fmt.Errorf("%s is not a regular file", src)
+	}
+	_, err = copyFile(src, dst, info, make([]byte, 1<<20))
+	return err
+}
+
 func copyFile(src, dst string, info fs.FileInfo, buf []byte) (int64, error) {
 	in, err := os.Open(src) // #nosec G304 -- walking the user's own tree.
 	if err != nil {
