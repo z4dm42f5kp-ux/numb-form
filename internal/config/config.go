@@ -31,9 +31,10 @@ type Config struct {
 	MaxWriteMB   int
 	Fuzzy        float64
 
-	Downloads string // review mode: where the copy goes; empty = Downloads
-	LogDir    string // direct mode: where logs go; empty = per-user state folder
-	CommitTo  string // numb-commit: the real working folder a working copy goes to
+	Downloads  string // review mode: where the copy goes; empty = Downloads
+	LogDir     string // direct mode: where logs go; empty = per-user state folder
+	CommitFrom string // numb-commit: the working copy to commit; empty = ask
+	CommitTo   string // numb-commit: the real working folder it goes to; empty = ask
 
 	Soffice          string // path to LibreOffice/OpenOffice soffice; empty = search
 	PagesConverter   string // auto | pages-app | libreoffice

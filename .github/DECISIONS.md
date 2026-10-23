@@ -173,6 +173,20 @@ program, so installs and updates stay as they are.
 Review runs (`mode = review`) work as before.
 Each program now has its own manual page.
 
+## numb-commit stages, skips known companies, and reviews in rounds
+
+numb-commit asks for both folders (or reads `commit_from`, `commit_to`),
+stages exactly the files to copy in Downloads and touches the target
+only after the person agrees.
+A new folder of a company the target already has, typically under its
+customer ID (`D10629 Foo S.A.`), is not copied, and no existing file is
+overwritten.
+numb-form marks nothing in its documents (nothing outside section A may
+change); numb-commit recognises its forms by filling the template with
+the values a form holds and comparing.
+The person chooses a manual review or an automatic one that corrects
+what it can and reviews again, at most five rounds.
+
 ## numb-typo corrects places in company names
 
 Customer names often end in a misspelt or cut-off city or country
