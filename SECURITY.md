@@ -218,7 +218,7 @@ change rather than for each push):
 | Known vulnerabilities in code and in built binaries, for every target OS | govulncheck |
 | Security linting, reported to code scanning | gosec |
 | Semantic analysis of Go and of the workflows | CodeQL (`security-extended`, `security-and-quality`) |
-| Fuzzing of every template filler and scanner (docx, odt, rtf), every spreadsheet reader (xlsx, ods, csv, legacy xls), the configuration parser and the name matcher | Go native fuzzing, 2 minutes per target on main, 10 nightly |
+| Fuzzing of every template filler and scanner (docx, odt, rtf), every spreadsheet reader (xlsx, ods, csv, legacy xls), the configuration parser, the numb-commit request reader and the name matcher | Go native fuzzing, 2 minutes per target on main, 10 nightly |
 | Templates and spreadsheets written by real LibreOffice (odt, fodt, rtf, docx, doc, xls, ods, fods) | formats workflow |
 | Workflow security (injection, credentials, permissions, pins) | zizmor, pedantic |
 | Customer files or credentials committed by mistake | history scan |
