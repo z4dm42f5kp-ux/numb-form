@@ -28,7 +28,8 @@ INDEX = ("https://raw.githubusercontent.com/argosopentech/argospm-index/"
          "ff90de60728f7c1338ff6b75974e4c89b2442d22/index.json")
 PINS = HERE / "models.sha256"
 LANGS = {"es": "Español", "de": "Deutsch"}
-SOURCES = ["README.md", "SECURITY.md", "docs/guide.md", "docs/install.md", "docs/usage.md", "docs/numb-date.md",
+SOURCES = ["README.md", "SECURITY.md", "docs/guide.md", "docs/install.md", "docs/usage.md", "docs/numb-commit.md",
+           "docs/numb-date.md",
            "docs/configuration.md",
            "docs/formats.md", "docs/containers.md", "docs/ai-prompt.md"]
 NOTE = {

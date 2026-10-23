@@ -2,7 +2,7 @@
 
 ## NAME
 
-**numb-form**, **numb-commit** — fill risk assessment forms (with
+**numb-form** — fill risk assessment forms (with **numb-commit** and
 **numb-date**)
 
 ## SYNOPSIS
@@ -13,10 +13,10 @@ numb-form [-f conf] check-template template [sample]
 numb-form [-f conf] config [init | set key value]
 numb-form [-f conf] update [stable | rolling | v1.2.3]
 numb-form rollback
-numb-commit [-f conf] [-run dir] [-downloads dir]
 ```
 
-numb-date has its own page: [numb-date.md](numb-date.md).
+numb-commit and numb-date have their own pages:
+[numb-commit.md](numb-commit.md), [numb-date.md](numb-date.md).
 
 ## DESCRIPTION
 
@@ -101,15 +101,9 @@ When a value is left empty (Enter alone), the field reads:
 | Headquarters / Address | `No address was found online due to little to no information available` |
 | Authorized Representatives | `No representatives were found online, please consult other internal sources for more accurate information` |
 
-**numb-commit** applies to review runs only.
-It copies the accepted folders of a run back into the real working
-folder.
-It only adds new folders, never overwrites or deletes anything, and
-refuses folders that appeared in the real tree in the meantime.
-Each folder is copied to a temporary name, verified with SHA-256 and then
-renamed.
-Documents edited during review are listed before the user confirms.
-Afterwards it offers to delete the review copy; the logs are kept.
+**numb-commit** copies the accepted folders of a review run into the
+real working folder, and shows and checks what a working copy would add
+to it: see [numb-commit.md](numb-commit.md).
 
 **numb-date** fills the *Report created* column of the spreadsheet from
 the forms: see [numb-date.md](numb-date.md).
@@ -148,9 +142,9 @@ the forms: see [numb-date.md](numb-date.md).
   On macOS, Linux and the BSDs the installed `less` is used when there
   is one.
   Without a topic the whole manual is shown, starting with the guide.
-  Topics: `guide`, `usage`, `numb-date`, `configuration`, `install`,
-  `formats`, `containers`, `security`; `numb-form man topics` lists
-  them.
+  Topics: `guide`, `usage`, `numb-commit`, `numb-date`, `configuration`,
+  `install`, `formats`, `containers`, `security`; `numb-form man topics`
+  lists them.
   The language follows `LANG`, or is given.
   `numb-form man -install` makes `man numb-form` work: on Linux, macOS
   and the BSDs it writes the manual page to `~/.local/share/man/man1`
@@ -202,10 +196,6 @@ the forms: see [numb-date.md](numb-date.md).
 : Stop safely after *duration*, for example `30m`; overrides a longer
   `timeout` in the configuration. Without it there is no time limit.
 
-`-run dir`
-: (numb-commit) Commit this run folder instead of the newest uncommitted
-  one.
-
 `-allow-non-tty`
 : Read answers from a pipe. For automated tests only.
 
@@ -237,7 +227,7 @@ the forms: see [numb-date.md](numb-date.md).
 `Downloads/numb-form-runs/<run>/numb-commit.log`
 : Review mode: log of the commit.
 
-The files of numb-date are listed on its page.
+The files of numb-commit and numb-date are listed on their pages.
 
 No cache or temporary files are left behind.
 Documents are written through
@@ -293,7 +283,7 @@ cd "H:\GWG"; numb-form -f review.conf; if ($?) { numb-commit }
 
 ## SEE ALSO
 
-[numb-date.md](numb-date.md),
+[numb-commit.md](numb-commit.md), [numb-date.md](numb-date.md),
 [configuration.md](configuration.md), [formats.md](formats.md),
 [install.md](install.md), [containers.md](containers.md),
 [../SECURITY.md](../SECURITY.md), [../AGENTS.md](../AGENTS.md)
