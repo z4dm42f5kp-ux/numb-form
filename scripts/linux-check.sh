@@ -13,10 +13,11 @@ src=/src
 t=$src/scripts/install/templates
 
 # row FILE LABEL: the command of the table row whose first cell starts
-# with LABEL, run as root in a container (no sudo, doas or --ask).
+# with LABEL, run as root in a container without a person: no sudo, doas
+# or --ask, and pacman without its question.
 row() {
 	# shellcheck disable=SC2016 # the backquotes are Markdown, not shell
-	grep -F "| $2" "$t/$1" | head -n 1 | sed 's/^[^`]*`//; s/`[^`]*$//; s/\\|/|/g; s/sudo //g; s/doas //g; s/ --ask//g'
+	grep -F "| $2" "$t/$1" | head -n 1 | sed 's/^[^`]*`//; s/`[^`]*$//; s/\\|/|/g; s/sudo //g; s/doas //g; s/ --ask//g; s/pacman -S /pacman -S --noconfirm /g'
 }
 # doc NAME: the generated command NAME in docs/install.md.
 doc() {
