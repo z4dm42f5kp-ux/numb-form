@@ -2,6 +2,7 @@ package app
 
 import (
 	"io/fs"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -70,4 +71,36 @@ func companyFolder(folders []realFolder, company, id string) (realFolder, string
 		}
 	}
 	return realFolder{}, "", false
+}
+
+// reviewDups explains the new folders that are not copied because the
+// real folder already has the company, and asks for a look when such a
+// folder holds more than numb-form's form.
+func reviewDups(v *reqReview, q *request) {
+	type group struct {
+		dup   string
+		other []string
+	}
+	groups := map[string]*group{}
+	var order []string
+	for _, c := range q.of(kDup) {
+		g := groups[c.top]
+		if g == nil {
+			g = &group{dup: c.dup}
+			groups[c.top] = g
+			order = append(order, c.top)
+		}
+		if c.origin != byNumbForm {
+			g.other = append(g.other, path.Base(c.rel))
+		}
+	}
+	for _, top := range order {
+		g := groups[top]
+		if len(g.other) == 0 {
+			v.add("ok", "%q is not copied: the real folder already has %q for that company", top, g.dup)
+			continue
+		}
+		v.add("warn", "%q is not copied because the real folder has %q, but it holds more than numb-form's form (%s): copy those files by hand if they belong there",
+			top, g.dup, strings.Join(g.other, ", "))
+	}
 }
