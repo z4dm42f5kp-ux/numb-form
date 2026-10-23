@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/z4dm42f5kp-ux/numb-form/internal/config"
+	"github.com/z4dm42f5kp-ux/numb-form/internal/installdoc"
 )
 
 // The documentation follows the code (.github/DOCUMENTATION.md): these
@@ -132,5 +133,17 @@ func TestLinksResolve(t *testing.T) {
 				t.Errorf("%s links to %s, which does not exist", path, m[1])
 			}
 		}
+	}
+}
+
+// The install commands are written from scripts/install (the pinned
+// release and the templates); a hand edit or a stale pin fails here.
+func TestInstallCommandsPinned(t *testing.T) {
+	stale, err := installdoc.Stale(".", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, d := range stale {
+		t.Errorf("%s does not match scripts/install: edit the templates there, then run go run ./scripts/install render", d)
 	}
 }

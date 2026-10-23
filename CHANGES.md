@@ -8,6 +8,19 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.7.3
+
+* Install: every install command in [docs/install.md](docs/install.md)
+  and the guide names one stable release and checks the download
+  against the SHA-256 checksum written in the command itself, instead
+  of a checksum file from the same server.
+  A table lists the checksums of every archive.
+  The commands are generated (`scripts/install`) and follow each stable
+  release.
+
+**Action needed:** none. Commands copied from an earlier version of
+the documentation still work.
+
 ## v1.7.2
 
 * Releases: after each stable release, and daily, the install-docs
