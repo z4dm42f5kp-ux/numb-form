@@ -8,6 +8,14 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.3.5
+
+* Internal: numb-commit's review of a request: every file to copy still
+  has its checksum and is not in the real folder yet, the spreadsheet
+  only gains report dates in cells without one, every new company
+  folder holds a filled form, and residue and the template stay behind.
+  Nothing uses it yet. No change in behaviour.
+
 ## v1.3.4
 
 * Internal: the numb-commit request file, `numb-commit-request.txt`:
