@@ -8,6 +8,18 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.7.4
+
+* Install: what each Linux distribution needs for the install command
+  (Debian 13 and systems based on it, Fedora 44, Arch Linux with
+  pacman only, Gentoo, Void Linux, openSUSE, Alpine Linux, NixOS and
+  Guix).
+* Building from source builds the pinned stable release from its tag,
+  never downloads another Go toolchain (`GOTOOLCHAIN=local`), removes
+  its build cache, and has commands for NixOS and Guix.
+  Debian 12 and the Ubuntu-specific lines are gone: Debian 13 covers
+  the systems based on it.
+
 ## v1.7.3
 
 * Install: every install command in [docs/install.md](docs/install.md)
