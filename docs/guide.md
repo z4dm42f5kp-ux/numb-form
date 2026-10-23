@@ -148,8 +148,8 @@ at the end.
 | --- | --- | --- |
 | `Full name of the person processing the form:` | Only asked if you skipped step 2 | Type your name; Enter at the next question uses it for every form in this run |
 | `Is the existing folder "Foo Gmbh" this company's folder? (...) [y/N]` | A folder with a very similar name already exists | `y` if it is the same company (nothing is created), otherwise Enter. Start with `numb-form -y` to answer `y` to all of these: each one is shown as `already has a folder: … (similar name, -y)` |
-| `Legal form (the name has none; Enter = blank):` | Asked only when the company name has no legal form such as `GmbH` or `S.A.` | Type it, or Enter to leave it blank |
-| `Headquarters / Address (one line, Enter = blank):` | The company's address, from your own sources | Type or paste it on one line and press Enter |
+| `Legal form (the name has none; Enter or '-' = blank):` | Asked only when the company name has no legal form such as `GmbH` or `S.A.` | Type it, or Enter or `-` to leave it blank |
+| `Headquarters / Address (one line, Enter or '-' = blank):` | The company's address, from your own sources | Type or paste it on one line and press Enter; Enter or `-` alone leaves it blank |
 | `Representatives (Enter = "No representatives were found…", '-' = blank):` | The people who may sign for the company, written `Full Name (Role 1, Role 2), Full Name (Role)` with the roles in English | Type or paste them; Enter alone writes "No representatives were found online ..."; `-` leaves the field blank |
 | `Is this correct? [a]ccept, [e]dit a field, [r]eject:` | The form has been written; numb-form shows part A as the form now reads | Type `a` if it is right; `e` to change one line; `r` to throw it away. There is no default here: you must type a letter |
 
