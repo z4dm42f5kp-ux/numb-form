@@ -1,16 +1,14 @@
 package app
 
 import (
-	"bufio"
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -26,22 +24,36 @@ const requestData = "--- for numb-commit, do not edit below this line ---"
 
 // change is one line of a request.
 type change struct {
-	kind   string // add, replace, keep
-	rel    string // slash-separated, relative to the working folder
+	kind   string // add, replace, keep, differs, dup (see the kinds below)
+	rel    string // slash-separated, relative to both folders
 	sha    string // add, replace: of the working copy's file
 	old    string // replace: of the real folder's file
 	size   int64
-	reason string // keep
-	top    string // add: the new folder it belongs to, "" for an existing folder
+	top    string // add, dup: the new folder it belongs to, "" for an existing folder
+	dup    string // dup: the real folder's folder of the same company
+	origin string // byNumbForm, editedForm or otherFile
+	reason string // keep, dup: why it is not copied
 }
 
+// Kinds of change. Only add and replace are copied.
+const (
+	kAdd     = "add"     // a new file
+	kReplace = "replace" // the overview spreadsheet, changed by numb-date
+	kKeep    = "keep"    // residue or the template: never copied
+	kDiffers = "differs" // exists in the real folder with other content: never overwritten
+	kDup     = "dup"     // in a new folder of a company the real folder already has
+)
+
 // request is what numb-commit will do: copy files from a working copy
-// (From) into the real working folder (To).
+// (From) into the real working folder (To). Stage is the copy of exactly
+// those files in Downloads that is reviewed and then copied.
 type request struct {
 	From, To string
+	Stage    string
 	Made     time.Time
 	Status   string // waiting, applied
 	Sheet    string // rel path of the overview spreadsheet
+	Others   int    // entries at the top of the real folder that do not change
 	Changes  []change
 }
 
@@ -90,11 +102,12 @@ func sameFile(a, b string, ai, bi fs.FileInfo) (bool, string, string, error) {
 }
 
 // scanRequest compares the working copy from with the real folder to.
-// New files are added, the overview spreadsheet (sheetRel) may be
-// replaced, and nothing is ever deleted; the template and residue are
-// never copied.
-func scanRequest(ctx context.Context, from, to, sheetRel, templateRel string) (*request, error) {
-	q := &request{From: from, To: to, Status: "waiting", Sheet: filepath.ToSlash(sheetRel)}
+// New files are added and the overview spreadsheet may be replaced;
+// nothing is ever deleted or overwritten. The template and residue are
+// never copied, and neither is a new folder of a company that the real
+// folder already has under another name, such as "D10629 Foo S.A.".
+func scanRequest(ctx context.Context, from, to string, rc reviewConfig) (*request, error) {
+	q := &request{From: from, To: to, Status: "waiting", Sheet: filepath.ToSlash(rc.sheetRel)}
 	err := filepath.WalkDir(from, func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -112,7 +125,7 @@ func scanRequest(ctx context.Context, from, to, sheetRel, templateRel string) (*
 		}
 		if why := residue(rel, d.IsDir()); why != "" {
 			if !d.IsDir() || !strings.HasPrefix(d.Name(), ".") {
-				q.Changes = append(q.Changes, change{kind: "keep", rel: slash, reason: "not copied: " + why})
+				q.Changes = append(q.Changes, change{kind: kKeep, rel: slash, reason: "not copied: " + why})
 			}
 			if d.IsDir() {
 				return filepath.SkipDir
@@ -122,8 +135,8 @@ func scanRequest(ctx context.Context, from, to, sheetRel, templateRel string) (*
 		if d.IsDir() || !d.Type().IsRegular() {
 			return nil
 		}
-		if strings.EqualFold(rel, templateRel) {
-			q.Changes = append(q.Changes, change{kind: "keep", rel: slash, reason: "not copied: the template"})
+		if strings.EqualFold(slash, rc.template) {
+			q.Changes = append(q.Changes, change{kind: kKeep, rel: slash, reason: "not copied: the template"})
 			return nil
 		}
 		info, err := d.Info()
@@ -134,7 +147,7 @@ func scanRequest(ctx context.Context, from, to, sheetRel, templateRel string) (*
 		ti, err := os.Lstat(target)
 		if errors.Is(err, fs.ErrNotExist) {
 			h, _, err := fsutil.SHA256File(p)
-			q.Changes = append(q.Changes, change{kind: "add", rel: slash, sha: h, size: info.Size()})
+			q.Changes = append(q.Changes, change{kind: kAdd, rel: slash, sha: h, size: info.Size(), origin: originOf(p, slash, rc)})
 			return err
 		}
 		if err != nil {
@@ -145,21 +158,79 @@ func scanRequest(ctx context.Context, from, to, sheetRel, templateRel string) (*
 			return err
 		}
 		if strings.EqualFold(slash, q.Sheet) {
-			q.Changes = append(q.Changes, change{kind: "replace", rel: slash, sha: hs, old: ht, size: info.Size()})
+			q.Changes = append(q.Changes, change{kind: kReplace, rel: slash, sha: hs, old: ht, size: info.Size()})
 			return nil
 		}
-		q.Changes = append(q.Changes, change{kind: "keep", rel: slash, reason: "differs from the real folder; numb-commit replaces only the spreadsheet"})
+		q.Changes = append(q.Changes, change{kind: kDiffers, rel: slash, origin: originOf(p, slash, rc),
+			reason: "differs from the real folder; existing files are never overwritten"})
 		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
 	sort.SliceStable(q.Changes, func(i, j int) bool { return q.Changes[i].rel < q.Changes[j].rel })
 	// Which new folder each file belongs to is fixed now, before copying
 	// makes the folders exist.
 	for i, c := range q.Changes {
-		if c.kind == "add" {
+		if c.kind == kAdd {
 			q.Changes[i].top = firstMissing(to, c.rel)
 		}
 	}
-	return q, err
+	q.skipKnownCompanies(rc)
+	q.Others = othersAtTop(to, q)
+	return q, nil
+}
+
+// skipKnownCompanies turns the files of each new folder whose company the
+// real folder already has (under its customer id, for example) into dup:
+// numb-form only made the form there because the working copy lacked
+// that folder.
+func (q *request) skipKnownCompanies(rc reviewConfig) {
+	var folders []realFolder
+	listed := false
+	for i, c := range q.Changes {
+		if c.kind != kAdd || c.top == "" {
+			continue
+		}
+		if !listed {
+			ov, _ := findOverview(q.To, rc.overviewDir)
+			folders, listed = listFolders(q.To, ov), true
+		}
+		base := path.Base(c.top)
+		company, id := base, ""
+		if n, ok := rc.names[strings.ToLower(base)]; ok {
+			company, id = n, rc.ids[strings.ToLower(base)]
+		}
+		if f, why, ok := companyFolder(folders, company, id); ok {
+			q.Changes[i].kind, q.Changes[i].dup = kDup, f.rel
+			q.Changes[i].reason = fmt.Sprintf("not copied: the real folder already has %q for %s (%s)", f.rel, company, why)
+		}
+	}
+}
+
+// othersAtTop counts the entries at the top of the real folder that the
+// request does not touch, for the tree.
+func othersAtTop(to string, q *request) int {
+	entries, err := os.ReadDir(to)
+	if err != nil {
+		return 0
+	}
+	touched := map[string]bool{}
+	for _, c := range q.Changes {
+		if c.kind != kKeep {
+			touched[strings.ToLower(strings.SplitN(c.rel, "/", 2)[0])] = true
+		}
+		if c.dup != "" {
+			touched[strings.ToLower(strings.SplitN(c.dup, "/", 2)[0])] = true
+		}
+	}
+	n := 0
+	for _, e := range entries {
+		if !strings.HasPrefix(e.Name(), ".") && !touched[strings.ToLower(e.Name())] {
+			n++
+		}
+	}
+	return n
 }
 
 // firstMissing returns the first folder of rel that does not exist in
@@ -181,7 +252,7 @@ func firstMissing(root, rel string) string {
 func (q *request) newFolders() (map[string][]change, []string) {
 	groups := map[string][]change{}
 	var order []string
-	for _, c := range q.of("add") {
+	for _, c := range q.of(kAdd) {
 		top := c.top
 		if _, ok := groups[top]; !ok {
 			order = append(order, top)
@@ -189,107 +260,4 @@ func (q *request) newFolders() (map[string][]change, []string) {
 		groups[top] = append(groups[top], c)
 	}
 	return groups, order
-}
-
-func kb(n int64) string { return strconv.FormatInt((n+1023)/1024, 10) + " KB" }
-
-// write saves the request as text people can read, followed by the same
-// data in lines for numb-commit.
-func (q *request) write(path string) error {
-	var b bytes.Buffer
-	fmt.Fprintf(&b, "numb-commit request: what numb-commit copies into the real folder\n\n")
-	fmt.Fprintf(&b, "From:   %s\nTo:     %s\nMade:   %s\nStatus: %s\n\n", q.From, q.To, q.Made.Format("02/01/2006 15:04"), q.Status)
-	groups, order := q.newFolders()
-	for _, top := range order {
-		if top == "" {
-			continue
-		}
-		fmt.Fprintf(&b, "New folder  %s\n", filepath.FromSlash(top))
-		for _, c := range groups[top] {
-			fmt.Fprintf(&b, "  + %s  (%s, sha256 %s)\n", filepath.FromSlash(c.rel), kb(c.size), c.sha)
-		}
-		b.WriteString("\n")
-	}
-	if fs := groups[""]; len(fs) > 0 {
-		b.WriteString("New files in existing folders\n")
-		for _, c := range fs {
-			fmt.Fprintf(&b, "  + %s  (%s, sha256 %s)\n", filepath.FromSlash(c.rel), kb(c.size), c.sha)
-		}
-		b.WriteString("\n")
-	}
-	for _, c := range q.of("replace") {
-		fmt.Fprintf(&b, "Replaced  %s\n  sha256 %s in the real folder now\n  sha256 %s afterwards\n  the replaced version is kept in the log folder\n\n", filepath.FromSlash(c.rel), c.old, c.sha)
-	}
-	if ks := q.of("keep"); len(ks) > 0 {
-		b.WriteString("Left alone\n")
-		for _, c := range ks {
-			fmt.Fprintf(&b, "  - %s  (%s)\n", filepath.FromSlash(c.rel), c.reason)
-		}
-		b.WriteString("\n")
-	}
-	b.WriteString("Nothing in the real folder is deleted, and no file there is overwritten except the ones under Replaced.\n\n")
-	b.WriteString(requestData + "\n")
-	fmt.Fprintf(&b, "from\t%s\nto\t%s\nmade\t%s\nstatus\t%s\nsheet\t%s\n", q.From, q.To, q.Made.Format(time.RFC3339), q.Status, q.Sheet)
-	for _, c := range q.Changes {
-		extra := c.reason
-		if c.kind == "add" {
-			extra = "folder:" + c.top
-		}
-		fmt.Fprintf(&b, "%s\t%s\t%s\t%s\t%d\t%s\n", c.kind, c.rel, c.sha, c.old, c.size, extra)
-	}
-	tmp := path + ".tmp"
-	if err := os.WriteFile(tmp, b.Bytes(), 0o644); err != nil { // #nosec G306 -- read by the team.
-		return err
-	}
-	return os.Rename(tmp, path)
-}
-
-// readRequest parses the data lines of a request file.
-func readRequest(path string) (*request, error) {
-	b, err := os.ReadFile(path) // #nosec G304 -- the request in the working folder.
-	if err != nil {
-		return nil, err
-	}
-	i := bytes.Index(b, []byte(requestData))
-	if i < 0 {
-		return nil, fmt.Errorf("%s has no data section", filepath.Base(path))
-	}
-	q := &request{}
-	sc := bufio.NewScanner(bytes.NewReader(b[i+len(requestData):]))
-	for sc.Scan() {
-		f := strings.Split(sc.Text(), "\t")
-		switch {
-		case len(f) == 2 && f[0] == "from":
-			q.From = f[1]
-		case len(f) == 2 && f[0] == "to":
-			q.To = f[1]
-		case len(f) == 2 && f[0] == "made":
-			q.Made, _ = time.Parse(time.RFC3339, f[1])
-		case len(f) == 2 && f[0] == "status":
-			q.Status = f[1]
-		case len(f) == 2 && f[0] == "sheet":
-			q.Sheet = f[1]
-		case len(f) == 6 && (f[0] == "add" || f[0] == "replace" || f[0] == "keep"):
-			n, _ := strconv.ParseInt(f[4], 10, 64)
-			rel := f[1]
-			if rel == "" || strings.HasPrefix(rel, "/") || strings.Contains("/"+rel+"/", "/../") || filepath.IsAbs(filepath.FromSlash(rel)) {
-				return nil, fmt.Errorf("unsafe path %q in the request", rel)
-			}
-			c := change{kind: f[0], rel: rel, sha: f[2], old: f[3], size: n, reason: f[5]}
-			if c.kind == "add" {
-				c.reason, c.top = "", strings.TrimPrefix(f[5], "folder:")
-				if c.top != "" && !strings.HasPrefix(c.rel, c.top+"/") {
-					return nil, fmt.Errorf("unsafe folder %q in the request", c.top)
-				}
-			}
-			q.Changes = append(q.Changes, c)
-		case strings.TrimSpace(sc.Text()) == "":
-		default:
-			return nil, fmt.Errorf("%s: unreadable line %q", filepath.Base(path), sc.Text())
-		}
-	}
-	if q.From == "" || q.To == "" {
-		return nil, fmt.Errorf("%s does not say where to copy from and to", filepath.Base(path))
-	}
-	return q, sc.Err()
 }

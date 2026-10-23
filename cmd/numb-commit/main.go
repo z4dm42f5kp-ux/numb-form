@@ -1,7 +1,9 @@
-// Command numb-commit copies the folders accepted in a numb-form run from
-// the review copy in Downloads back into the real folder. It only adds
-// new folders, never overwrites or deletes, and verifies every file with
-// SHA-256.
+// Command numb-commit copies the new forms from a working copy (or a
+// review run) into the real working folder. It stages the files in
+// Downloads, writes a request with the folder tree before and after, has
+// it reviewed, and copies only after the person agrees. It only adds,
+// never overwrites (except the overview spreadsheet) or deletes, and
+// verifies every file with SHA-256.
 package main
 
 import (
@@ -24,8 +26,8 @@ func realMain() int {
 	conf := fs.String("f", "", "configuration file read after the system and per-user files")
 	run := fs.String("run", "", "run folder to commit (default: the newest uncommitted run)")
 	downloads := fs.String("downloads", "", "Downloads folder (default: the user's Downloads, or $NUMBFORM_DOWNLOADS)")
-	from := fs.String("from", "", "working copy to commit (default: the current folder)")
-	to := fs.String("to", "", "real working folder to copy into (default: commit_to in the configuration)")
+	from := fs.String("from", "", "working copy to commit (default: commit_from in the configuration, else asked)")
+	to := fs.String("to", "", "real working folder to copy into (default: commit_to in the configuration, else asked)")
 	allowPipe := fs.Bool("allow-non-tty", false, "accept answers from a pipe (testing only)")
 	version := fs.Bool("version", false, "print the version and exit")
 	fs.Usage = func() {
@@ -59,15 +61,9 @@ func realMain() int {
 	for _, n := range notes {
 		fmt.Println("note:", n)
 	}
-	cwd, err := os.Getwd()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "numb-commit:", err)
-		return app.ExitError
-	}
 	code := app.Commit(app.CommitOptions{
 		Downloads: *downloads,
 		RunDir:    *run,
-		Parent:    cwd,
 		From:      *from,
 		To:        *to,
 		Review:    review,

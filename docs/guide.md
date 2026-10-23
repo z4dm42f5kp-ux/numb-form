@@ -204,10 +204,16 @@ Every time:
 3. Run numb-form and numb-date there as usual.
 4. Type `numb-commit` and press Enter.
 
-numb-commit compares the copy with `F:\14. GWG` and writes
-**`numb-commit-request.txt`** into the copy: the list of exactly what
-it will add to `F:\14. GWG`.
-It then checks that list by itself and ends with a verdict:
+numb-commit asks for the two folders (unless `commit_from` and
+`commit_to` are set), compares the copy with `F:\14. GWG`, stages the
+files to copy in Downloads and writes **`numb-commit-request.txt`** into
+the copy: the list of exactly what it will add, with the folder tree
+before and after.
+New folders of companies that `F:\14. GWG` already has (for example as
+`D10629 Foo S.A.`) are not copied, and no existing file is overwritten.
+Answer `r` to let numb-commit review and correct the list by itself, or
+`m` to look at it yourself.
+The review ends with a verdict:
 
 * `Verdict: OK to commit.` — type `y` to copy.
 * `Verdict: commit after checking the lines marked check.` — read the

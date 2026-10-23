@@ -149,7 +149,7 @@ func (c Config) Values() [][2]string {
 		{"mode", c.Mode}, {"online", yn(c.Online)}, {"overview_dir", c.OverviewDir}, {"header", c.Header},
 		{"id_header", c.IDHeader}, {"template_name", c.TemplateName}, {"person", c.Person}, {"date_format", c.DateFormat},
 		{"timeout", timeout}, {"max_write_mb", strconv.Itoa(c.MaxWriteMB)}, {"fuzzy_threshold", strconv.FormatFloat(c.Fuzzy, 'g', -1, 64)},
-		{"downloads", c.Downloads}, {"log_dir", c.LogDir}, {"commit_to", c.CommitTo}, {"soffice", c.Soffice}, {"pages_converter", c.PagesConverter},
+		{"downloads", c.Downloads}, {"log_dir", c.LogDir}, {"commit_from", c.CommitFrom}, {"commit_to", c.CommitTo}, {"soffice", c.Soffice}, {"pages_converter", c.PagesConverter},
 		{"pages_write", yn(c.PagesWrite)}, {"numbers_converter", c.NumbersConverter}, {"legacy_formats", yn(c.LegacyFormats)},
 		{"legacy_output", c.LegacyOutput},
 	}
@@ -175,7 +175,8 @@ func Template() string {
 	line("how close a folder name must be to be offered as a match (0.5-1)", "fuzzy_threshold", "0.85")
 	line("review mode: folder for the copy; empty means your Downloads folder", "downloads", "")
 	line("direct mode: folder for logs; empty means the per-user state folder", "log_dir", "")
-	line("numb-commit: the real working folder that a working copy is copied into, for example F:\\14. GWG", "commit_to", "")
+	line("numb-commit: the working copy to commit, for example C:\\Users\\you\\Downloads\\14. GWG; empty means ask", "commit_from", "")
+	line("numb-commit: the real working folder it is copied into, for example F:\\14. GWG; empty means ask", "commit_to", "")
 	line("path to LibreOffice or OpenOffice soffice; empty means search", "soffice", "")
 	line(".pages templates: auto, pages-app (macOS) or libreoffice", "pages_converter", d.PagesConverter)
 	line("EXPERIMENTAL, macOS only: save filled forms as .pages through Apple Pages", "pages_write", "no")

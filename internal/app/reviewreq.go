@@ -18,18 +18,32 @@ import (
 	"github.com/z4dm42f5kp-ux/numb-form/internal/textutil"
 )
 
-// finding is one result of reviewing a request.
+// finding is one result of reviewing a request. fix says how numb-commit
+// can correct it by itself: fixRescan (compare and stage again) or
+// fixDrop (do not copy that file); "" means a person must look.
 type finding struct {
 	level string // ok, warn, fail
 	msg   string
+	rel   string
+	fix   string
 }
+
+const (
+	fixRescan = "rescan"
+	fixDrop   = "drop"
+)
 
 type reqReview struct {
 	findings []finding
 }
 
 func (v *reqReview) add(level, format string, a ...any) {
-	v.findings = append(v.findings, finding{level, fmt.Sprintf(format, a...)})
+	v.findings = append(v.findings, finding{level: level, msg: fmt.Sprintf(format, a...)})
+}
+
+// fail records a failure that numb-commit can fix (fix) for the file rel.
+func (v *reqReview) fail(rel, fix, format string, a ...any) {
+	v.findings = append(v.findings, finding{level: "fail", msg: fmt.Sprintf(format, a...), rel: rel, fix: fix})
 }
 
 func (v *reqReview) count(level string) int {
@@ -42,6 +56,16 @@ func (v *reqReview) count(level string) int {
 	return n
 }
 
+// fixable reports whether every failure can be fixed by numb-commit.
+func (v *reqReview) fixable() bool {
+	for _, f := range v.findings {
+		if f.level == "fail" && f.fix == "" {
+			return false
+		}
+	}
+	return true
+}
+
 func hashOf(p string) string {
 	h, _, err := fsutil.SHA256File(p)
 	if err != nil {
@@ -52,63 +76,73 @@ func hashOf(p string) string {
 
 var reReportDate = regexp.MustCompile(`^\d{2}-\d{2}-\d{4}$`)
 
-// reviewRequest checks a request against both folders. Before it is
-// applied: the working copy still holds exactly the listed files, the
-// real folder does not have them yet, the replaced spreadsheet only gains
-// report dates, every new company folder belongs to a company in the
-// list and holds a filled form, and nothing that must stay behind is
-// listed. After it is applied: every listed file is in the real folder
-// with its checksum.
+// staged is where the file to copy is: in the staged copy once there is
+// one, otherwise in the working copy.
+func (q *request) staged(rel string) string {
+	if q.Stage != "" {
+		return filepath.Join(q.Stage, filepath.FromSlash(rel))
+	}
+	return filepath.Join(q.From, filepath.FromSlash(rel))
+}
+
+// reviewRequest checks a request against the folders. Before it is
+// applied: the staged copy (or the working copy) holds exactly the listed
+// files, the working copy has not changed since, the real folder does not
+// have them yet, the replaced spreadsheet only gains report dates, every
+// new company folder belongs to a company in the list and holds a filled
+// form, and nothing that must stay behind is listed. After it is applied:
+// every listed file is in the real folder with its checksum.
 func reviewRequest(q *request, cfg reviewConfig) *reqReview {
 	v := &reqReview{}
 	applied := q.Status == "applied"
 	for _, c := range q.Changes {
-		if c.kind == "keep" {
+		if c.kind != kAdd && c.kind != kReplace {
 			continue
 		}
 		if why := residue(filepath.FromSlash(c.rel), false); why != "" || strings.EqualFold(c.rel, cfg.template) {
-			v.add("fail", "%s is listed for copying but must stay behind", c.rel)
+			v.fail(c.rel, fixDrop, "%s is listed for copying but must stay behind", c.rel)
 		}
 	}
-	for _, c := range q.of("add") {
-		src := filepath.Join(q.From, filepath.FromSlash(c.rel))
+	for _, c := range q.of(kAdd) {
 		dst := filepath.Join(q.To, filepath.FromSlash(c.rel))
 		switch {
 		case applied && hashOf(dst) == c.sha:
 		case applied:
 			v.add("fail", "%s is missing in the real folder or differs from the request", c.rel)
-		case hashOf(src) != c.sha:
-			v.add("fail", "%s changed after the request was made; run numb-commit again", c.rel)
+		case hashOf(q.staged(c.rel)) != c.sha:
+			v.fail(c.rel, fixRescan, "%s changed after the request was made", c.rel)
+		case q.Stage != "" && hashOf(filepath.Join(q.From, filepath.FromSlash(c.rel))) != c.sha:
+			v.fail(c.rel, fixRescan, "%s changed in the working copy after it was staged", c.rel)
 		default:
 			if _, err := os.Lstat(dst); !errors.Is(err, fs.ErrNotExist) {
-				v.add("fail", "%s already exists in the real folder", c.rel)
+				v.fail(c.rel, fixDrop, "%s already exists in the real folder and is never overwritten", c.rel)
 			}
 		}
 	}
-	for _, c := range q.of("replace") {
-		src := filepath.Join(q.From, filepath.FromSlash(c.rel))
+	for _, c := range q.of(kReplace) {
 		dst := filepath.Join(q.To, filepath.FromSlash(c.rel))
 		now := hashOf(dst)
 		switch {
 		case applied && now == c.sha:
 		case applied:
 			v.add("fail", "%s in the real folder is not the committed version", c.rel)
-		case hashOf(src) != c.sha:
-			v.add("fail", "%s changed after the request was made; run numb-commit again", c.rel)
+		case hashOf(q.staged(c.rel)) != c.sha:
+			v.fail(c.rel, fixRescan, "%s changed after the request was made", c.rel)
 		case now != c.old:
 			v.add("fail", "%s in the real folder changed after the request was made (someone else edited it?)", c.rel)
 		case strings.EqualFold(c.rel, q.Sheet):
-			reviewSheet(v, dst, src, cfg)
+			reviewSheet(v, dst, q.staged(c.rel), cfg)
 		}
 	}
 	if !applied {
 		reviewFolders(v, q, cfg)
+		reviewDups(v, q)
 	}
 	if v.count("fail") == 0 {
 		if applied {
 			v.add("ok", "every listed file is in the real folder with its SHA-256 checksum")
 		} else {
-			v.add("ok", "%d file(s) to add and %d to replace match their SHA-256 checksums", len(q.of("add")), len(q.of("replace")))
+			v.add("ok", "%d file(s) to add and %d to replace match their SHA-256 checksums", len(q.of(kAdd)), len(q.of(kReplace)))
 		}
 	}
 	return v
@@ -118,9 +152,12 @@ func reviewRequest(q *request, cfg reviewConfig) *reqReview {
 type reviewConfig struct {
 	header, idHeader string
 	overviewDir      string
-	template         string            // rel path of the template
-	templateBase     string            // its name without extension
-	names            map[string]string // folder name -> company, from the spreadsheet
+	sheetRel         string              // rel path of the overview spreadsheet
+	template         string              // rel path of the template
+	templateBase     string              // its name without extension
+	tpls             []*formats.Template // templates of both folders, to recognise numb-form's forms
+	names            map[string]string   // folder name (lower case) -> company, from the spreadsheet
+	ids              map[string]string   // folder name (lower case) -> customer id
 }
 
 // reviewSheet allows only report dates written into empty or digit-free
@@ -221,7 +258,7 @@ func reviewFolders(v *reqReview, q *request, cfg reviewConfig) {
 			v.add("warn", "new folder %q has no risk assessment form", top)
 			continue
 		}
-		b, err := os.ReadFile(filepath.Join(q.From, filepath.FromSlash(formRel))) // #nosec G304 -- a form in the working copy.
+		b, err := os.ReadFile(q.staged(formRel)) // #nosec G304 -- a form to copy.
 		if err != nil {
 			v.add("fail", "%s cannot be read", formRel)
 			continue

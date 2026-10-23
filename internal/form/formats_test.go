@@ -1,6 +1,7 @@
 package form_test
 
 import (
+	"archive/zip"
 	"bytes"
 	"testing"
 
@@ -100,4 +101,51 @@ func FuzzAllFormats(f *testing.F) {
 			}
 		}
 	})
+}
+
+// A filled form is recognised as numb-form's own until anything in it
+// changes, in section A or elsewhere.
+func TestAsFilled(t *testing.T) {
+	members := map[string]string{"docx": "word/document.xml", "odt": "content.xml"}
+	for _, c := range cases(t) {
+		t.Run(c.name, func(t *testing.T) {
+			out, _, err := c.f.Fill(c.tpl, vals)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if ok, err := form.AsFilled(c.f, c.tpl, out); err != nil || !ok {
+				t.Fatalf("own form not recognised: %v %v", ok, err)
+			}
+			// The smallest edit outside section A: a line break at the end.
+			edited := append(append([]byte(nil), out...), '\n')
+			if m := members[c.name]; m != "" {
+				zr, err := zip.NewReader(bytes.NewReader(out), int64(len(out)))
+				if err != nil {
+					t.Fatal(err)
+				}
+				x, err := form.ZipEntry(zr, m)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if edited, err = form.ReplaceZipEntry(out, m, append(x, '\n')); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if ok, _ := form.AsFilled(c.f, c.tpl, edited); ok {
+				t.Fatal("an edited form counts as unchanged")
+			}
+			other := form.Values{}
+			for k, v := range vals {
+				other[k] = v
+			}
+			other[form.FieldAddress] = "Elsewhere 2"
+			again, _, err := c.f.Fill(c.tpl, other)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if ok, _ := form.AsFilled(c.f, c.tpl, again); !ok {
+				t.Fatal("a form filled with other values is not recognised")
+			}
+		})
+	}
 }
