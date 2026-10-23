@@ -4,7 +4,7 @@
 
 Rellena la sección A del formulario *Appendix A - Risk Assesment* para cada empresa en la hoja de cálculo general que aún no tiene carpeta.
 
-Usted confirma cada documento, a menos que lo configura para funcionar desatendido. La hoja de cálculo nunca se cambia.
+Rellena el nombre, la forma legal, la sentencia del registro, la fecha y su nombre por sí mismo, y le pide la dirección y los representantes. Usted confirma cada documento. numb-form nunca cambia la hoja de cálculo; después, `numb-date` escribe la fecha de cada nueva forma en su celda *Report created*, después de estar de acuerdo, y no cambia nada más.
 
 Español: [docs/es/README.md](README.md) · Deutsch: [docs/de/README.md](../de/README.md)
 

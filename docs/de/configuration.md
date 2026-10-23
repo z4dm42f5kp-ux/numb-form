@@ -4,7 +4,7 @@
 
 ## NAME
 
-**numb-form.conf** — numb-form Konfigurationsdatei
+**numb-form.conf** — numb-form configuration file
 
 ## DESCRIPTION
 
@@ -30,7 +30,7 @@ numb-form funktioniert ohne Konfigurationsdatei; die Standardwerte unten sind da
 
 3. Eine Datei mit `-f file`.
 
-Jede Zeile ist `key = value`. Zeilen, die mit `#` beginnen, sind Kommentare, und ` #` beginnt einen Kommentar nach einem Wert. Werte können mit `"` angegeben werden. Unbekannte Schlüssel und ungültige Werte sind Fehler, so dass Tippfehler sofort gefunden werden.
+Jede Zeile ist `key = value`. Zeilen, die mit `#` beginnen, sind Kommentare, und ` #` beginnt einen Kommentar nach einem Wert. Werte können mit `"` angegeben werden. Unbekannte Schlüssel und ungültige Werte sind Fehler, so dass Tippfehler sofort gefunden werden. Schlüssel älterer Versionen (`confirm`, `address_sources`, `address_fallback`, `reps_sources`, `reps_min_trust`, `reps_fallback`, `caution`, `website`, `search`, `browser`, `guess_domains`) werden mit einer Notiz ignoriert.
 
 Speichern Sie eine einzelne Einstellung, ohne die Datei zu bearbeiten:
 
@@ -51,14 +51,11 @@ numb-form config init && numb-form config
 `mode = direct` | `review`
 : **direct** (Standard): Ordner und Formulare werden nach jeder Bestätigung im Arbeitsordner selbst erstellt. **review**: Der gesamte Arbeitsordner wird zuerst in Downloads kopiert, alle Arbeiten finden in der Kopie statt und `numb-commit` kopiert die akzeptierten Ordner zurück.
 
-`confirm = each` | `none`
-: **each** (Standard): Jeder Wert und jedes Dokument wird angezeigt und muss akzeptiert werden. **none**: läuft ohne Fragen; jedes Dokument muss immer noch genau wie geschrieben gelesen werden. Nahezu Ordner-Namen-Übereinstimmungen werden nie automatisch entschieden: Das Unternehmen wird übersprungen und als *needs review * gemeldet. Erfordert `person`.
-
 `online = yes` | `no`
-: Suchen Sie nach Registern und Websites (Standard ja).
+: Lassen Sie `numb-form update` GitHub kontaktieren (Standard ja). Unternehmen werden nie online nachgeschlagen.
 
-`timeout = 25m`
-: Stoppen Sie sicher nach dieser langen; höchstens `25m`.
+`timeout = none`
+: Stoppen Sie sicher nach diesem langen, zum Beispiel `30m` oder `2h`; **none** (Standard) bedeutet keine zeitliche Begrenzung.
 
 `max_write_mb = 100`
 : Die meisten Megabytes von Dokumenten, die ein Lauf schreiben kann (1-100).
@@ -91,40 +88,6 @@ numb-form config init && numb-form config
 `fuzzy_threshold = 0.85`
 : Wie ähnlich ein Ordnername sein muss, muss als Übereinstimmung angeboten werden (0,5-1).
 
-### Quellen
-
-Quellen sind `companies-house`, `vies`, `brasil-cnpj`, `official` (Regierungsblätter und Register, die durch Suche gefunden wurden), `gleif`, `website`, `directory` (Unternehmensdaten-Websites, die Registerdaten wie Northdata, Moneyhouse, Racius oder OpenCorporates erneut veröffentlichen), `search` (Web-Suchsnippets; Suche findet auch die Website), `osm` (OpenStreetMap, für eine Adresse) und `wikidata`. Listen sind durch Leerzeichen oder Kommas getrennt; ihre Reihenfolge ist die Reihenfolge der Präferenz.
-
-`address_sources = companies-house vies brasil-cnpj official gleif website directory search osm wikidata`
-: Quellen für *Headquarters / Address*.
-
-`address_fallback = ask` | `blank`
-: Wenn keine Adresse gefunden wird. Mit `confirm = none` fungiert `ask` als `blank`.
-
-`reps_sources = companies-house vies brasil-cnpj official gleif website directory search osm wikidata`
-: Quellen für *Authorized Representatives*.
-
-`reps_min_trust = any` | `website` | `register`
-: Die am wenigsten vertrauenswürdige Quelle wird für Vertreter akzeptiert: `register` akzeptiert nur Regierungs- oder Regulierungsregister.
-
-`reps_fallback = no-reps-text` | `blank`
-: Wenn niemand gefunden wird: der genaue Text ohne Vertreter oder leer.
-
-`caution = auto` | `always` | `never`
-: Der Vorsichtstext. **auto**: für Werte vorgeschlagen, die nicht durch ein Register bestätigt wurden (gefragt bei `confirm = each`).
-
-`website = auto` | `ask` | `never`
-: Die Website des Unternehmens las für seinen rechtlichen Hinweis. **auto** (Standard): automatisch gefunden und nur verwendet, wenn das Unternehmen benannt wird. **ask**: Sie geben die Adresse für jedes Unternehmen ein (Enter findet sie automatisch). **never**: keine Website gelesen wird. Mit `confirm = none` fungiert `ask` als `auto`. Der ältere Wert `wikidata` bedeutet `auto`.
-
-`search = duckduckgo mojeek yahoo brave` | `none`
-: Web-Suchmaschinen verwendet, um Websites zu finden, Regierung Gazette Einträge und, als letztes Mittel, Vertreter in Ergebnis Schnipsel, in der Reihenfolge der Präferenz: Wenn man sich weigert, ruht es für eine Minute und die nächste wird gefragt. Es wird nur der Firmenname mit Wörtern wie `impressum` oder `site:boe.es` gesendet. **none** schaltet die Suche aus; Register und erratene Adressen werden weiterhin verwendet.
-
-`browser = auto` | `none` | *Pfad
-: Der Browser begann unsichtbar (kopflos, kein Fenster) für Websites, die mit JavaScript erstellt wurden, und für die Suche, wenn jede Engine ablehnt. **auto**: Google Chrome; ohne Chromium oder Microsoft Edge. Ein *Pfad* benennt einen anderen Chrom-basierten Browser. Jeder Start verwendet ein neues, leeres Profil, das direkt danach gelöscht wird.
-
-`guess_domains = yes` | `no`
-: Versuchen Sie auch, Adressen aus dem Namen gebaut, wie `foobar.de` oder `foobar.com.br`, von den Ländern der Rechtsform gewählt.
-
 ### Formate
 
 `soffice =`
@@ -137,22 +100,17 @@ Quellen sind `companies-house`, `vies`, `brasil-cnpj`, `official` (Regierungsbl�
 : EXPERIMENTAL, nur macOS: Speichern Sie ausgefüllte Formulare als `.pages` bis Apple Pages.
 
 `legacy_formats = no`
-: SYSTEMDATEI NUR: `.doc`-Vorlagen und `.xls`-Tabellen zulassen. Runs, die sie verwenden, sind immer offline.
+: SYSTEMDATEI NUR: `.doc`-Vorlagen und `.xls`-Tabellen zulassen.
 
 `legacy_output = docx` | `same`
 : Ausgefüllte Formulare aus einer `.doc`-Vorlage sind wieder `.docx` oder `.doc`.
 
 ## EXAMPLES
 
-Unbeaufsichtigte Läufe, die nur Registerdaten akzeptieren:
+Speichern Sie Ihren Namen, damit er nicht bei jedem Lauf gefragt wird:
 
 ```
-confirm = none
 person = Max Muster
-address_sources = companies-house gleif
-reps_sources = companies-house gleif
-reps_min_trust = register
-caution = auto
 ```
 
 Ihr früherer Workflow mit einer Überprüfungskopie in Downloads:

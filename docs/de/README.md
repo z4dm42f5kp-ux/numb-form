@@ -4,7 +4,7 @@
 
 Füllt Abschnitt A des Formulars *Appendix A - Risk Assesment* für jedes Unternehmen in der Übersichtstabelle aus, die noch keinen Ordner hat.
 
-Sie bestätigen jedes Dokument, es sei denn, Sie konfigurieren es unbeaufsichtigt. Die Tabellenkalkulation wird nie geändert.
+Es füllt den Namen, die Rechtsform, den Registersatz, das Datum und Ihren Namen selbst aus und fragt Sie nach der Adresse und den Vertretern. Sie bestätigen jedes Dokument. numb-form ändert niemals die Tabellenkalkulation; danach schreibt `numb-date` das Datum jedes neuen Formulars in seine *Report created* Zelle, nachdem Sie zugestimmt haben, und ändert nichts anderes.
 
 Español: [docs/es/README.md](../es/README.md) · Deutsch: [docs/de/README.md](README.md)
 

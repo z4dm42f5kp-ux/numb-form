@@ -60,6 +60,6 @@ Runs, die ein Legacy-Format verwenden, sind immer vollständig offline. Der `.xl
 
 * **Microsoft 365 / Office**: Speichern Sie die Vorlage als `.docx` und die Übersicht als `.xlsx` (die Standardwerte).
 * **LibreOffice** und **Apache OpenOffice**: `.odt` und `.ods` arbeiten direkt; so auch `.docx` und `.xlsx`.
-* **Proton Drive (Docs und Sheets)**: Laden Sie die Vorlage als `.docx` und die Übersicht als `.xlsx` in den Arbeitsordner herunter. Dies funktioniert auch auf Systemen ohne Desktop-Office-Suite, einschließlich der BSDs, aus einem Webbrowser.
+* **Proton Drive (Docs and Sheets)**: download the template as `.docx` and the overview as `.xlsx` into the working folder. This also works on systems without a desktop office suite, including the BSDs, from a web browser.
 * **Apple Pages und Numbers**: Verwenden Sie `.pages` und `.numbers` wie oben beschrieben, oder exportieren Sie nach `.docx` und `.xlsx` (File → Export To).
 * **Die BSDs**: LibreOffice ist als Paket verfügbar (`pkg install libreoffice`, `pkg_add libreoffice`, `pkgin install libreoffice`); Proton Docs in einem Browser benötigt keine Installation.

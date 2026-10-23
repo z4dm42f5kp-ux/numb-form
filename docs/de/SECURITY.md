@@ -12,44 +12,29 @@ Nur das neueste Release wird unterstützt.
 
 numb-form verarbeitet Kundendokumente, daher sind die Designregeln streng.
 
-* **numb-form** fügt immer nur hinzu: einen neuen Ordner pro neuer Firma, mit einem ausgefüllten Formular darin. Es ändert oder löscht niemals eine vorhandene Datei oder einen vorhandenen Ordner und entfernt nur Ordner, die es selbst in derselben Ausführung erstellt hat (bei Ablehnung oder Fehler).
+* **numb-form** only ever adds: a new folder per new company, with one filled form in it. It never changes or deletes an existing file or folder, and it removes only folders it created itself in the same run (on rejection or error).
 * Bei `mode = review` wird der eigentliche Arbeitsordner überhaupt nicht geschrieben: Der gesamte Baum wird zuerst in Downloads kopiert und jede Änderung wird in der Kopie vorgenommen.
-* **numb-commit** (Review-Modus) fügt nur neue Ordner hinzu. Es überschreibt oder löscht niemals, lehnt Ordner ab, die in der Zwischenzeit erschienen sind, kopiert einen temporären Namen, überprüft jede Datei mit SHA-256 und benannt dann um.
-* Die Tabelle in `3. Übersichten` wird schreibgeschützt geöffnet und niemals geschrieben. Seine SHA-256 Prüfsumme wird vor der Kopie, nach der Kopie und am Ende des Laufs verglichen; eine Differenz stoppt den Lauf.
+* **numb-commit** (review mode) only adds new folders. It never overwrites or deletes, refuses folders that appeared in the meantime, copies to a temporary name, verifies every file with SHA-256 and then renames.
+* numb-form und numb-commit öffnen die Tabelle in `3. Übersichten` schreibgeschützt und schreiben sie niemals. Seine SHA-256 Prüfsumme wird vor der Kopie, nach der Kopie und am Ende des Laufs verglichen; eine Differenz stoppt den Lauf.
+* **numb-date** ist das einzige Programm, das die Tabellenkalkulation schreibt, und nur `.xlsx` und `.xlsm`. Es schreibt nur leere oder ziffernfreie Zellen der Spalte *Report created*, nachdem der Benutzer der Liste der Daten zugestimmt hat. Die Zellen werden in das XML des Blattes gespleißt, behalten ihren eigenen Stil bei und erhalten keine neue Formatierung; jeder andere Teil der Arbeitsmappe wird Byte für Byte kopiert, und Zellen mit Formeln werden in Ruhe gelassen. Vor dem Schreiben vergleicht es jede Zelle jedes Blatts der neuen Arbeitsmappe mit dem Original: Alles andere, was sich unterscheidet, stoppt es. SHA-256 schützt jeden Schritt: Die Datei muss immer noch die Prüfsumme haben, die sie beim Lesen hatte, die temporäre Kopie daneben muss mit der neuen Arbeitsmappe übereinstimmen, bevor sie in die Datei umbenannt wird, und die Datei muss danach übereinstimmen. Das Original wird im Protokollordner aufbewahrt, bis der Benutzer das von der Festplatte zurückgelesene Ergebnis akzeptiert; *undo* stellt es wieder her, überprüft mit SHA-256. Es weigert sich zu laufen, während Excel oder LibreOffice die Datei geöffnet hat. Formulare werden nur gelesen.
 * Dokumente werden nicht re-serialisiert. Das XML wird nur nach Byte-Offsets gescannt und Werte werden in die ursprünglichen Bytes gespleißt; alle anderen Teile des `.docx` werden Byte für Byte kopiert. Nach jedem Ausfüllen wird das Ergebnis erneut analysiert und Absatz für Absatz mit der Vorlage verglichen. Werte werden XML-escaped und von Zeichen entfernt, die in XML nicht erlaubt sind. Vorlagen mit Makros werden abgelehnt.
 * Keine Formatierung wird jemals hinzugefügt. Werte werden dem eigenen Textlauf des Labels oder einer Kopie der vorhandenen Eigenschaften dieses Runs hinzugefügt, wenn dem Label ein Tab folgt.
-* Jedes Dokument wird nach dem Schreiben von der Festplatte zurückgelesen. Mit `confirm = each` (Standard) sieht und akzeptiert eine Person es, und die Programme weigern sich, ohne ein interaktives Terminal zu laufen. Bei `confirm = none` muss das Zurücklesen genau den beabsichtigten Werten entsprechen, Near-Ordner-Namensübereinstimmungen werden nie automatisch entschieden und es werden nur die Quellen und das Vertrauensniveau in der Konfiguration verwendet.
-* Ein Lauf stoppt sicher nach höchstens 25 Minuten. Es schreibt höchstens 100 MB Dokumente neben der Kopie und hinterlässt keinen Cache oder temporäre Dateien: Netzwerkdaten bleiben im Speicher, temporäre Dateien werden umbenannt oder entfernt, und Konverter laufen in einem privaten temporären Ordner mit einem Wegwerf-Office-Profil, danach gelöscht.
+* Jedes Dokument wird nach dem Schreiben von der Festplatte zurückgelesen. Eine Person sieht und akzeptiert es, und die Programme weigern sich, ohne ein interaktives Terminal zu laufen.
+* Ein Lauf hat kein Zeitlimit, es sei denn, `timeout` setzt eins; Ctrl+C oder das Limit stoppt es sicher. Es schreibt höchstens 100 MB Dokumente neben der Kopie und hinterlässt keinen Cache oder temporäre Dateien: temporäre Dateien werden umbenannt oder entfernt, und Konverter laufen in einem privaten temporären Ordner mit einem Wegwerf-Office-Profil, das danach gelöscht wird.
 
 ## Konfiguration und Formate
 
 * Der Konfigurationsparser weist unbekannte Schlüssel und ungültige Werte zurück.
 * Schlüssel, die erweitern, was numb-form akzeptiert (`legacy_formats`), werden nur in der Systemdatei geehrt. Unter Unix wird diese Datei ignoriert, es sei denn, sie gehört zu root und ist nicht von einer Gruppe oder anderen beschreibbar; unter Windows befindet sie sich unter Programmdateien.
-* Legacy-Binärformate (.doc, .xls) sind standardmäßig deaktiviert, und Läufe, die sie verwenden, sind immer vollständig offline. Der .xls-Reader (Compound-Datei und BIFF8) ist numb-forms eigener, Bounds-Checks jeder Offset und Kette und wird kontinuierlich Fuzzed.
+* Legacy-Binärformate (.doc, .xls) sind standardmäßig deaktiviert. Der .xls-Reader (Compound-Datei und BIFF8) ist numb-forms eigener, Bounds-Checks jeder Offset und Kette und wird kontinuierlich Fuzzed.
 * .doc, .pages und .numbers werden von Office-Software bereits auf dem Computer (LibreOffice, Apache OpenOffice, Apple Pages oder Numbers) mit festen Argumenten konvertiert; Dateinamen werden als Argumente übergeben, niemals als Skripttext. Das Schreiben von .pages ist experimentell und standardmäßig ausgeschaltet.
 * Vorlagen mit Makros werden abgelehnt; makrofähige Tabellenkalkulationen (.xlsm) werden nur für Zellenwerte gelesen.
 
 ## Netz
 
-Online-Lookups senden nur Firmennamen und offizielle Nummern, die auf der eigenen Website des Unternehmens gedruckt sind:
+Ein Formularlauf macht keine Netzwerkverbindungen. Firmennamen, Adressen und Vertreter verlassen niemals den Computer.
 
-* Firmennamen für die GLEIF API, Wikidata und DuckDuckGo (mit Wörtern wie `impressum` oder `site:boe.es`) und für UK Companies House nur, wenn ein freier Schlüssel festgelegt ist;
-* EU-Mehrwertsteuernummern für EU VIES und brasilianische CNPJ-Nummern für BrasilAPI;
-* gewöhnliche Seitenanfragen auf der Website des Unternehmens (automatisch gefunden oder vom Benutzer eingegeben) und auf Seiten des Regierungsblatts (BORME, Portal da Justiça, Boletín Oficial, Sunbiz, Companies House), die durch Suche gefunden werden.
-
-Nichts aus der Tabelle außer dem Firmennamen wird gesendet und nichts über die Person, die das Formular verarbeitet.
-
-Die Suchanfragen gehen wiederum zu DuckDuckGo, Mojeek, Yahoo oder Brave Search. Firmendatenverzeichnisseiten, die durch die Suche gefunden werden, werden wie jede andere Webseite gelesen (höchstens drei pro Unternehmen), und der Name von OpenStreetMap wird einmal nach dem Firmennamen gefragt, wenn keine Adresse gefunden wurde. Wenn Google Chrome (oder Chromium oder Edge) installiert ist, wird es für Script-basierte Websites kopflos gestartet und die Suche abgelehnt: mit festen Flags, keine Erweiterungen, ein neues leeres Profil im temporären Ordner, das direkt danach gelöscht wird (nie das Profil des Benutzers), nur HTTPS-Adressen, ein Browser nach dem anderen, höchstens 40 Sekunden und 4 MB pro Seite. `browser = none` schaltet es aus. `search = none` stoppt die Suche; `-offline` oder `online = no` sendet überhaupt nichts. Die suchanfragen sind einige sekunden voneinander entfernt und halten eine minute inne, wenn duckduckgo nach einem menschlichen check fragt.
-
-* Nur HTTPS, TLS 1.2 oder höher, höchstens fünf HTTPS-Weiterleitungen.
-* Ohne Proxy werden Verbindungen zu Loopback-, Private-, Link-Local- und Multicast-Adressen abgelehnt (serverseitiger Request Forgery Guard).
-* Antwortkörper sind auf 2 MB begrenzt, im Speicher gehalten und nie auf die Festplatte geschrieben.
-* Der Text aus dem Netzwerk wird von Steuerzeichen, ANSI-Escape-Sequenzen und bidirektionalen Überschreibungen befreit, bevor er angezeigt wird, so dass eine Webseite das Terminal nicht manipulieren kann.
-* Archive werden mit Größenbegrenzungen (Zip Bomb Guard) gelesen.
-* API-Schlüssel kommen nur aus der Umgebung, werden nur an ihren eigenen Dienst gesendet und werden niemals protokolliert oder gespeichert.
-* Daten werden niemals von einem Mutterunternehmen, einer Tochtergesellschaft oder einer ähnlich benannten Einheit übernommen.
-
-`numb-form update` ist der einzige Befehl, der Programme herunterlädt. Es wird nur ausgeführt, wenn der Benutzer es eingibt, und niemals während eines Formularlaufs.
+`numb-form update` ist der einzige Befehl, der das Netzwerk kontaktiert. Es wird nur ausgeführt, wenn der Benutzer es eingibt, und niemals während eines Formularlaufs.
 
 * Downloads kommt nur von `github.com` und `*.githubusercontent.com` über HTTPS, einschließlich jeder Weiterleitung.
 * Das Archiv muss mit seiner Zeile im `SHA256SUMS` des Releases übereinstimmen; dies ist das gleiche Vertrauen wie die Installationsbefehle (die Sigstore-Signatur und die Build-Herkunft werden nicht vom Programm überprüft; überprüfen Sie sie von Hand, wie in [docs/install.md](install.md) beschrieben, falls erforderlich).
@@ -61,7 +46,7 @@ Die Suchanfragen gehen wiederum zu DuckDuckGo, Mojeek, Yahoo oder Brave Search. 
 
 **Keine Module von Drittanbietern Go.** Die Programme verwenden nur die Go-Standardbibliothek. `go.mod` hat keine `require`-Linien, und `scripts/check-deps.sh` schlägt den Build fehl, wenn eine Abhängigkeit, `go.sum` oder `vendor/` angezeigt wird oder wenn ein Nicht-Standard-Import verwendet wird. Da es nichts zum download gibt, gibt es nichts zu halluzinieren, typosquat oder zu manipulieren.
 
-**PGP und seine Ersatzstoffe. ** Authentizität wird mit den Mechanismen überprüft, die jedes Ökosystem tatsächlich unterstützt. PGP wird nicht verwendet, weil die beteiligten Ökosysteme nicht mehr darauf angewiesen sind (PyPI entfernte PGP-Signaturunterstützung im Jahr 2023).
+**PGP und seine Ersatzstoffe.** Authentizität wird mit den Mechanismen überprüft, die jedes Ökosystem tatsächlich unterstützt. PGP wird nicht verwendet, weil die beteiligten Ökosysteme nicht mehr darauf angewiesen sind (PyPI entfernte PGP-Signaturunterstützung im Jahr 2023).
 
 | Komponente | Überprüfung |
 | --- | --- |

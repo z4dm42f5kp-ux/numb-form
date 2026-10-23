@@ -15,41 +15,26 @@ numb-form maneja documentos de cliente, por lo que las reglas de diseño son est
 * **numb-form** only ever adds: a new folder per new company, with one filled form in it. It never changes or deletes an existing file or folder, and it removes only folders it created itself in the same run (on rejection or error).
 * Con `mode = review`, la carpeta de trabajo real no está escrita en absoluto: todo el árbol es copiado a Downloads primero y cada cambio se hace en la copia.
 * **numb-commit** (review mode) only adds new folders. It never overwrites or deletes, refuses folders that appeared in the meantime, copies to a temporary name, verifies every file with SHA-256 and then renames.
-* La hoja de cálculo en `3. Übersichten` se abre sólo lectura y nunca se escribe. Su suma de comprobación SHA-256 se compara antes de la copia, después de la copia y al final de la carrera; una diferencia para la ejecución.
+* numb-form y numb-commit abren la hoja de cálculo en `3. Übersichten` solo lectura y nunca la escriben. Su suma de comprobación SHA-256 se compara antes de la copia, después de la copia y al final de la carrera; una diferencia para la ejecución.
+* **numb-date** es el único programa que escribe la hoja de cálculo, y sólo `.xlsx` y `.xlsm`. Escribe solamente células vacías o libres de dígitos de la columna *Report created*, después de que el usuario acepte la lista de fechas. Las células se introducen en el XML de la hoja, mantienen su propio estilo y no tienen nuevo formato; cada otra parte del libro de trabajo es copiado byte para byte, y las células con fórmulas se quedan solas. Antes de escribir compara cada celda de cada hoja del nuevo libro de trabajo con el original: cualquier otra cosa que difiere lo detiene. SHA-256 guarda cada paso: el archivo todavía debe tener el chequesum que tenía cuando se leía, la copia temporal al lado debe coincidir con el nuevo libro de trabajo antes de que se renombra sobre el archivo, y el archivo debe coincidir después. El original se guarda en la carpeta de registro hasta que el usuario acepta el resultado leído de nuevo del disco; *undo* lo restaura, comprobado con SHA-256. Se niega a funcionar mientras Excel o LibreOffice tiene el archivo abierto. Las formas sólo se leen.
 * Los documentos no son reserializados. El XML solo se escanea para los offsets de byte y los valores se introducen en los bytes originales; todas las otras partes del `.docx` son copiadas por byte para byte. Después de cada llenado el resultado se analiza de nuevo y se compara con el párrafo de plantilla por párrafo. Los valores son compatibles con XML y no se admiten caracteres en XML. Se rechazan las plantillas con macros.
 * Nunca se añade ningún formato. Los valores se unen a la propia edición de texto de la etiqueta, o una copia de las propiedades existentes de esa carrera cuando la etiqueta es seguida por una pestaña.
-* Cada documento se lee de nuevo del disco después de escribir. Con `confirm = each` (por defecto) una persona lo ve y lo acepta, y los programas se niegan a funcionar sin un terminal interactivo. Con `confirm = none` el read-back debe igualar exactamente los valores previstos, los partidos cercanos al nombre de carpeta nunca se deciden automáticamente, y sólo se utilizan las fuentes y el nivel de confianza en la configuración.
-* Una carrera se detiene seguro después de 25 minutos. Escribe a la mayoría de 100 MB de documentos además de la copia, y no deja ningún caché o archivos temporales: los datos de red se quedan en memoria, los archivos temporales se renombran o eliminan, y los convertidores se ejecutan en una carpeta temporal privada con un perfil de oficina desechable, eliminados después.
+* Cada documento se lee de nuevo del disco después de escribir. Una persona lo ve y lo acepta, y los programas se niegan a funcionar sin un terminal interactivo.
+* Una carrera no tiene límite de tiempo a menos que `timeout` establezca uno; Ctrl+C o el límite lo detiene con seguridad. Escribe a la mayoría de 100 MB de documentos además de la copia, y no deja ningún caché o archivos temporales: los archivos temporales son renombrados o eliminados, y los convertidores se ejecutan en una carpeta temporal privada con un perfil de oficina desechable, eliminados después.
 
 ## Configuración y formatos
 
 * El analizador de configuración rechaza claves desconocidas y valores inválidos.
 * Las claves que ensanchan lo que numb-form acepta (`legacy_formats`) se honran sólo en el archivo del sistema. En Unix ese archivo es ignorado a menos que pertenezca a root y no es obra de grupo u otros; en Windows vive bajo Archivos del programa.
-* Los formatos binarios Legacy (.doc, .xls) están apagados por defecto, y las carreras que los usan siempre están completamente fuera de línea. El lector de .xls (archivo completo y BIFF8) es el propio numb-form controla cada offset y cadena, y se fusiona continuamente.
+* Los formatos binarios Legacy (.doc, .xls) están apagados por defecto. El lector de .xls (archivo completo y BIFF8) es el propio numb-form controla cada offset y cadena, y se fusiona continuamente.
 * .doc, .pages y .numbers son convertidos por software de oficina ya en el equipo (LibreOffice, Apache OpenOffice, Apple Pages o Numbers), con argumentos fijos; nombres de archivos se transmiten como argumentos, nunca como texto de script. Escribir .pages es experimental y apagado por defecto.
 * Se rechazan las plantillas con macros; se leen hojas de cálculo (.xlsm) macróficas para valores celulares solamente.
 
 ## Red
 
-Los buscadores en línea envían sólo nombres de empresa y números oficiales impresos en el propio sitio web de la empresa:
+Una ejecución de formularios no hace conexiones de red. Los nombres de las empresas, direcciones y representantes nunca salen del ordenador.
 
-* nombre de la empresa a la GLEIF API, Wikidata y DuckDuckGo (con palabras como `impressum` o `site:boe.es`), y a UK Companies House sólo cuando se establece una llave gratuita;
-* Números de IVA de la UE a VIES de la UE, y números de CNPJ brasileños a BrasilAPI;
-* Solicitudes de página ordinarias a la página web de la empresa (encontradas automáticamente, o escritas por el usuario) y a las páginas de consulta gubernamentales (BORME, Portal da Justiça, Boletín Oficial, Sunbiz, Companies House) encontradas por búsqueda.
-
-Nada de la hoja de cálculo aparte del nombre de la empresa es enviado, y nada sobre la persona que procesa la forma.
-
-Las búsquedas van a DuckDuckGo, Mojeek, Yahoo o Brave Search a su vez. Las páginas del directorio Company-data encontradas por búsqueda se leen como cualquier página web (en la mayoría de tres por empresa), y OpenStreetMap's Nominatim se pide una vez por el nombre de la empresa cuando no se encontró dirección. Cuando Google Chrome (o Chromium o Edge) se instala, se inicia sin cabeza para sitios web construidos por script y se niegan las búsquedas: con banderas fijas, sin extensiones, un nuevo perfil vacío en la carpeta temporal que se elimina justo después (nunca el perfil del usuario), HTTPS sólo direcciones, un navegador a la vez, a la mayoría de 40 segundos y 4 MB por página. `browser = none` lo apaga. `search = none` deja de buscar; `-offline` o `online = no` no envía nada en absoluto. Las búsquedas están separadas unos segundos y pausan por un minuto cuando DuckDuckGo pide un cheque humano.
-
-* HTTPS sólo, TLS 1.2 o posterior, a la mayoría de cinco HTTPS redirige.
-* Sin un proxy, se rechazan las conexiones con el bucleback, las direcciones privadas, locales de enlace y multicast (solicitud de guardia de falsificación del lado del servidor).
-* Los cuerpos de respuesta están tapados a 2 MB, mantenidos en memoria y nunca escritos en disco.
-* El texto de la red está despojado de caracteres de control, secuencias de escape ANSI y anulaciones bidireccionales antes de que se muestre, por lo que una página web no puede manipular el terminal.
-* Los archivos se leen con límites de tamaño (guardiente de bomba de zip).
-* Las claves de API vienen sólo del medio ambiente, se envían sólo a su propio servicio, y nunca se registran o almacenan.
-* Los datos nunca se toman de una entidad madre, subsidiaria o similarmente nombrada.
-
-`numb-form update` es el único comando que descarga programas. Se ejecuta sólo cuando el usuario lo escribe, y nunca durante una ejecución de formularios.
+`numb-form update` es el único comando que contacta a la red. Se ejecuta sólo cuando el usuario lo escribe, y nunca durante una ejecución de formularios.
 
 * Downloads viene sólo de `github.com` y `*.githubusercontent.com`, sobre HTTPS, incluyendo cada redireccion.
 * El archivo debe coincidir con su línea en el `SHA256SUMS` de la versión; esta es la misma confianza que los comandos de instalación (la firma Sigstore y la procedencia de la construcción no son revisados por el programa; compruebe a mano como se describe en [docs/install.md](install.md) si es necesario).
@@ -61,7 +46,7 @@ Las búsquedas van a DuckDuckGo, Mojeek, Yahoo o Brave Search a su vez. Las pág
 
 **No hay módulos Go de terceros.** Los programas utilizan sólo la biblioteca estándar Go. `go.mod` no tiene líneas `require`, y `scripts/check-deps.sh` falla la construcción si aparece una dependencia, `go.sum` o `vendor/`, o si se utiliza cualquier importación no estándar. Con nada que descargar, no hay nada que alucinar, tiposquat o manipular.
 
-**PGP y sus reemplazos. ** La autenticidad se verifica con los mecanismos que cada ecosistema realmente apoya. PGP no se utiliza porque los ecosistemas involucrados ya no dependen de él (PyPI removió el soporte de firma PGP en 2023).
+**PGP and its replacements.** Authenticity is checked with the mechanisms each ecosystem actually supports. PGP is not used because the ecosystems involved no longer rely on it (PyPI removed PGP signature support in 2023).
 
 | Componente | Verificación |
 | --- | --- |

@@ -30,7 +30,7 @@ numb-form funciona sin un archivo de configuración; los defectos a continuació
 
 3. Un archivo dado con `-f file`.
 
-Cada línea es `key = value`. Las líneas que comienzan con `#` son comentarios, y ` #` comienza un comentario después de un valor. Los valores se pueden citar con `"`. Las claves desconocidas y los valores inválidos son errores, por lo que los errores de escritura se encuentran inmediatamente.
+Cada línea es `key = value`. Las líneas que comienzan con `#` son comentarios, y ` #` comienza un comentario después de un valor. Los valores se pueden citar con `"`. Las claves desconocidas y los valores inválidos son errores, por lo que los errores de escritura se encuentran inmediatamente. Las claves de versiones anteriores (`confirm`, `address_sources`, `address_fallback`, `reps_sources`, `reps_min_trust`, `reps_fallback`, `caution`, `website`, `search`, `browser`, `guess_domains`) son ignoradas con una nota.
 
 Guardar un solo ajuste sin editar el archivo:
 
@@ -49,16 +49,13 @@ numb-form config init && numb-form config
 ### Flujo de trabajo
 
 `mode = direct` | `review`
-: **direct** (por defecto): carpetas y formas se crean en la carpeta de trabajo en sí, después de cada confirmación. **review**: toda la carpeta de trabajo se copia por primera vez a Downloads, todo el trabajo sucede en la copia, y `numb-commit` copia las carpetas aceptadas de vuelta.
-
-`confirm = each` | `none`
-: **each** (por defecto): cada valor y cada documento se muestra y debe ser aceptado. **none**: funciona sin preguntas; cada documento debe leer exactamente como está escrito. Cerca de los partidos de nombre de carpeta nunca se deciden automáticamente: la empresa se salta y se reporta como *needs review*. Requiere `person`.
+: **direct** (default): carpetas y formas se crean en la carpeta de trabajo en sí, después de cada confirmación. **review**: toda la carpeta de trabajo se copia por primera vez a Downloads, todo el trabajo sucede en la copia, y `numb-commit` copia las carpetas aceptadas de vuelta.
 
 `online = yes` | `no`
-: Busque registros y sitios web (por defecto sí).
+: Deje que `numb-form update` contacte con GitHub (por defecto sí). Las empresas nunca se buscan en línea.
 
-`timeout = 25m`
-: Deténgase con seguridad después de tanto tiempo; en la mayoría de `25m`.
+`timeout = none`
+: Deténgase con seguridad después de este largo, por ejemplo `30m` o `2h`; **none** (por defecto) no significa límite de tiempo.
 
 `max_write_mb = 100`
 : La mayoría de los megabytes de documentos que se ejecutan pueden escribir (1-100).
@@ -91,40 +88,6 @@ numb-form config init && numb-form config
 `fuzzy_threshold = 0.85`
 : Cómo similar debe ser un nombre de carpeta para ser ofrecido como un partido (0.5-1).
 
-### Fuentes
-
-Sources are `companies-house`, `vies`, `brasil-cnpj`, `official` (government gazettes and registers found by search), `gleif`, `website`, `directory` (company-data websites that republish register data, such as northdata, Moneyhouse, Racius or OpenCorporates), `search` (web search snippets; search also finds the website), `osm` (OpenStreetMap, for an address) and `wikidata`. Lists are separated by spaces or commas; their order is the order of preference.
-
-`address_sources = companies-house vies brasil-cnpj official gleif website directory search osm wikidata`
-: Fuentes para *Headquarters / Address*.
-
-`address_fallback = ask` | `blank`
-: Cuando no se encuentra ninguna dirección. Con `confirm = none`, `ask` actúa como `blank`.
-
-`reps_sources = companies-house vies brasil-cnpj official gleif website directory search osm wikidata`
-: Fuentes para *Authorized Representatives*.
-
-`reps_min_trust = any` | `website` | `register`
-: Fuente de confianza mínima aceptada para los representantes: `register` acepta únicamente registros gubernamentales o regulatorios.
-
-`reps_fallback = no-reps-text` | `blank`
-: Cuando nadie se encuentra: el texto exacto no representativo, o en blanco.
-
-`caution = auto` | `always` | `never`
-: El texto de precaución. **auto**: sugerida para valores no confirmados por un registro (asked cuando `confirm = each`).
-
-`website = auto` | `ask` | `never`
-: El sitio web de la empresa leyó su aviso legal. **auto** (predeterminado): encontrado automáticamente y utilizado sólo si se llama la empresa. **ask**: escriba la dirección de cada empresa (Enter la encuentra automáticamente). **never**: no se lee ningún sitio web. Con `confirm = none`, `ask` actúa como `auto`. El valor más antiguo `wikidata` significa `auto`.
-
-`search = duckduckgo mojeek yahoo brave` | `none`
-: Motores de búsqueda web utilizados para encontrar sitios web, entradas gubernamentales y, como último recurso, representantes en resultado snippets, en orden de preferencia: cuando uno se niega, descansa por un minuto y el siguiente se pregunta. Sólo se envía el nombre de la empresa, con palabras como `impressum` o `site:boe.es`. **none** apaga la búsqueda; registros y direcciones conjeturadas todavía se utilizan.
-
-`browser = auto` Silencio `none` Silencio *pate*
-: El navegador comenzó invisiblemente (sin cabeza, sin ventana) para sitios web construidos con JavaScript y para buscar cuando cada motor se niega. **auto**: Google Chrome; sin él, cromo o Microsoft Edge. Un *path* nombra otro navegador basado en cromo. Cada inicio utiliza un nuevo perfil vacío que se elimina justo después.
-
-`guess_domains = yes` | `no`
-: También pruebe las direcciones construidas desde el nombre, como `foobar.de` o `foobar.com.br`, elegidas por los países de la forma legal.
-
 ### Formatos
 
 `soffice =`
@@ -137,22 +100,17 @@ Sources are `companies-house`, `vies`, `brasil-cnpj`, `official` (government gaz
 : EXPERIMENTAL, macOS solamente: guardar formularios llenos como `.pages` a través de Apple Pages.
 
 `legacy_formats = no`
-: SYSTEM FILE ONLY: permitir plantillas `.doc` y hojas de cálculo `.xls`. Corres que los usan siempre están fuera de línea.
+: SYSTEM FILE ONLY: permitir plantillas `.doc` y hojas de cálculo `.xls`.
 
 `legacy_output = docx` | `same`
 : Las formas llenas de una plantilla `.doc` son `.docx`, o `.doc` de nuevo.
 
 ## EXAMPLES
 
-Corrientes no enmendadas que aceptan solamente datos de registro:
+Guarda tu nombre para que no se le pregunte en cada carrera:
 
 ```
-confirm = none
 person = Max Muster
-address_sources = companies-house gleif
-reps_sources = companies-house gleif
-reps_min_trust = register
-caution = auto
 ```
 
 Su flujo de trabajo anterior, con una copia de revisión en Downloads:

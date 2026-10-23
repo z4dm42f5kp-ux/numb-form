@@ -4,7 +4,7 @@
 
 ## NAME
 
-**numb-form**, **numb-commit** — fill risk assessment forms
+**numb-form**, **numb-commit**, **numb-date** — fill risk assessment forms
 
 ## SYNOPSIS
 
@@ -12,10 +12,10 @@
 numb-form [-f conf] [-offline] [-root dir] [-downloads dir] [-timeout duration]
 numb-form [-f conf] check-template template [sample]
 numb-form [-f conf] config [init | set key value]
-numb-form keys
 numb-form [-f conf] update [stable | rolling | v1.2.3]
 numb-form rollback
 numb-commit [-f conf] [-run dir] [-downloads dir]
+numb-date [-f conf] [-root dir] [-timeout duration]
 ```
 
 ## DESCRIPTION
@@ -36,51 +36,40 @@ A run proceeds as follows:
 1. La plantilla se revisa con un llenado de ensayo de cada campo. La carrera se detiene si la sección A, o cualquier etiqueta que no sea *Commercial Registry Number*, no se puede encontrar o no está vacía.
 2. El nombre de la persona que procesa el formulario se toma de la configuración, o se escribe una vez.
 3. Con `mode = review`, toda la carpeta de trabajo se copia a `Downloads/numb-form-runs/<date>_<time>_<id>/` y todo después de este paso sucede en la copia. Con `mode = direct` (el predeterminado), la carpeta de trabajo en sí se utiliza y el registro va a la carpeta de estado por usuario.
-4. Los nombres de las empresas se leen desde la columna encabezada `Customer Name`, de arriba a abajo. Todas las demás columnas son ignoradas, incluyendo `Report created`. La hoja de cálculo nunca se escribe a; su suma de comprobación SHA-256 se revisa antes y después de la carrera.
-5. Para cada empresa, las carpetas en la carpeta de trabajo y todos sus subcarpetas son buscados. Los nombres son comparados ignorando caso, acentos y umlauts (ü = u = ue), puntuación y espacios. Un partido significa que la forma ya existe, y la compañía está saltada. Un partido cercano se muestra al usuario para confirmar (o, con `confirm = none`, reportado como *needs review* y saltado). Las carpetas con una forma legal diferente nunca coinciden: `Foo GmbH` y `Foo S.A.` son diferentes empresas.
-6. Para una nueva empresa, una carpeta llamada después de la creación de la empresa. La plantilla se copia en ella como `<template name> - <Company Name>.<ext>`, y la sección A se llena.
-7. El documento se lee de nuevo del disco y se muestra. El usuario lo acepta, edita un campo o lo rechaza; se elimina una carpeta rechazada. Con `confirm = none` el read-back debe igualar los valores exactamente.
+4. Los nombres de las empresas se leen desde la columna encabezada `Customer Name`, de arriba a abajo. Todas las demás columnas son ignoradas, incluyendo `Report created`. numb-form nunca escribe la hoja de cálculo; su suma de comprobación SHA-256 se revisa antes y después de la carrera.
+5. Para cada empresa, las carpetas en la carpeta de trabajo y todos sus subcarpetas son buscados. Los nombres son comparados ignorando caso, acentos y umlauts (ü = u = ue), puntuación y espacios. Un partido significa que la forma ya existe, y la compañía está saltada. Un partido cercano se muestra al usuario para confirmar. Las carpetas con una forma legal diferente nunca coinciden: `Foo GmbH` y `Foo S.A.` son diferentes empresas.
+6. Para una nueva empresa, el usuario escribe la dirección de la sede y los representantes autorizados. Todo lo demás está lleno sin preguntas.
+7. Una carpeta llamada después de la creación de la empresa. La plantilla se copia en ella como `<template name> - <Company Name>.<ext>`, y la sección A se llena.
+8. El documento se lee de nuevo del disco y se muestra. El usuario lo acepta, edita un campo o lo rechaza; se elimina una carpeta rechazada.
 
 Sólo se llenan las líneas de la sección A, *Information About the Contracting Party*. La sección B y todo lo que está fuera de la sección A quedan byte para byte sin cambios, y no se añade formato.
 
 | Campo | Valor |
 | --- | --- |
 | Name / Company Name of the Contracting Party | la hoja de cálculo literal |
-| Legal form | encontrado en el nombre, también antes de una filial o nota de país (`Foo GmbH (Wien)`), escrito como en el nombre con capitales convencionales (`GMBH` da `GmbH`); preguntado sólo cuando el nombre no tiene ninguno |
-| Headquarters / Address | elegido de los candidatos encontrados |
+| Legal form | found in the name: at the end, before a branch or country note (`Foo GmbH (Wien)`), before a city or country (`Foo SAS, Bogotá, Colombia`, `Foo S.A.C.I. Paraguay`), or first (`Ets Foo`); accents, dots and spaces may differ (`SOCIEDAD ANONIMA`, `S A`); written as in the name with conventional capitals (`GMBH` gives `GmbH`); asked only when the name has none |
+| Headquarters / Address | escrito por el usuario; Introduzca las hojas en blanco |
 | Commercial Registry Number | siempre `No commercial registry number was found online consult internal sources for further information`; puede ser reemplazado por el número con *edit* |
-| Authorized Representatives | `Full Name (Role 1, Role 2), Full Name (Role)`, roles en inglés |
+| Authorized Representatives | escrito por el usuario como `Full Name (Role 1, Role 2), Full Name (Role)`, roles en inglés; Enter escribe el texto no representativo a continuación, `-` deja en blanco |
 | Date of the evaluation | hoy, `date_format` (predeterminado `DD/MM/YYYY`) |
 | Person Processing the Form | desde la configuración o escribe al inicio |
 
-Todo es buscado en un pase por compañía, sin preguntas. Los candidatos proceden, en orden de autoridad:
+numb-form no hace ninguna búsqueda en línea para las empresas. Sólo `numb-form update` contacta con GitHub.
 
-1. government registers: UK Companies House (only with a free key); EU VIES, for an EU VAT number printed on the company's website (name and address; Germany confirms only that the number is valid); Receita Federal, for a Brazilian CNPJ printed on the website (address, administrators and directors), read through the free BrasilAPI mirror; government gazettes and registers found by searching their websites for the company: BORME (Spain), Portal da Justiça (Portugal), Boletín Oficial (Argentina), Sunbiz (Florida), Companies House pages (United Kingdom); which one depends on the countries the legal form points to;
-2. el registro GLEIF LEI (regulación de registro);
-3. el propio sitio web de la empresa: su aviso legal (Impressum, Aviso legal, Mentions légales, Aviso legal) primero, luego sobre, páginas de contacto y privacidad;
-4. community data, shown unverified with the caution text: company-data directories that republish register data (northdata, firmenwissen, Moneyhouse, Racius, Empresite, cnpj.biz, OpenCorporates, Dun & Bradstreet and similar; at most three pages per company), the snippets of web search results, OpenStreetMap (for an address) and Wikidata.
-
-Cuando los representantes confirmados por una fuente oficial, o una dirección de un registro o el sitio web de la empresa, siguen desaparecidos, numb-form ejecuta una búsqueda más para los representantes (con la palabra local, como *Geschäftsführer* o *representante legal*) y una para la dirección, y lee las páginas del directorio que encuentran. Una persona llamada por dos tipos diferentes de fuente (por ejemplo el sitio web de la empresa y un directorio) cuenta como verificada.
-
-El sitio web se encuentra automáticamente: desde Wikidata, desde un DuckDuckGo buscar el nombre exacto, y desde direcciones como `foobar.de` o `foobar.com.mx` construidas desde el nombre y los países de su forma legal. Un sitio se utiliza sólo si una de sus páginas llama a la empresa con su forma legal. En el aviso legal de un grupo que nombre varias empresas, sólo se lee la parte sobre la empresa.
-
-Las etiquetas son reconocidas en alemán, inglés, español, portugués, francés, italiano, holandés, polaco, checo, eslovaco y nórdico, en cualquier lugar de una línea, en tablas y a pie, y se traducen a roles de inglés. Se eliminan las etiquetas que nombran a otras personas (papel de supervisión, oficial de protección de datos, persona responsable de contenido, contacto, agente registrado) y personas que se fueron (*Ceses/Dimisiones*, *ehemalig*, *former*).
-
-Los números oficiales y las entradas de registro impresos en el sitio web (por ejemplo `HRB 12345` o `FN 123456 a`) se muestran antes de que el formulario esté escrito; el número se puede escribir en *Commercial Registry Number* con *edit*.
-
-La búsqueda utiliza motores sin llave a su vez: DuckDuckGo, luego Mojeek, Yahoo y Brave Search (`search` en la configuración). Cada uno se le pide a la mayoría de unas cuantas veces por compañía, a unos segundos de distancia. Un motor que se niega (un cheque humano, un límite de tarifas) descansa por un minuto y el siguiente se pregunta.
-
-Cuando Google Chrome se instala (o, sin ella, Chromium o Microsoft Edge), numb-form comienza invisiblemente, sin una ventana (sin cabeza), para dos cosas: leer sitios web de la empresa cuyo contenido está construido por JavaScript o que desvía programas, en la mayoría de tres páginas por sitio; y buscar cuando cada motor se niega. Cada inicio utiliza un nuevo perfil vacío en la carpeta temporal que se elimina justo después; el propio navegador del usuario, la historia y los registros nunca se utilizan. `browser = none` apaga esto.
-
-Las fuentes alimentan qué campo, la fuente menos confiable aceptada para los representantes y los inconvenientes se establecen en la configuración. Las personas y direcciones nunca son tomadas de una entidad madre, subsidiaria o similarmente nombrada. Los valores no verificados obtienen este texto exacto cuando `caution` lo dice:
-
-> Precaución: Este campo puede diferir de fuentes internas o ser inexacto debido a la insuficiente información en línea
-
-Cuando no se encuentra representante, el campo dice:
+Cuando los representantes quedan vacíos, el campo dice:
 
 > No se encontraron representantes en línea, consulte otras fuentes internas para obtener información más precisa
 
 **numb-commit** applies to review runs only. It copies the accepted folders of a run back into the real working folder. It only adds new folders, never overwrites or deletes anything, and refuses folders that appeared in the real tree in the meantime. Each folder is copied to a temporary name, verified with SHA-256 and then renamed. Documents edited during review are listed before the user confirms. Afterwards it offers to delete the review copy; the logs are kept.
+
+**numb-date** llena la columna de la hoja de cálculo. Se inicia como numb-form, en o por encima de la carpeta de trabajo, y encuentra la misma hoja de cálculo, que debe ser `.xlsx` o `.xlsm`.
+
+1. The company column is found by `header`, then by common names (`Customer Name`, `Customer`, `Company Name`, `Kunde`, `Cliente` and others, ignoring case); the date column in the same header row by `Report created AB`, `Report created`, `Report date`, `Created` and similar names, or any heading that mentions a report and its creation or date.
+2. Las filas cuya celda contiene un dígito se saltan: ya tienen una fecha.
+3. Para las otras filas, la carpeta de la empresa se encuentra como numb-form la encuentra (alrededor se piden cerillas). Los formularios `.docx`, `.odt`, `.fodt` o `.rtf` en la carpeta (y un nivel debajo) se leen, el formulario de evaluación del riesgo primero: el *Date of the evaluation* de la sección A, o, en los formularios establecidos de manera diferente, la fecha escrita después de una etiqueta de fecha. Se entienden fechas como `16/10/2026`, `16.10.2026`, `2026-10-16` y `16 October 2026`. Cuando no se encuentra ninguna fecha, el usuario lo escribe o salta la empresa.
+4. Las fechas se enumeran, escritas como `DD-MM-YYYY` después de que el usuario acceda, lea de nuevo del disco y se muestra; el usuario las acepta o deshacer la escritura.
+
+Sólo las células listadas cambian; vea [../SECURITY.md](SECURITY.md) para los cheques. Las formas sólo se leen. El archivo no debe abrirse en Excel o LibreOffice. El registro es `numb-date.log` en la carpeta de estado por usuario (o `log_dir`).
 
 ## COMMANDS
 
@@ -95,9 +84,6 @@ Cuando no se encuentra representante, el campo dice:
 
 `config set key value`
 : Guardar una configuración en el archivo de configuración por usuario, por ejemplo `numb-form config set person "Erika Mustermann"`. El valor se verifica antes de que se guarde.
-
-`keys`
-: Explica las claves de API gratuitas opcionales.
 
 `rollback`
 : Switch back to the version that the last `update` replaced. The version rolled back from is kept in its place, so a second `rollback` returns to it. Without a kept version, install a release by number instead: `numb-form update v0.1.1`.
@@ -114,7 +100,7 @@ Cuando no se encuentra representante, el campo dice:
 : Lea *file* después de los archivos de configuración del sistema y del usuario.
 
 `-offline`
-: Contacte sin fuente en línea.
+: Con `update`: negarse a contactar con GitHub.
 
 `-root dir`
 : Use *dir* como la carpeta de trabajo en lugar de detectarla.
@@ -123,7 +109,7 @@ Cuando no se encuentra representante, el campo dice:
 : Modo de revisión: ponga la copia en *dir*.
 
 `-timeout duration`
-: Parar con seguridad después de *duración*; en la mayoría de `25m`.
+: Stop safe after *duration*, for example `30m`; overrides a longer `timeout` in the settings. Sin ella no hay límite de tiempo.
 
 `-run dir`
 : (numb-commit) Envíe esta carpeta de ejecución en lugar de la más reciente sin compromiso.
@@ -139,11 +125,8 @@ Cuando no se encuentra representante, el campo dice:
 `NUMBFORM_DOWNLOADS`
 : Carpeta Downloads para utilizar, por ejemplo, un volumen montado en un contenedor.
 
-`NUMBFORM_COMPANIES_HOUSE_KEY`
-: Opcional gratuito UK Companies House API key. Nunca conectado o almacenado.
-
 `HTTPS_PROXY`, `NO_PROXY`
-: Ajustes proxy para búsquedas en línea.
+: Ajustes proxy para `numb-form update`.
 
 `TZ`
 : Zona horaria de la fecha de evaluación.
@@ -156,13 +139,16 @@ Cuando no se encuentra representante, el campo dice:
 `<log folder>/<run>/manifest.json`
 : Grabación legible a máquina de la carrera.
 
+`<log folder>/<run>_date/numb-date.log`
+: Registro de una carrera numbruna, con la SHA-256 de la hoja de cálculo antes y después.
+
 `Downloads/numb-form-runs/<run>/<working folder>/`
 : Modo de revisión: la copia.
 
 `Downloads/numb-form-runs/<run>/numb-commit.log`
 : Modo de revisión: registro del commit.
 
-No hay caché ni archivos temporales detrás. Las respuestas de la red sólo se realizan en memoria, los documentos se escriben a través de un archivo temporal que se renombra o se elimina, y los convertidores trabajan en una carpeta temporal privada que se elimina.
+No hay caché ni archivos temporales detrás. Los documentos se escriben a través de un archivo temporal que se renombra o elimina, y los convertidores trabajan en una carpeta temporal privada que se elimina.
 
 ## EXIT STATUS
 
@@ -189,12 +175,6 @@ cd /path/to/GWG && numb-form -f review.conf && numb-commit
 ```
 
 donde `review.conf` contiene `mode = review`.
-
-Corre sin acceso a la red:
-
-```
-cd /path/to/GWG && numb-form -offline
-```
 
 ## SEE ALSO
 

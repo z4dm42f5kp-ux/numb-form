@@ -73,8 +73,4 @@ kubectl apply -f k8s/pvc.yaml && kubectl apply -f k8s/numb-form-pod.yaml && kube
 kubectl apply -f k8s/numb-commit-pod.yaml && kubectl wait --for=condition=Ready pod/numb-commit --timeout=120s && kubectl attach -it numb-commit && kubectl delete pod numb-commit
 ```
 
-Wenn die erste Aufforderung vor dem Anfügen gedruckt wurde, drücken Sie Enter, um sie erneut zu sehen. Die Pods verwenden ein schreibgeschütztes Root-Dateisystem, lassen alle Funktionen fallen, montieren kein Service-Account-Token und stoppen nach 30 Minuten. Für den optionalen Companies House-Schlüssel müssen Sie den `env`-Eintrag unkommentieren und das Geheimnis erstellen:
-
-```
-kubectl create secret generic numb-form --from-literal=companies-house='your-free-key'
-```
+Wenn die erste Aufforderung vor dem Anfügen gedruckt wurde, drücken Sie Enter, um sie erneut zu sehen. Die Pods verwenden ein schreibgeschütztes Root-Dateisystem, lassen alle Funktionen fallen, montieren kein Service-Account-Token und stoppen nach 30 Minuten.

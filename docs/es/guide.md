@@ -21,7 +21,7 @@ numb-form pasa por la lista de Excel de arriba a abajo. Para cada empresa que a�
 
 1. crea una carpeta con el nombre de la empresa,
 2. pone una copia del formulario en él, llamado `Appendix A - Risk Assesment - <company>.docx`,
-3. rellena la parte A del formulario (nombre, forma legal, dirección, representantes, fecha y nombre),
+3. llena la parte A del formulario: el nombre, la forma legal, la sentencia del registro, la fecha y su nombre por sí mismo, y la dirección y los representantes que escriba,
 4. te muestra lo que escribió y espera tu OK.
 
 Las empresas que ya tienen una carpeta se saltan. La lista de Excel nunca se cambia. La parte B de la forma nunca se toca.
@@ -73,27 +73,25 @@ Muchas preguntas muestran una sugerencia entre corchetes, como `[GmbH]` o `[y/N]
 
 Cada empresa comienza con una línea como `[3/11] Foo GmbH  (Sheet1!C5)`: la tercera de once empresas, y la célula de la que fue tomado.
 
-A continuación, numb-form mira a la empresa por sí misma, que lleva unos segundos: registros oficiales, el propio sitio web de la empresa (lo encuentra solo), números oficiales impresos allí, gacetas gubernamentales y una búsqueda web. Muestra el sitio web que utilizó, cualquier registro impreso allí (por ejemplo `HRB 12345`), y cuántas direcciones y representantes encontró. La forma legal se toma del nombre de la empresa sin preguntar. *Commercial Registry Number* siempre recibe la frase "No se encontró ningún número de registro comercial en línea consulta fuentes internas para más información"; para poner el número en su lugar, seleccione `e` (edita) y campo 4 al final.
+La forma legal se toma del nombre de la empresa sin preguntar. numb-form le pide la dirección y los representantes; no busca nada en línea. *Commercial Registry Number* siempre obtiene la frase "No se encontró ningún número de registro comercial en línea consulta fuentes internas para más información"; para poner el número en su lugar, seleccione `e` (edita) y campo 4 al final.
 
 | numb-form pregunta | Lo que significa | Lo que normalmente haces |
 | --- | --- | --- |
 | `Full name of the person processing the form:` | Sólo preguntaba si saltaste el paso 2 | Escriba su nombre; Ingrese en la siguiente pregunta lo utiliza para cada forma en esta carrera |
 | `Is the existing folder "Foo Gmbh" this company's folder? (...) [y/N]` | Una carpeta con un nombre muy similar ya existe | `y` si es la misma empresa (nada se crea), de lo contrario Enter |
-| `Legal form (Enter = keep, '-' = blank) [GmbH]` | Se le preguntó solamente cuando el nombre de la empresa no tiene forma legal como `GmbH` o `S.A.`; la sugerencia viene del registro o sitio web | Entra |
-| `Headquarters / Address candidates` y una lista numerada, entonces `Choose a number, 'm' to type it, 'b' to leave blank [1]` | Discursos encontrados, los registros oficiales más fiables primero; cada uno muestra su fuente | Entrar toma el número 1; escriba otro número; `m` para escribir la dirección usted mismo; `b` para dejarlo en blanco |
-| `Address (Enter = keep, or correct it) [...]` | La dirección que elegiste, para corregir un typo | Introduzca o escriba la dirección corregida |
-| `Add the caution text to the address (not fully verified)? [y/N]` | Añade la frase "Caution: Este campo puede diferir de fuentes internas..." La misma pregunta puede plantearse a los representantes | Press Enter: la sugerencia ya depende de lo fiable que sea la fuente |
-| `Authorized representative candidates` y una lista numerada, entonces `Numbers to include (e.g. 1,3), 'a' all, 'm' type them, 'n' none found [1,2]` | Personas encontradas, cada marcada `[verified]` (registro oficial) o `[unverified]` | Entrar toma los números verificados; números de tipo como `1,3`; `a` para todos; `m` para escribirlos usted mismo; `n` escribe "No se encontraron representantes en línea ..." |
-| `Is this correct? [a]ccept, [e]dit a field, [r]eject:` | El formulario ha sido escrito; numb-form muestra la parte A como el formulario ahora lee | Tipo `a` si es correcto; `e` para cambiar una línea; `r` para tirarla. No hay defecto aquí: debe escribir una carta |
+| `Legal form (the name has none; Enter = blank):` | Se le preguntó solamente cuando el nombre de la empresa no tiene forma legal como `GmbH` o `S.A.` | Escribelo o entra para dejarlo en blanco |
+| `Headquarters / Address (one line, Enter = blank):` | Dirección de la empresa, de sus propias fuentes | Escribe o pega en una línea y pulsa Enter |
+| `Representatives (Enter = "No representatives were found…", '-' = blank):` | La gente que puede firmar para la empresa, escribió `Full Name (Role 1, Role 2), Full Name (Role)` con los roles en inglés | Escribe o pega; Entra solo escribe "No se encontraron representantes en línea ..."; `-` deja el campo en blanco |
+| `Is this correct? [a]ccept, [e]dit a field, [r]eject:` | El formulario ha sido escrito; numb-form muestra la parte A como el formulario ahora lee | Tipo `a` si es correcto; `e` para cambiar una línea; `r` para tirarlo lejos. No hay defecto aquí: debe escribir una carta |
 
-Al final numb-form muestra un resumen, por ejemplo `Done: 3 accepted, 8 already had a folder, 0 rejected, 0 need review, 0 skipped, 0 errors.` y dónde está el registro.
+Al final numb-form muestra un resumen, por ejemplo `Done: 3 accepted, 8 already had a folder, 0 rejected, 0 skipped, 0 errors.` y dónde está el registro.
 
 You can stop at any time with **Ctrl+C**. Forms you already accepted stay; the one you were working on is removed.
 
 ## 5. Lo que cambió en la unidad
 
 * Una nueva carpeta por compañía aceptada, con una forma llena en ella.
-* Nada más. Ningún archivo o carpeta existente se cambia o se elimina, y la lista de Excel nunca se cambia.
+* Nada más. Ningún archivo o carpeta existente se cambia o se elimina, y la lista de Excel nunca se cambia por numb-form (ver paso 7 para numb-date).
 * Una forma rechazada no deja nada atrás.
 
 Para deshacer una forma aceptada, eliminar su carpeta de empresa.
@@ -109,6 +107,30 @@ numb-form check-template "Appendix A - Risk Assesment.docx" "$env:USERPROFILE\De
 ```
 
 Lee la plantilla sin cambiarla y guarda un ejemplo lleno en el escritorio. Abra `sample.docx` y compruebe que los valores están en los lugares correctos. Suprimirlo después.
+
+## 7. Llenar las fechas del informe (después de numb-form)
+
+La lista de Excel tiene una columna como *Report created AB*. `numb-date` te lo llena. En la misma ventana PowerShell en GWG, escriba:
+
+```
+numb-date
+```
+
+Pasa por la lista. Las empresas cuya celda *Report created* ya contiene una fecha se saltan. Para los demás abre el formulario de la empresa (sólo para leerlo), toma el *Date of the evaluation* y las listas, por ejemplo:
+
+```
+Dates to write into Kundenliste.xlsx (column "Report created AB"):
+  F13    16-10-2026  Foo Ltda
+```
+
+| numb-date pide | ¿Qué haces? |
+| --- | --- |
+| `Is the folder "Fooo Inc" this company's folder? (...) [y/N]` | `y` si es la misma empresa, de lo contrario Enter |
+| `Date (DD-MM-YYYY, Enter = skip):` | El formulario no tiene fecha legible: escribirlo, o Entrar para saltar la empresa |
+| `Write these 1 date(s)? Nothing else in the spreadsheet changes. [y/N]` | `y` para escribirlos; Entrar no escribe nada |
+| `Is this correct? [a]ccept, [u]ndo:` | numb-date muestra las células como el archivo ahora lee; `a` para mantenerlas, `u` para poner el archivo exactamente como era |
+
+**Cerrar la lista de Excel primero. ** numb-date se detiene si el archivo está abierto. Sólo las células *Report created* cambian: ninguna otra célula, ningún formato.
 
 ## ¿Prefieres revisar todo antes de aterrizar en GWG?
 
@@ -136,7 +158,7 @@ Se descarga la versión, se comprueba, reemplaza el programa e imprime la nueva 
 
 Versiones 0.1.1 y mayores no tienen `numb-form update`. Para aquellos, o si `numb-form update` no puede conectarse, use una de las dos líneas siguientes. No escriba ellos: Abra esta página en su navegador, haga clic en el icono de copia en el borde derecho de la caja gris, y haga clic con el botón derecho en la ventana PowerShell para pegar. Cierre cada ventana numb-form primero.
 
-**Stable version** (la nueva versión publicada; use esto para el trabajo real):
+**Stable version** (el nuevo lanzamiento publicado; utilizar esto para el trabajo real):
 
 ```
 & { $ErrorActionPreference = 'Stop'; if (Get-Process numb-form, numb-commit -ErrorAction SilentlyContinue) { throw 'Close every numb-form window first, then run this again' }; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $u = 'https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download'; $z = 'numb-form_windows_amd64.zip'; $d = Join-Path $env:LOCALAPPDATA 'Programs\numb-form'; New-Item -ItemType Directory -Force $d | Out-Null; Push-Location $d; try { Invoke-WebRequest -UseBasicParsing "$u/$z" -OutFile $z; Invoke-WebRequest -UseBasicParsing "$u/SHA256SUMS" -OutFile SHA256SUMS; $h = (Get-FileHash $z -Algorithm SHA256).Hash.ToLower(); if (-not (Select-String -Path SHA256SUMS -SimpleMatch "$h  $z" -Quiet)) { throw 'CHECKSUM MISMATCH' }; Remove-Item -Force -ErrorAction SilentlyContinue numb-form.exe, numb-commit.exe; Expand-Archive -Force $z -DestinationPath $d } finally { Remove-Item -ErrorAction SilentlyContinue $z, SHA256SUMS; Pop-Location }; $p = [Environment]::GetEnvironmentVariable('Path', 'User'); if (-not $p) { $p = '' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';') + ';' + $d).TrimStart(';'), 'User') }; & (Join-Path $d 'numb-form.exe') -version; 'OK, reinstalled. Your settings are kept. Open a new PowerShell window' }
@@ -178,8 +200,8 @@ Escriba `numb-form man` para leer todo en la ventana azul, una pantalla a la vez
 **`no sheet has a "Customer Name" header cell`**
 : numb-form busca el encabezado `Customer Name` y toma los nombres de abajo. El mensaje enumera los encabezados que encontró. Si su lista usa otro título, por ejemplo `Firmenname`, guárdalo una vez con `numb-form config set header "Firmenname"`. Versiones 0.1.1 y búsqueda más antigua para `Company Name` en su lugar; allí, ejecutar `numb-form config set header "Customer Name"` una vez.
 
-**`Time limit of 25m0s reached`**
-: Una carrera se detiene después de 25 minutos por seguridad. Comience de nuevo; las empresas ya hechas son saltadas.
+**`Time limit of 30m0s reached`**
+: Se estableció un límite de tiempo con `timeout` en la configuración o con `-timeout`; no hay ninguno por defecto. Comience de nuevo; las empresas ya hechas son saltadas.
 
 **Version 0.1.0 does not start inside GWG**
 : Actualizar (ver [Reinstalar o actualizar](#reinstall-or-update)), o utilizar `numb-form -root "H:\GWG"`.

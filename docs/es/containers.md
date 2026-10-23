@@ -73,8 +73,4 @@ En modo de revisión, revise la copia en el volumen `numb-form-downloads`, y lue
 kubectl apply -f k8s/numb-commit-pod.yaml && kubectl wait --for=condition=Ready pod/numb-commit --timeout=120s && kubectl attach -it numb-commit && kubectl delete pod numb-commit
 ```
 
-Si el primer aviso fue impreso antes de adjuntar, presione Enter para verlo de nuevo. Las cápsulas utilizan un sistema de archivos raíz de sólo lectura, bajan todas las capacidades, montan sin cuenta de servicio token y paran después de 30 minutos. Para la tecla Companies House opcional, descomponga la entrada `env` y cree el secreto:
-
-```
-kubectl create secret generic numb-form --from-literal=companies-house='your-free-key'
-```
+Si el primer aviso fue impreso antes de adjuntar, presione Enter para verlo de nuevo. Las cápsulas utilizan un sistema de archivos raíz de sólo lectura, bajan todas las capacidades, montan sin cuenta de servicio token y paran después de 30 minutos.
