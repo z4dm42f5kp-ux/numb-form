@@ -8,6 +8,12 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.7.2
+
+* Releases: after each stable release, and daily, the install-docs
+  workflow checks the newest release's Sigstore signature, pins it in
+  `scripts/install/pins.txt` and proposes the change as a pull request.
+
 ## v1.7.1
 
 * `numb-form man` no longer shows comment lines of the documentation.

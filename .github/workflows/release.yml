@@ -116,3 +116,18 @@ jobs:
       - name: Remove build output
         if: always()
         run: rm -rf dist
+
+  install-docs:
+    # The install commands in the documentation follow every stable
+    # release (install-docs.yml); a release made with the workflow token
+    # starts no workflow by itself.
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Propose the new install commands
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: gh workflow run install-docs.yml --repo "$REPO" --ref main
