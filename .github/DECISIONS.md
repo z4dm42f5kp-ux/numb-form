@@ -199,3 +199,13 @@ It matches numb-form: the legal form in its conventional casing
 texts when nothing is found.
 The assistant writes no em dashes, en dashes or semicolons.
 "innacurate" in the caution became "inaccurate".
+
+## Documentation is written down like the BSDs
+
+The manual is part of the program, as on OpenBSD and FreeBSD: a change
+to what a person sees updates its manual page in the same pull request,
+and `CHANGES.md` (FreeBSD's RELNOTES and UPDATING) says what changed and
+what users must do.
+Tests check what a program can: every flag and configuration key is
+documented and every link resolves.
+
