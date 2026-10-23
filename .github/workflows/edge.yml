@@ -42,6 +42,14 @@ jobs:
           go-version: stable
           check-latest: true
           cache: false
+      - name: Rolling must contain the newest stable release
+        run: |
+          tag=$(git tag --list 'v[0-9]*' --sort=-v:refname | head -n 1)
+          if [ -n "$tag" ] && ! git merge-base --is-ancestor "$tag" HEAD; then
+            echo "::error::stable release $tag is not part of main; rolling would be behind it. Merge it into main."
+            exit 1
+          fi
+          echo "main contains ${tag:-no stable release yet}"
       - name: Check, test and vulnerability scan
         run: |
           sh scripts/check-deps.sh
