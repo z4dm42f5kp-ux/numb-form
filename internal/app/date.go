@@ -156,13 +156,16 @@ func notOpen(path string) error {
 	dir, base := filepath.Dir(path), filepath.Base(path)
 	for _, lock := range []string{"~$" + base, ".~lock." + base + "#"} {
 		if _, err := os.Lstat(filepath.Join(dir, lock)); err == nil {
-			return fmt.Errorf("%s is open in Excel or LibreOffice; close it and start numb-date again", base)
+			return fmt.Errorf("%s is open in Excel or LibreOffice; close it and start again", base)
 		}
 	}
 	return nil
 }
 
-func (r *run) openDateLog(root string) error {
+func (r *run) openDateLog(root string) error { return r.openLog(root, "_date", DateLogName) }
+
+// openLog starts the log of a numb-date or numb-typo run in the log folder.
+func (r *run) openLog(root, suffix, name string) error {
 	dir := r.cfg.LogDir
 	if dir == "" {
 		var err error
@@ -170,7 +173,7 @@ func (r *run) openDateLog(root string) error {
 			return err
 		}
 	}
-	r.runDir = filepath.Join(dir, r.opt.Now().Format("2006-01-02_150405")+"_"+fsutil.RandHex(2)+"_date")
+	r.runDir = filepath.Join(dir, r.opt.Now().Format("2006-01-02_150405")+"_"+fsutil.RandHex(2)+suffix)
 	if fsutil.IsUnder(r.runDir, root) {
 		return fmt.Errorf("the log folder %s is inside the working folder; set log_dir elsewhere", dir)
 	}
@@ -178,17 +181,15 @@ func (r *run) openDateLog(root string) error {
 		return err
 	}
 	var err error
-	r.log, err = runlog.Open(filepath.Join(r.runDir, DateLogName))
+	r.log, err = runlog.Open(filepath.Join(r.runDir, name))
 	return err
 }
 
 // writeDates shows the plan, writes it after the user agrees, reads the
 // spreadsheet back and lets the user accept or undo.
 func (r *run) writeDates(path string, before []byte, have string, t *sheet.Table, plan []planned, counts map[string]int) error {
-	vals := map[string]string{}
 	r.ui.Printf("\nDates to write into %s (column %q):\n", filepath.Base(path), t.DateHeader)
 	for _, p := range plan {
-		vals[p.row.DateRef] = p.date
 		r.ui.Printf("  %-6s %s  %s\n", p.row.DateRef, p.date, ui.Safe(p.row.Name))
 	}
 	ok, err := r.ui.YesNo(fmt.Sprintf("\nWrite these %d date(s)? Nothing else in the spreadsheet changes.", len(plan)), false)
@@ -200,64 +201,14 @@ func (r *run) writeDates(path string, before []byte, have string, t *sheet.Table
 		r.logf("user declined writing %d dates", len(plan))
 		return nil
 	}
-	if err := notOpen(path); err != nil {
-		return err
-	}
-	after, err := sheet.SetText(before, t.Part, vals)
-	if err != nil {
-		return err
-	}
-	if err := sheet.CheckEdit(before, after, t.Sheet, vals); err != nil {
-		return fmt.Errorf("self-check failed, nothing was written: %w", err)
-	}
-	backup := filepath.Join(r.runDir, "before-"+filepath.Base(path))
-	if err := fsutil.WriteNew(backup, before); err != nil {
-		return fmt.Errorf("could not keep a copy of the original: %w", err)
-	}
-	if err := fsutil.ReplaceVerified(path, have, after); err != nil {
-		_ = os.Remove(backup)
-		return err
-	}
-	wrote := fsutil.SHA256Bytes(after)
-	r.logf("wrote %d dates: sha256 %s -> %s; original kept at %s", len(plan), have, wrote, backup)
+	var edits []cellEdit
 	for _, p := range plan {
-		r.logf("  %s %q = %s (%s)", p.row.DateRef, p.row.Name, p.date, p.from)
+		edits = append(edits, cellEdit{ref: p.row.DateRef, value: p.date, label: p.row.Name + ", " + p.from})
 	}
-
-	// Read the file back from disk and show what the cells now hold.
-	got, err := readSheetFile(path)
-	if err != nil {
+	accepted, err := r.writeCells(path, before, have, t.Sheet, t.Part, edits)
+	if err != nil || !accepted {
 		return err
 	}
-	nt, err := sheet.ReadTable(got, r.cfg.Header, r.cfg.IDHeader)
-	if err != nil {
-		return err
-	}
-	now := map[string]string{}
-	for _, row := range nt.Rows {
-		now[row.DateRef] = row.Date
-	}
-	r.ui.Printf("\nWritten. %s now reads:\n", filepath.Base(path))
-	for _, p := range plan {
-		r.ui.Printf("  %-6s %s  %s\n", p.row.DateRef, ui.Safe(now[p.row.DateRef]), ui.Safe(p.row.Name))
-	}
-	ch, err := r.ui.Choose("Is this correct? [a]ccept, [u]ndo: ", "au", 0)
-	if err != nil {
-		r.ui.Printf("\nThe dates were written; the original spreadsheet is kept at %s\n", backup)
-		return err
-	}
-	if ch == 'u' {
-		if err := fsutil.ReplaceVerified(path, wrote, before); err != nil {
-			r.ui.Printf("Could not undo: %v\nThe original spreadsheet is kept at %s\n", err, backup)
-			return err
-		}
-		_ = os.Remove(backup)
-		r.logf("undone: sha256 back to %s", have)
-		r.ui.Println("Undone: the spreadsheet is exactly as before (SHA-256 checked).")
-		return nil
-	}
-	_ = os.Remove(backup)
-	r.logf("accepted")
 	r.ui.Printf("\nDone: %d date(s) written, %d already had a date, %d skipped.\nLog: %s\n",
 		len(plan), counts["dated"], counts["skipped"], filepath.Join(r.runDir, DateLogName))
 	return nil

@@ -8,6 +8,17 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.6.1
+
+* numb-date: the check after writing lists each cell with the company
+  and where its date came from (the form, or `typed`), for example
+  `F3  16-10-2026  (Foo Ltd, typed)`.
+  The message for an open spreadsheet now reads `… is open in Excel or
+  LibreOffice; close it and start again`.
+* Internal: the checked spreadsheet writer of numb-date (self-check,
+  SHA-256, original kept until you accept, undo) is shared, so that a
+  later program can write other cells the same way.
+
 ## v1.6.0
 
 * numb-commit does not copy a new folder of a company the real folder
