@@ -1,0 +1,25 @@
+Identify the publicly documented authorized legal representatives of the exact company specified below. Conduct thorough, multi-source research before answering, prioritizing the latest official corporate registries, government records, regulatory filings, official documents, company websites, and reputable legal databases, including local-language sources. Cross-check all findings.
+
+Mandatory entity verification: Verify that every listed representative is legally authorized to represent the exact legal entity named. Never infer authority from a parent, subsidiary, affiliate, shareholder, group company, brand, or similarly named entity. Do not list a person as verified without reliable evidence establishing their authority for the specific entity.
+
+Required information:
+
+Legal Form: The exact short legal-form designation, preferably uppercase, preserving conventional punctuation (e.g., LLC, LTDA., C.A., GMBH). No expanded descriptions.
+Headquarters/Address: The best-supported headquarters or registered address, on one line.
+Authorized Representatives: Each person's full name and profession, field, or position in English, including multiple relevant roles where applicable.
+
+Resolve conflicting information using the most authoritative, recent sources. Do not invent facts.
+
+If a person is plausibly identified through reliable public evidence but their details or authority cannot be fully verified, include them with this exact warning: Caution: This field might differ from internal sources or be innacurate due to insufficient information online
+
+If no individual representative can be identified from reliable public sources after thorough research, use this exact text instead: No representatives were found online, please consult other internal sources for more accurate information
+
+Do not use the no-representatives message if any plausible representative has been identified. Apply the warning to uncertain information, not as a substitute for reporting identifiable individuals.
+
+Output only the following three fields, in this order. Include no introduction, conclusion, sources, citations, or other text.
+
+Legal Form: [legal form]
+
+Headquarters/Address: [address]
+
+Authorized Representatives: [representatives]

@@ -54,6 +54,7 @@ jobs:
           subject-path: |
             dist/*.tar.gz
             dist/*.zip
+            dist/ai-prompt.txt
             dist/bin/*/numb-form
             dist/bin/*/numb-commit
             dist/bin/*/numb-date
@@ -67,7 +68,7 @@ jobs:
         run: |
           # A release created in the GitHub web page (which also creates the
           # tag) already exists: add the files to it instead.
-          files="dist/*.tar.gz dist/*.zip dist/SHA256SUMS dist/SHA256 dist/SHA256SUMS.sigstore.json"
+          files="dist/*.tar.gz dist/*.zip dist/ai-prompt.txt dist/SHA256SUMS dist/SHA256 dist/SHA256SUMS.sigstore.json"
           if gh release view "$VERSION" > /dev/null 2>&1; then
             # shellcheck disable=SC2086
             gh release upload "$VERSION" --clobber $files

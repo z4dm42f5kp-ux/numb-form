@@ -19,6 +19,8 @@ It needs no technical knowledge.
 * Install: [docs/install.md](docs/install.md)
 * Use: [docs/usage.md](docs/usage.md)
 * Configure: [docs/configuration.md](docs/configuration.md)
+* Find the address and representatives with an AI assistant:
+  [docs/ai-prompt.md](docs/ai-prompt.md)
 * Office suites and formats: [docs/formats.md](docs/formats.md)
 * Containers: [docs/containers.md](docs/containers.md)
 * Security: [SECURITY.md](SECURITY.md)

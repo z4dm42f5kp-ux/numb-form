@@ -176,3 +176,13 @@ at once). Go and the pinned Go tools have no Dependabot support here:
 `updates.yml` checks them daily, proposes newer tools as a pull request,
 and, when a newer Go fixes a vulnerability in the newest release's
 binaries, proposes a patch release of the same code built with that Go.
+
+## The AI prompt is a separate download
+
+numb-form makes no online lookups, so the address and the
+representatives come from the person.
+The team finds them with an AI assistant and a fixed prompt.
+The prompt is kept in the repository (`docs/ai-prompt.txt`) and shipped
+with every release as its own file, checksummed in `SHA256SUMS`, so
+that everyone uses the same version.
+It is not built into the programs.
