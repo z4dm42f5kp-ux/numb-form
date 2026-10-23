@@ -29,13 +29,13 @@ git clone --depth 1 https://github.com/z4dm42f5kp-ux/numb-form.git && cd numb-fo
 
 ## Docker
 
-Unter Linux, macOS und den BSDs wurde innerhalb des Arbeitsordners (oder des Ordners darüber) begonnen:
+**Unix-like** (macOS, Linux, BSD) begann im Terminal im Arbeitsordner (oder im Ordner darüber):
 
 ```
 mkdir -p "$HOME/Downloads/numb-form-logs" && docker run --rm -it --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges -e TZ=Europe/Berlin -e XDG_STATE_HOME=/downloads/numb-form-logs -v "$PWD:/data" -v "$HOME/Downloads:/downloads" ghcr.io/z4dm42f5kp-ux/numb-form:latest
 ```
 
-Unter Windows mit Docker Desktop, in Windows PowerShell ersetzen `%cd%` mit `${PWD}` und `%USERPROFILE%` mit `$env:USERPROFILE`. In Command Prompt:
+**Windows** (10, 11) mit Docker Desktop, in Command Prompt (in PowerShell schreiben Sie `${PWD}` für `%cd%` und `$env:USERPROFILE` für `%USERPROFILE%`):
 
 ```
 docker run --rm -it --read-only --cap-drop ALL --security-opt no-new-privileges -e TZ=Europe/Berlin -e XDG_STATE_HOME=/downloads/numb-form-logs -v "%cd%:/data" -v "%USERPROFILE%\Downloads:/downloads" ghcr.io/z4dm42f5kp-ux/numb-form:latest
@@ -43,7 +43,7 @@ docker run --rm -it --read-only --cap-drop ALL --security-opt no-new-privileges 
 
 ## Podman
 
-Rootless; `--userns=keep-id` behält Ihren eigenen Dateibesitz und `:Z` benennt die Volumes auf SELinux-Systemen wie Fedora um:
+Rootless; `--userns=keep-id` behält Ihren eigenen Dateibesitz und `:Z` benennt die Volumes auf SELinux-Systemen wie Fedora neu. **Unix-like** (Linux, macOS, BSD), im Terminal:
 
 ```
 mkdir -p "$HOME/Downloads/numb-form-logs" && podman run --rm -it --userns=keep-id --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges -e TZ=Europe/Berlin -e XDG_STATE_HOME=/downloads/numb-form-logs -v "$PWD:/data:Z" -v "$HOME/Downloads:/downloads:Z" ghcr.io/z4dm42f5kp-ux/numb-form:latest
@@ -51,7 +51,7 @@ mkdir -p "$HOME/Downloads/numb-form-logs" && podman run --rm -it --userns=keep-i
 
 ## Überprüfungsmodus in einem Container
 
-Mounten Sie den Arbeitsordner read-only für den Lauf, read-write für den Commit und übergeben Sie `mode = review` in einer Konfigurationsdatei:
+Mounten Sie den Arbeitsordner Read-only für den Lauf, Read-Write für den Commit und übergeben Sie `mode = review` in einer Konfigurationsdatei. **Unix-like** (Linux, macOS, BSD), im Terminal:
 
 ```
 mkdir -p "$HOME/Downloads" && printf 'mode = review\n' > "$HOME/Downloads/review.conf" && docker run --rm -it --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges -e TZ=Europe/Berlin -v "$PWD:/data:ro" -v "$HOME/Downloads:/downloads" ghcr.io/z4dm42f5kp-ux/numb-form:latest -f /downloads/review.conf && docker run --rm -it --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges -v "$PWD:/data" -v "$HOME/Downloads:/downloads" --entrypoint /numb-commit ghcr.io/z4dm42f5kp-ux/numb-form:latest
