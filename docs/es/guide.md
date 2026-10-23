@@ -73,7 +73,7 @@ Muchas preguntas muestran una sugerencia entre corchetes, como `[GmbH]` o `[y/N]
 
 Cada empresa comienza con una línea como `[3/11] Foo GmbH  (Customer ID D1001, row 5)`: la tercera de once empresas, su número de cliente y su fila en la lista de Excel.
 
-La forma legal se toma del nombre de la empresa sin preguntar. numb-form le pide la dirección y los representantes; no busca nada en línea. *Commercial Registry Number* siempre obtiene la frase "No se encontró ningún número de registro comercial en línea consulta fuentes internas para más información"; para poner el número en su lugar, seleccione `e` (edita) y campo 4 al final.
+La forma legal se toma del nombre de la empresa sin preguntar. numb-form le pide la dirección y los representantes; no busca nada en línea. Para encontrarlos, dale a un asistente de AI [the AI prompt](ai-prompt.md) y el nombre de la empresa, y compruebe su respuesta contra sus fuentes internas. *Commercial Registry Number* siempre obtiene la frase "No se encontró ningún número de registro comercial en línea consulta fuentes internas para más información"; para poner el número en su lugar, seleccione `e` (edita) y campo 4 al final.
 
 | numb-form pregunta | Lo que significa | Lo que normalmente haces |
 | --- | --- | --- |

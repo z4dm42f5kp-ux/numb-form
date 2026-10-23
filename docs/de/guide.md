@@ -73,7 +73,7 @@ Viele Fragen zeigen einen Vorschlag in eckigen Klammern, wie `[GmbH]` oder `[y/N
 
 Jedes Unternehmen beginnt mit einer Zeile wie `[3/11] Foo GmbH  (Customer ID D1001, row 5)`: das dritte von elf Unternehmen, seine Kundennummer und seine Zeile in der Excel-Liste.
 
-Die Rechtsform wird dem Firmennamen entnommen, ohne zu fragen. numb-form fragt Sie dann nach der Adresse und den Vertretern; es sucht online nichts nach. *Commercial Registry Number* erhält immer den Satz "Keine kommerzielle Registrierungsnummer wurde online gefunden, konsultieren Sie interne Quellen für weitere Informationen"; um die Nummer stattdessen zu setzen, wählen Sie `e` (Bearbeitung) und Feld 4 am Ende.
+Die Rechtsform wird dem Firmennamen entnommen, ohne zu fragen. numb-form fragt Sie dann nach der Adresse und den Vertretern; es sucht online nichts nach. Um sie zu finden, geben Sie einem KI-Assistenten [ die AI prompt](ai-prompt.md) und den Namen des Unternehmens und überprüfen Sie die Antwort mit Ihren internen Quellen. *Commercial Registry Number* erhält immer den Satz "Keine kommerzielle Registrierungsnummer wurde online gefunden, konsultieren Sie interne Quellen für weitere Informationen"; um die Nummer stattdessen zu setzen, wählen Sie `e` (Bearbeitung) und Feld 4 am Ende.
 
 | numb-form fragt | Was es bedeutet | Was Sie normalerweise tun |
 | --- | --- | --- |
