@@ -8,6 +8,14 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.3.1
+
+* Documentation: numb-date has its own manual page,
+  [docs/numb-date.md](docs/numb-date.md), shown by
+  `numb-form man numb-date` (or `numb-form man date`).
+  It lists every question, the files it writes and what to do when
+  something goes wrong.
+
 ## v1.3.0
 
 * numb-form: Enter on an empty address writes "No address was found
