@@ -1,0 +1,107 @@
+name: linux
+
+# Linux compatibility, the heavy check: on Debian 13, Fedora 44, Arch
+# Linux, Gentoo, Void Linux, openSUSE Tumbleweed and Leap 16, Alpine
+# Linux, NixOS and Guix, it installs Go and the tools with the commands
+# of docs/install.md, runs the tests with the distribution's own Go as a
+# normal user, and runs the documented install commands (the pinned
+# release binary and the build from source). scripts/linux-check.sh does
+# the work.
+#
+# It runs for minor releases only: pull requests titled "vX.Y.0: ...".
+# Patch releases, pushes to main and the rolling build do not run it. It
+# also runs when the check itself changes, and by hand.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+  push:
+    branches: ["claude/**"]
+    paths:
+      - .github/workflows/linux.yml
+      - scripts/linux-check.sh
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: linux-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  distro:
+    # "vX.Y.0:" contains ".0:"; "vX.Y.Z:" with Z > 0 does not.
+    if: >-
+      github.event_name != 'pull_request' ||
+      (startsWith(github.event.pull_request.title, 'v') && contains(github.event.pull_request.title, '.0:'))
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { distro: debian, image: "debian:13" }
+          - { distro: fedora, image: "fedora:44" }
+          - { distro: arch, image: "archlinux:latest" }
+          - { distro: gentoo, image: "gentoo/stage3:latest" }
+          - { distro: void, image: "ghcr.io/void-linux/void-glibc-full:latest" }
+          - { distro: opensuse-tumbleweed, image: "opensuse/tumbleweed:latest" }
+          - { distro: opensuse-leap, image: "opensuse/leap:16.0" }
+          - { distro: alpine, image: "alpine:latest" }
+          - { distro: nixos, image: "nixos/nix:latest" }
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Go and the tools as documented (root)
+        env:
+          DISTRO: ${{ matrix.distro }}
+          IMAGE: ${{ matrix.image }}
+        run: |
+          docker run --name prep -v "$PWD:/src:ro" "$IMAGE" sh /src/scripts/linux-check.sh prepare "$DISTRO"
+          docker commit prep numb-check > /dev/null
+          docker rm prep > /dev/null
+      - name: Tests with the distribution's Go
+        env:
+          DISTRO: ${{ matrix.distro }}
+        run: |
+          # As a normal user, as people run it; Nix's store belongs to root.
+          user="--user 1000:1000"
+          [ "$DISTRO" = nixos ] && user=""
+          # shellcheck disable=SC2086 # empty or one option
+          docker run --rm $user -v "$PWD:/src:ro" numb-check sh /src/scripts/linux-check.sh test "$DISTRO"
+      - name: Documented install commands
+        env:
+          DISTRO: ${{ matrix.distro }}
+        run: |
+          user="--user 1000:1000"
+          [ "$DISTRO" = nixos ] && user=""
+          # shellcheck disable=SC2086 # empty or one option
+          docker run --rm $user -v "$PWD:/src:ro" numb-check sh /src/scripts/linux-check.sh install "$DISTRO"
+
+  guix:
+    # Guix runs on the runner itself: it needs its build daemon.
+    if: >-
+      github.event_name != 'pull_request' ||
+      (startsWith(github.event.pull_request.title, 'v') && contains(github.event.pull_request.title, '.0:'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Guix and pull its current packages
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q guix
+          for k in /usr/share/guix/*.pub; do sudo guix archive --authorize < "$k"; done
+          guix pull
+          echo "$HOME/.config/guix/current/bin" >> "$GITHUB_PATH"
+      - name: Tests with Guix's Go
+        run: sh scripts/linux-check.sh test guix
+      - name: Documented install commands
+        run: sh scripts/linux-check.sh install guix

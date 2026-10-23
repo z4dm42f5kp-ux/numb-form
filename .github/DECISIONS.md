@@ -266,3 +266,21 @@ Many real mid-size cities are listed so that they are never "corrected".
 Names of companies that already have a folder are left alone, since
 renaming them would part them from their forms.
 It writes through the same checked path as numb-date.
+
+## Install commands are pinned, and Linux is tested before minor releases
+
+An install command that downloads `releases/latest` and checks it
+against a `SHA256SUMS` from the same place proves only that the download
+is intact: whoever can replace the files can replace the checksums.
+The commands now name one release and carry its checksums, so a
+replaced file fails the check.
+They are written by `scripts/install` from templates and
+`scripts/install/pins.txt`; a test fails when the documentation differs.
+After each stable release, `install-docs.yml` checks the release's
+Sigstore signature, pins it and opens a pull request; it also runs
+daily.
+The Linux distributions the team uses are tested in containers with
+their own Go and the documented commands, only for minor releases
+(pull requests titled `vX.Y.0:`), because the check takes long.
+Patch releases, `main` and the rolling build are not held up by it.
+

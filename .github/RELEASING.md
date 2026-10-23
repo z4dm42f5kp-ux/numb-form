@@ -16,6 +16,15 @@ Each release is one pull request titled `vX.Y.Z: what it changes`.
 4. The commit that ci tested is tagged `vX.Y.Z`, and the normal release
    build runs: archives, checksums, Sigstore signature, provenance,
    container image. The rolling build already contains it.
+5. The **install-docs** workflow checks the new release's signature and
+   opens a pull request *docs: install commands for vX.Y.Z*. Merge it so
+   the documented install commands install the new release; merging it
+   releases nothing.
+
+A minor release (`vX.Y.0:`) also runs the **linux** workflow on its pull
+request: the tests and the documented commands on every listed Linux
+distribution. It takes up to an hour and a half; wait for it before
+merging.
 
 A pull request with another title (no `vX.Y.Z:` at the start) releases
 nothing. To release the newest `main` without a pull request, run

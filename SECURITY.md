@@ -213,6 +213,10 @@ Each release has:
 * a container image on ghcr.io, signed with cosign and attested.
 
 [docs/install.md](docs/install.md) shows how to verify each of them.
+Its install commands name one stable release and carry that release's
+SHA-256 checksums, taken from `SHA256SUMS` after its Sigstore signature
+was checked (`.github/workflows/install-docs.yml`), so a file replaced
+on the download server fails the check.
 
 ## Security testing pipeline
 

@@ -8,6 +8,23 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.5.1
+
+* The install commands in the documentation install one named stable
+  release and check it against SHA-256 checksums written in the command
+  itself, over HTTPS only.
+  A workflow checks each new stable release's Sigstore signature and
+  proposes the new commands; a daily check catches a missed release.
+* Install and build instructions for Debian 13 and systems based on it,
+  Fedora 44, Arch Linux (pacman only), Gentoo, Void Linux, openSUSE
+  Tumbleweed and Leap 16, Alpine Linux, NixOS and Guix.
+  Before every minor release, CI runs the tests and the documented
+  commands on each of them.
+* Building from source builds the same tag as the release, never
+  downloads another Go toolchain, and works on NixOS and Guix in one
+  command.
+* `numb-form man` no longer shows comment lines of the documentation.
+
 ## v1.5.0
 
 * numb-typo corrects misspelt or cut-off places at the end of company
