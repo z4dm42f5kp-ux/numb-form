@@ -102,7 +102,8 @@ func sameFile(a, b string, ai, bi fs.FileInfo) (bool, string, string, error) {
 // scanRequest compares the working copy from with the real folder to.
 // New files are added and the overview spreadsheet may be replaced;
 // nothing is ever deleted or overwritten. The template and residue are
-// never copied.
+// never copied, and neither is a new folder of a company that the real
+// folder already has under another name, such as "D10629 Foo S.A.".
 func scanRequest(ctx context.Context, from, to string, rc reviewConfig) (*request, error) {
 	q := &request{From: from, To: to, Status: "waiting", Sheet: filepath.ToSlash(rc.sheetRel)}
 	err := filepath.WalkDir(from, func(p string, d fs.DirEntry, err error) error {
@@ -173,6 +174,7 @@ func scanRequest(ctx context.Context, from, to string, rc reviewConfig) (*reques
 			q.Changes[i].top = firstMissing(to, c.rel)
 		}
 	}
+	q.skipKnownCompanies(rc)
 	q.Others = othersAtTop(to, q)
 	return q, nil
 }

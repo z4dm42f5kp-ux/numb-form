@@ -8,6 +8,21 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.6.0
+
+* numb-commit does not copy a new folder of a company the real folder
+  already has, for example `Foo S.A.` when the real folder has
+  `D10629 Foo S.A.`: it starts with the company's customer ID, has the
+  company's name after a customer ID, or has the company's name in
+  another spelling.
+  The request lists it under *Left alone*, the tree marks the real
+  folder with `=`, and the review asks you to copy other files from it
+  by hand.
+* numb-commit asks `Review [m]anually, or let numb-commit [r]eview and
+  correct it until it is right?`.
+  `r` stages changed files again and leaves out files that must not be
+  copied, reviewing again until the review passes, at most five rounds.
+
 ## v1.5.3
 
 * Internal: numb-commit's automatic review, which corrects what it can
