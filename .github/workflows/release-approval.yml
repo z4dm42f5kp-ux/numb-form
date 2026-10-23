@@ -1,0 +1,126 @@
+name: release approval
+
+# Proposes a stable release and publishes it after the owner approves.
+#
+# When a pull request titled "vX.Y.Z: ..." is merged into main and ci
+# passes on that commit, this workflow waits in the "release" environment
+# for approval (GitHub mails a "Review pending deployments" link). After
+# "Approve and deploy" it tags the tested commit vX.Y.Z and starts
+# release.yml on that tag, which builds, signs and publishes exactly as a
+# tag pushed by hand would. "Reject" (or no answer for 30 days) releases
+# nothing. A tag created with the workflow token starts no workflow by
+# itself, hence the explicit start. See .github/RELEASING.md.
+
+on:
+  # Only runs of ci on main started by a push (a merge) count, and nothing
+  # of the triggering run is checked out or executed: only its commit SHA
+  # is used, as the commit to tag.
+  workflow_run: # zizmor: ignore[dangerous-triggers]
+    workflows: [ci]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release from the newest main, such as v1.4.1"
+        required: true
+
+permissions: {}
+
+concurrency:
+  group: release-approval-${{ github.event.workflow_run.head_sha || github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  propose:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      sha: ${{ steps.v.outputs.sha }}
+    steps:
+      - id: v
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          EVENT: ${{ github.event_name }}
+          RUN_SHA: ${{ github.event.workflow_run.head_sha }}
+          INPUT: ${{ inputs.version }}
+        run: |
+          set -eu
+          if [ "$EVENT" = workflow_dispatch ]; then
+            sha=$(gh api "repos/$REPO/commits/main" --jq .sha)
+            version=$INPUT
+            from="started by hand"
+          else
+            sha=$RUN_SHA
+            # The pull request that was merged into main with this commit.
+            title=$(gh api "repos/$REPO/commits/$sha/pulls" \
+              --jq '[.[] | select(.merged_at != null and .base.ref == "main")][0].title // ""')
+            version=$(printf '%s\n' "$title" | sed -nE '1s/^(v[0-9]+\.[0-9]+\.[0-9]+):.*/\1/p')
+            from="pull request: $title"
+            if [ -z "$version" ]; then
+              echo "No release: the merged pull request is not titled vX.Y.Z: ($title)."
+              exit 0
+            fi
+          fi
+          if ! printf '%s\n' "$version" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::$version is not a version like v1.4.1"
+            exit 1
+          fi
+          if gh api "repos/$REPO/git/ref/tags/$version" > /dev/null 2>&1; then
+            echo "$version is already tagged; nothing to release."
+            exit 0
+          fi
+          newest=$(gh api "repos/$REPO/tags?per_page=100" --jq '.[].name' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1)
+          if [ -n "$newest" ] && [ "$(printf '%s\n%s\n' "$newest" "$version" | sort -V | tail -n 1)" != "$version" ]; then
+            echo "::error::$version is not newer than the newest release $newest"
+            exit 1
+          fi
+          # Without a required reviewer the next job would run at once:
+          # refuse rather than release without asking.
+          rules=$(gh api "repos/$REPO/environments/release" --jq '[.protection_rules[]?.type] | join(" ")' 2>/dev/null || true)
+          case " $rules " in
+          *" required_reviewers "*) ;;
+          *)
+            echo "::error::the release environment has no required reviewer, so $version would be released without asking. Set it up as described in .github/RELEASING.md, then re-run this workflow."
+            exit 1
+            ;;
+          esac
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          {
+            echo "### $version is waiting for your approval"
+            echo
+            echo "- commit: \`$sha\`"
+            echo "- $from"
+            echo "- newest release so far: ${newest:-none}"
+            echo
+            echo "Approve the **release** deployment to tag and publish it, or reject it to release nothing."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  release:
+    needs: propose
+    if: needs.propose.outputs.version != ''
+    runs-on: ubuntu-latest
+    # The owner approves here (required reviewer of the environment).
+    environment: release
+    permissions:
+      contents: write # create the tag
+      actions: write  # start release.yml, which a tag made here does not start
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          VERSION: ${{ needs.propose.outputs.version }}
+          SHA: ${{ needs.propose.outputs.sha }}
+        run: |
+          set -eu
+          gh api "repos/$REPO/git/refs" -f "ref=refs/tags/$VERSION" -f "sha=$SHA" > /dev/null
+          gh workflow run release.yml --repo "$REPO" --ref "$VERSION"
+          echo "Tagged $SHA as $VERSION and started the release build." >> "$GITHUB_STEP_SUMMARY"

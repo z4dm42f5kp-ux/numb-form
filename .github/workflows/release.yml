@@ -3,6 +3,10 @@ name: release
 on:
   push:
     tags: ["v*"]
+  # Started on a tag by release-approval.yml (and by updates.yml for a
+  # rebuild with a newer Go): a tag made with the workflow token does not
+  # start the push trigger above.
+  workflow_dispatch:
 
 permissions: {}
 
@@ -12,6 +16,8 @@ concurrency:
 
 jobs:
   release:
+    # Only ever on a version tag, also when started by hand.
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
       contents: write      # create the GitHub release
