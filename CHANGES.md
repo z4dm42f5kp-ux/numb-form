@@ -8,6 +8,14 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.7.1
+
+* `numb-form man` no longer shows comment lines of the documentation.
+* Internal: a generator that writes the install commands of the
+  documentation from templates and one pinned release with its SHA-256
+  checksums (`scripts/install`, `internal/installdoc`).
+  No document uses it yet.
+
 ## v1.7.0
 
 * New program **numb-typo**: it corrects misspelt or cut-off places at

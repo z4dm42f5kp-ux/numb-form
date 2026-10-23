@@ -38,6 +38,8 @@ func roffText(md string, b *strings.Builder) {
 				b.WriteString(roffEscape(strings.TrimSpace(lines[i])) + "\n")
 			}
 			b.WriteString(".fi\n.RE\n")
+		case strings.HasPrefix(t, "<!--") && strings.HasSuffix(t, "-->"):
+			// A comment, such as the markers of generated commands.
 		case strings.HasPrefix(t, "# "):
 			flush()
 			b.WriteString(".SH " + roffEscape(strings.ToUpper(inline(t[2:]))) + "\n")
