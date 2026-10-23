@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability (private)
+    url: https://github.com/z4dm42f5kp-ux/numb-form/security/advisories/new
+    about: Report vulnerabilities privately, never in a public issue. See SECURITY.md.
+  - name: The step-by-step guide
+    url: https://github.com/z4dm42f5kp-ux/numb-form/blob/main/docs/guide.md#when-something-goes-wrong
+    about: Many messages are explained under "When something goes wrong".

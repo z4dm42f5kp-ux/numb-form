@@ -199,3 +199,18 @@ It matches numb-form: the legal form in its conventional casing
 texts when nothing is found.
 The assistant writes no em dashes, en dashes or semicolons.
 "innacurate" in the caution became "inaccurate".
+
+## Documentation and security are written down like the BSDs and Go
+
+The manual is part of the program, as on OpenBSD and FreeBSD: a change
+to what a person sees updates its manual page in the same pull request,
+and `CHANGES.md` (FreeBSD's RELNOTES and UPDATING) says what changed and
+what users must do.
+Tests check what a program can: every flag and configuration key is
+documented and every link resolves.
+Problem reports use forms that ask for what OpenBSD asks for: exact
+steps, exact output and the version, without customer data.
+The security policy follows the Go project's (private reports, tracks,
+7 days to acknowledge, 90 days to fix or disclose), and
+`.github/SECURE-CODING.md` turns SECURITY.md's promises into rules,
+a review checklist and an audit every three months.

@@ -1,0 +1,24 @@
+name: Documentation error
+description: The guide or a manual page is wrong, missing something, or unclear. A documentation error is a bug.
+title: "docs: "
+labels: [documentation]
+body:
+  - type: input
+    id: page
+    attributes:
+      label: Page
+      description: The file or the numb-form man topic, for example docs/guide.md or "numb-form man guide".
+    validations:
+      required: true
+  - type: textarea
+    id: wrong
+    attributes:
+      label: What is wrong or unclear
+      description: Quote the sentence. Say what the program does instead, or what you could not understand.
+    validations:
+      required: true
+  - type: textarea
+    id: better
+    attributes:
+      label: What it should say
+      description: Optional. A better sentence, in plain words.
