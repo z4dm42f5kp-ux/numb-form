@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/z4dm42f5kp-ux/numb-form/internal/config"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/docx"
@@ -72,52 +73,99 @@ func runCommit(t *testing.T, cp, real, answers string, review bool) (int, string
 	return code, out.String()
 }
 
-// numb-commit compares the working copy with the real folder, writes the
-// request and reviews it, and copies nothing.
-func TestFolderCommitPreview(t *testing.T) {
+// noStage fails when a staged copy was left in Downloads.
+func noStage(t *testing.T, dl string) {
+	t.Helper()
+	es, _ := os.ReadDir(dl)
+	for _, e := range es {
+		if strings.HasPrefix(e.Name(), stagePrefix) {
+			t.Errorf("staged copy %s left behind", e.Name())
+		}
+	}
+}
+
+func TestFolderCommit(t *testing.T) {
 	real, cp := workingCopy(t, dateOf("Foo Ltd"))
-	before := treeHashes(t, real)
-	code, out := runCommit(t, cp, real, "", false)
-	if code != ExitOK || !strings.Contains(out, "Verdict: OK to commit") || !strings.Contains(out, "nothing was copied into") {
-		t.Fatalf("exit %d\n%s", code, out)
-	}
-	if !reflect.DeepEqual(treeHashes(t, real), before) {
-		t.Fatal("the real folder changed")
-	}
-	req, err := os.ReadFile(filepath.Join(cp, RequestName))
-	if err != nil {
+	// A staged copy left by a numb-commit killed two days ago goes too.
+	old := filepath.Join(filepath.Dir(cp), stagePrefix+"2026-10-21 10.00.00 abcd")
+	if err := os.MkdirAll(filepath.Join(old, "Foo"), 0o750); err != nil {
 		t.Fatal(err)
 	}
+	if err := os.Chtimes(old, time.Now().Add(-48*time.Hour), time.Now().Add(-48*time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	tplBefore, _, _ := fsutil.SHA256File(filepath.Join(real, "Appendix A - Risk Assesment.docx"))
+	code, out := runCommit(t, cp, real, "y\n", false)
+	if code != ExitOK || !strings.Contains(out, "Verdict: OK to commit") || !strings.Contains(out, "staged in") {
+		t.Fatalf("exit %d\n%s", code, out)
+	}
+	for _, f := range []string{"Foo Ltd/Appendix A - Risk Assesment - Foo Ltd.docx", "3. Übersichten/Kundenliste.xlsx"} {
+		a, _, _ := fsutil.SHA256File(filepath.Join(cp, filepath.FromSlash(f)))
+		b, _, _ := fsutil.SHA256File(filepath.Join(real, filepath.FromSlash(f)))
+		if a != b {
+			t.Errorf("%s not committed", f)
+		}
+	}
+	if h, _, _ := fsutil.SHA256File(filepath.Join(real, "Appendix A - Risk Assesment.docx")); h != tplBefore {
+		t.Error("the template was committed")
+	}
+	for _, f := range []string{"numb-form.log", "Foo Ltd/~$pendix A.docx", RequestName} {
+		if _, err := os.Stat(filepath.Join(real, filepath.FromSlash(f))); !os.IsNotExist(err) {
+			t.Errorf("%s was committed", f)
+		}
+	}
+	if st, err := os.Stat(filepath.Join(real, "Foo Ltd", "Appendix A - Risk Assesment - Foo Ltd.docx")); err != nil || st.Mode().Perm()&0o200 == 0 {
+		t.Errorf("committed form is not writable: %v", err)
+	}
+	noStage(t, filepath.Dir(cp))
+	req, _ := os.ReadFile(filepath.Join(cp, RequestName))
 	if !strings.HasPrefix(string(req), "\ufeff") {
 		t.Error("the request has no byte order mark")
 	}
-	for _, want := range []string{"Status: waiting", "New folder  Foo Ltd", "made by numb-form, unchanged", "After the commit:",
-		"+ new folder", "~ replaced", "not copied: the template", "not copied: an Office lock file", "not copied: a log or system file"} {
+	for _, want := range []string{"Status: applied", "New folder  Foo Ltd", "made by numb-form, unchanged", "After the commit:",
+		"Foo Ltd   ", "+ new folder", "~ replaced"} {
 		if !strings.Contains(string(req), want) {
 			t.Errorf("request lacks %q:\n%s", want, req)
 		}
 	}
-	// The review reads the request back and checks it again.
-	if code, out := runCommit(t, cp, real, "", true); code != ExitOK || !strings.Contains(out, "Verdict: OK to commit") {
-		t.Fatalf("review: exit %d\n%s", code, out)
-	}
-	if !reflect.DeepEqual(treeHashes(t, real), before) {
-		t.Fatal("the review changed the real folder")
+	// Reviewing afterwards checks the result.
+	if code, out := runCommit(t, cp, real, "", true); code != ExitOK || !strings.Contains(out, "every listed file is in the real folder") {
+		t.Fatalf("review after commit: %d\n%s", code, out)
 	}
 }
 
-// A spreadsheet change outside the report dates fails the review.
+// A spreadsheet change outside the report dates fails the review, and
+// nothing is copied.
 func TestFolderCommitRefusesOtherSheetChanges(t *testing.T) {
 	real, cp := workingCopy(t, func(_ []byte, tb *sheet.Table) map[string]string {
 		return map[string]string{tb.Rows[0].NameRef: "Renamed GmbH"}
 	})
 	before := treeHashes(t, real)
-	code, out := runCommit(t, cp, real, "", false)
+	code, out := runCommit(t, cp, real, "y\n", false)
 	if code != ExitError || !strings.Contains(out, "only report dates may change") || !strings.Contains(out, "Verdict: do not commit.") {
 		t.Fatalf("exit %d\n%s", code, out)
 	}
 	if !reflect.DeepEqual(treeHashes(t, real), before) {
 		t.Fatal("the real folder changed")
+	}
+	noStage(t, filepath.Dir(cp))
+}
+
+// A file that differs from the real folder is never overwritten.
+func TestFolderCommitKeepsDifferingFile(t *testing.T) {
+	real, cp := workingCopy(t, dateOf("Foo Ltd"))
+	if err := os.WriteFile(filepath.Join(cp, "Foo GmbH", "keep.txt"), []byte("edited in the copy"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	code, out := runCommit(t, cp, real, "y\n", false)
+	if code != ExitOK || !strings.Contains(out, "≠ unchanged") {
+		t.Fatalf("exit %d\n%s", code, out)
+	}
+	if b, _ := os.ReadFile(filepath.Join(real, "Foo GmbH", "keep.txt")); string(b) != "existing" {
+		t.Error("an existing file was overwritten")
+	}
+	if _, err := os.Stat(filepath.Join(real, "Foo Ltd")); err != nil {
+		t.Error("the new folder was not copied")
 	}
 }
 
@@ -132,18 +180,19 @@ func TestFolderCommitAsksForFolders(t *testing.T) {
 		t.Fatal("no review runs waiting, but not in folder mode")
 	}
 	var out bytes.Buffer
-	opt.In, opt.Out = strings.NewReader("14. GWG\n\""+cp+"\"\n"+cp+"\n"+real+"\n"), &out
+	opt.In, opt.Out = strings.NewReader("14. GWG\n\""+cp+"\"\n"+cp+"\n"+real+"\nn\n"), &out
 	if code := Commit(opt); code != ExitOK {
 		t.Fatalf("exit %d\n%s", code, out.String())
 	}
-	for _, want := range []string{askFrom, "Give the whole path", askTo, "the target is the folder to commit", "nothing was copied into"} {
+	for _, want := range []string{askFrom, "Give the whole path", askTo, "the target is the folder to commit", "Nothing was copied"} {
 		if !strings.Contains(out.String(), want) {
 			t.Errorf("output lacks %q:\n%s", want, out.String())
 		}
 	}
 	if _, err := os.Stat(filepath.Join(real, "Foo Ltd")); !os.IsNotExist(err) {
-		t.Error("copied into the real folder")
+		t.Error("copied although the answer was no")
 	}
+	noStage(t, filepath.Dir(cp))
 }
 
 // An unchanged working copy has nothing to commit, and a review without

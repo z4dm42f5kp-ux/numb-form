@@ -52,7 +52,7 @@ func Commit(opt CommitOptions) int {
 	ctx, cancel := runContext(opt.Timeout)
 	defer cancel()
 	// SIGTERM is also what Windows sends when the window is closed: stop
-	// cleanly.
+	// cleanly, so the staged copy is removed.
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	u := ui.New(ctx, opt.In, opt.Out)
@@ -62,7 +62,7 @@ func Commit(opt CommitOptions) int {
 	}
 	var err error
 	if folderMode(opt) {
-		u.Printf("numb-commit %s: what a working copy adds to the real folder (preview, copies nothing)\n\n", Version)
+		u.Printf("numb-commit %s: copy the new forms from a working copy into the real folder\n\n", Version)
 		err = commitFolders(ctx, u, opt)
 	} else {
 		err = commit(ctx, u, opt)

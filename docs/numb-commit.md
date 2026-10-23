@@ -2,8 +2,8 @@
 
 ## NAME
 
-**numb-commit** — copy reviewed forms into the real working folder, and
-show what a working copy would add to it
+**numb-commit** — copy the new forms into the real working folder,
+after showing and checking exactly what changes
 
 ## SYNOPSIS
 
@@ -17,10 +17,12 @@ numb-commit [-f conf] [-run dir] [-downloads dir]
 
 numb-form and numb-date work on a folder on your own computer or on the
 real working folder itself.
-numb-commit deals with the result.
-There are two ways to work.
+numb-commit brings the result into the real working folder, usually on
+a network drive, and nothing else.
 
-**A working copy** (for a network drive).
+There are two ways to work; numb-commit handles both.
+
+**A working copy** (recommended for a network drive).
 You copy the real folder, for example `F:\14. GWG`, to your computer,
 for example `C:\Users\you\Downloads\14. GWG`, and run numb-form and
 numb-date there.
@@ -41,11 +43,6 @@ numb-form config set commit_to "F:\14. GWG"
 
 `-from` and `-to` answer them for one run.
 
-This version of numb-commit only compares the two folders, writes the
-request and reviews it.
-It copies nothing into the target.
-Copy the files listed under *New folder* and *Replaced* yourself.
-
 **A review run** (`mode = review`).
 numb-form makes the copy itself in `Downloads\numb-form-runs`, and
 numb-commit copies the accepted folders of the newest run back into the
@@ -56,38 +53,58 @@ Each folder is copied to a temporary name, verified with SHA-256 and then
 renamed.
 Documents edited during the review are listed before you confirm.
 Afterwards it offers to delete the review copy; the logs are kept.
-
-numb-commit commits a review run when `mode = review` is set or review
-runs are waiting, and neither `-from`, `-to`, `commit_from`,
-`commit_to` nor `review` names a folder; `-run` always does it.
+numb-commit does this when `mode = review` is set or review runs are
+waiting, and neither `-from`, `-to`, `commit_from`, `commit_to` nor
+`review` names a folder; `-run` always does it.
 
 ## WHAT NUMB-COMMIT DOES WITH A WORKING COPY
 
 1. It compares the working copy with the target, file by file.
    Files with the same size and time are the same; for the others, the
    SHA-256 checksum decides.
-2. It writes **`numb-commit-request.txt`** into the working copy and
+2. It copies exactly the files it will commit into a **staged copy** in
+   your Downloads folder (`numb-commit staged copy <date> <time> <id>`),
+   laid out as in the target, checks every checksum, and makes them
+   read-only.
+   Nothing touches the target yet.
+3. It writes **`numb-commit-request.txt`** into the working copy and
    shows it: the list of changes and the target's folder tree before and
    after (see THE REQUEST FILE).
-3. It reviews the request (see REVIEW) and prints a verdict.
-4. It copies nothing: the target is not touched.
+4. It reviews the request (see REVIEW) and refuses to continue when a
+   check fails.
+   Look at the staged copy and the request yourself, too.
+5. It asks `Copy this into F:\14. GWG now? [y/N]`.
+   Only `y` copies.
+6. It copies the staged files into the target, checking every checksum
+   again, and marks the request as applied.
+7. It reviews the target once more: every file must be there with its
+   checksum.
+8. It removes the staged copy, also when you answer no, when a check
+   fails, when you press Ctrl+C or when you close the window.
+   A staged copy left by a numb-commit that was killed (for example by
+   a power cut) is removed by the next numb-commit after one day.
 
-What the request lists as copied:
+What is copied:
 
-* **New folders** (normally one per new company) and **new files** in
-  folders that already exist.
+* **New folders** (normally one per new company): built under a
+  temporary name in the target and renamed when complete, so a folder
+  appears whole or not at all.
+* **New files** in folders that already exist.
 * **The overview spreadsheet**, when numb-date added report dates.
+  Its old version is kept in the log folder first.
 
 What is never copied:
 
-* **A file that exists in the target with other content**: it is never
-  overwritten, except the spreadsheet.
-  The request lists these as differing, so you see what changed in the
-  working copy.
+* **A file that exists in the target with other content**: numb-commit
+  never overwrites a file except the spreadsheet.
+  It lists these as differing, so you see what changed in the working
+  copy.
 * the template (`Appendix A - Risk Assesment.docx`), even if it changed;
 * logs, `manifest.json`, `numb-form-runs` folders and the request file;
 * Office and LibreOffice lock files (`~$…`, `.~lock.…#`), hidden and
   temporary files, `Thumbs.db`, `desktop.ini`.
+
+Nothing in the target is ever deleted.
 
 ## FORMS MADE BY NUMB-FORM
 
@@ -108,13 +125,14 @@ This works for `.docx`, `.odt`, `.fodt` and `.rtf` templates.
 ## THE REQUEST FILE
 
 `numb-commit-request.txt` lies in the working copy, never in the target.
-It says, in plain words, exactly what would change:
+It says, in plain words, exactly what changes:
 
 ```
 numb-commit request: what numb-commit copies into the real folder
 
 From:   C:\Users\you\Downloads\14. GWG
 To:     F:\14. GWG
+Staged: C:\Users\you\Downloads\numb-commit staged copy 2026-10-23 14.05.12 3fa1
 Made:   23/10/2026 14:05
 Status: waiting
 
@@ -150,20 +168,21 @@ In the tree after the commit:
 
 | Mark | Meaning |
 | --- | --- |
-| `+` | new: to be copied into the target |
+| `+` | new: copied into the target |
 | `~` | replaced: the spreadsheet with its new report dates |
 | `≠` | differs in the working copy; the target's version stays |
 
-*Status* is `waiting`.
+*Status* is `waiting` until the copy is done, then `applied`.
 Below the readable part, a data section repeats the list for
 numb-commit; do not edit it.
+A copy of the applied request is kept in the log folder.
 
 ## REVIEW
 
 The review checks that:
 
-* every file to copy still has the checksum in the request (nothing was
-  edited since);
+* every file to copy has the checksum in the request, in the staged copy
+  and in the working copy (nothing was edited since);
 * none of them exists in the target yet;
 * the target's spreadsheet still has the checksum in the request
   (nobody else changed it in the meantime);
@@ -175,17 +194,20 @@ The review checks that:
   blank line, and the target has no similar folder for it;
 * nothing that must stay behind (template, logs, lock files) is listed.
 
-Each line is marked `ok`, `check` (look at it) or `FAIL`, followed by
-the verdict:
+After the request is applied, it checks that every listed file is in
+the target with its checksum.
+
+Each line is marked `ok`, `check` (look at it before committing) or
+`FAIL`, followed by the verdict:
 
 | Verdict | Meaning |
 | --- | --- |
 | `OK to commit.` | Every check passed. |
 | `commit after checking the lines marked check.` | Nothing is wrong with the files, but something deserves a look, for example a blank address. |
-| `do not commit.` | Something changed or does not belong. |
+| `do not commit.` | Something changed or does not belong; numb-commit refuses to copy. |
 
-`numb-commit review` runs the review again on the request in the
-working copy at any time, for example on a request a colleague
+`numb-commit review` runs the review on the request in the working copy
+at any time, without copying, for example on a request a colleague
 prepared.
 
 ## OPTIONS
@@ -199,14 +221,14 @@ prepared.
   configuration; when that is empty, numb-commit asks.
 
 `review`
-: Only review the request in the working copy.
+: Only review the request in the working copy; copy nothing.
 
 `-run dir`
 : Review runs: commit this run folder instead of the newest uncommitted
   one.
 
 `-downloads dir`
-: Review runs: the folder that holds `numb-form-runs`.
+: Where `numb-form-runs` and the staged copy are.
   Default: `downloads` in the configuration, else your Downloads folder.
 
 `-f file`
@@ -221,18 +243,31 @@ prepared.
 ## FILES
 
 `<working copy>/numb-commit-request.txt`
-: The request: what would be copied.
+: The request: what is (or was) copied.
   UTF-8 with a byte order mark, so Notepad and Windows PowerShell 5.1
   (`Get-Content`) show the tree correctly.
 
-`Downloads/numb-form-runs/<run>/numb-commit.log`
-: Review runs: log of the commit.
+`<Downloads>/numb-commit staged copy <date> <time> <id>/`
+: The files to copy, while numb-commit runs. Removed at the end.
+
+`<log folder>/<date>_<time>_<id>_commit/numb-commit.log`
+: Log of the copy, with every checksum.
+
+`<log folder>/<date>_<time>_<id>_commit/replaced/`
+: The target's previous version of every replaced file.
+
+`<log folder>/<date>_<time>_<id>_commit/numb-commit-request.txt`
+: The applied request.
+
+The log folder is `log_dir`, by default `%LOCALAPPDATA%\numb-form\runs`
+(Windows), `~/Library/Logs/numb-form` (macOS) or
+`~/.local/state/numb-form/runs` (Linux, BSD).
 
 ## EXIT STATUS
 
-0 when the review passes or there is nothing to do; 1 on an error or a
-failed review; 2 on a usage error; 3 when stopped with Ctrl+C or by
-closing the window.
+0 when the copy is done, there is nothing to do or you answered no; 1 on
+an error or a failed review; 2 on a usage error; 3 when stopped with
+Ctrl+C or by closing the window.
 
 ## EXAMPLES
 
@@ -256,8 +291,8 @@ cd "$env:USERPROFILE\Downloads\14. GWG"; numb-form; if ($?) { numb-date }; if ($
 cd ~/Downloads/14.\ GWG && numb-form && numb-date && numb-commit
 ```
 
-Check a request again, for example one a colleague prepared (all
-systems):
+Let numb-commit check a request, for example one a colleague prepared,
+without copying (all systems):
 
 ```
 numb-commit review
@@ -269,25 +304,24 @@ numb-commit review
 : Connect the network drive (open it once in File Explorer) and type the
   path again.
 
-**`… is not a working folder: it has no template and "Übersicht" folder`**
-: Give the folder that holds the template and the overview folder, not
-  a folder inside it.
-
 **`… changed after the request was made`**
-: A file was edited after the request was written. Run numb-commit
-  again.
+: A file was edited after it was staged. Run numb-commit again.
 
 **`… in the real folder changed after the request was made`**
 : Someone else changed the spreadsheet on the network drive.
-  Copy the real spreadsheet into the working copy again, run numb-date
-  there, then numb-commit.
+  numb-commit does not overwrite their work. Copy the real spreadsheet
+  into the working copy again, run numb-date there, then numb-commit.
 
 **`… already exists in the real folder and is never overwritten`**
 : A colleague created the same file meanwhile. Compare the two by hand.
 
 **`spreadsheet cell … changed; only report dates may change`**
-: The working copy's spreadsheet was edited by hand. Make other changes
-  in the real spreadsheet.
+: The working copy's spreadsheet was edited by hand. numb-commit only
+  carries report dates; make other changes in the real spreadsheet.
+
+**`… is not a working folder: it has no template and "Übersicht" folder`**
+: Give the folder that holds the template and the overview folder, not
+  a folder inside it.
 
 **`no request to review`**
 : Run `numb-commit` first; `numb-commit review` checks the request it
