@@ -15,6 +15,7 @@ rem Installed by "numb-form man -install": "man numb-form" shows the numb-form m
 if /i "%~1"=="numb-form" goto show
 if /i "%~1"=="numb-commit" goto show
 if /i "%~1"=="numb-date" goto show
+if /i "%~1"=="numb-typo" goto show
 echo man: no manual entry for %1. This man only knows numb-form: man numb-form
 exit /b 1
 :show
@@ -61,7 +62,7 @@ func Install(roff string) ([]string, error) {
 		return nil, err
 	}
 	out := []string{p1}
-	for _, n := range []string{"numb-commit.1", "numb-date.1"} {
+	for _, n := range []string{"numb-commit.1", "numb-date.1", "numb-typo.1"} {
 		p := filepath.Join(dir, n)
 		if err := os.WriteFile(p, []byte(".so man1/numb-form.1\n"), 0o644); err != nil { // #nosec G306
 			return nil, err
