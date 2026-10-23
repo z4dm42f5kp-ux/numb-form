@@ -17,7 +17,8 @@ Deutsch: [docs/de/README.md](docs/de/README.md)
 It needs no technical knowledge.
 
 * Install: [docs/install.md](docs/install.md)
-* Use: [docs/usage.md](docs/usage.md)
+* Use: [numb-form](docs/usage.md), [numb-commit](docs/numb-commit.md),
+  [numb-date](docs/numb-date.md)
 * Configure: [docs/configuration.md](docs/configuration.md)
 * Office suites and formats: [docs/formats.md](docs/formats.md)
 * Containers: [docs/containers.md](docs/containers.md)

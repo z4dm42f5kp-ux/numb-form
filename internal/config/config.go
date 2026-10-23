@@ -33,6 +33,7 @@ type Config struct {
 
 	Downloads string // review mode: where the copy goes; empty = Downloads
 	LogDir    string // direct mode: where logs go; empty = per-user state folder
+	CommitTo  string // numb-commit: the real working folder a working copy goes to
 
 	Soffice          string // path to LibreOffice/OpenOffice soffice; empty = search
 	PagesConverter   string // auto | pages-app | libreoffice

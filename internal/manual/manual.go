@@ -25,7 +25,9 @@ type Topic struct {
 // Topics in manual order: the step-by-step guide first.
 var Topics = []Topic{
 	{"guide", "docs/guide.md", "Step-by-step guide"},
-	{"usage", "docs/usage.md", "Reference manual"},
+	{"usage", "docs/usage.md", "numb-form reference"},
+	{"numb-commit", "docs/numb-commit.md", "numb-commit: copy the new forms into the real folder"},
+	{"numb-date", "docs/numb-date.md", "numb-date: fill the report dates"},
 	{"configuration", "docs/configuration.md", "Settings (numb-form.conf)"},
 	{"install", "docs/install.md", "Installing and updating"},
 	{"formats", "docs/formats.md", "File formats"},
@@ -33,7 +35,7 @@ var Topics = []Topic{
 	{"security", "SECURITY.md", "Security"},
 }
 
-var aliases = map[string]string{"config": "configuration", "settings": "configuration", "conf": "configuration", "update": "install", "docker": "containers", "kubernetes": "containers", "podman": "containers", "help": "guide", "start": "guide"}
+var aliases = map[string]string{"numb-form": "usage", "commit": "numb-commit", "date": "numb-date", "config": "configuration", "settings": "configuration", "conf": "configuration", "update": "install", "docker": "containers", "kubernetes": "containers", "podman": "containers", "help": "guide", "start": "guide"}
 
 // Find returns the topic called name.
 func Find(name string) (Topic, bool) {

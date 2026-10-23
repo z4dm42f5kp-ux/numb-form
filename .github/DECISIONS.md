@@ -158,3 +158,17 @@ none, now writes a standard text like the one for representatives:
 "No address was found online due to little to no information available"
 and "No legal form was found online due to little to no information
 available". `-` still leaves the field blank.
+
+## numb-commit from a working copy, with a request file
+
+The real GWG folder is on a network drive, and people work on a copy in
+Downloads.
+numb-commit (with `commit_to` or `-to`) compares the copy with the real
+folder, writes every change to `numb-commit-request.txt` in the copy,
+reviews it and copies only after a yes: new folders and files, and the
+spreadsheet when only report dates changed.
+The template, logs and lock files are never copied; nothing is deleted.
+The review is a subcommand (`numb-commit review`) rather than a fourth
+program, so installs and updates stay as they are.
+Review runs (`mode = review`) work as before.
+Each program now has its own manual page.
