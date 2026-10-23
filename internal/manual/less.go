@@ -148,7 +148,9 @@ func (p *pager) draw(w io.Writer) {
 func readKey(r *bufio.Reader) (string, error) {
 	c, err := r.ReadByte()
 	if err != nil || c != 0x1b {
-		return string(c), err
+		// One byte, not the character with that number: bytes of an
+		// accented letter arrive one by one.
+		return string([]byte{c}), err
 	}
 	n, err := r.ReadByte()
 	if err != nil {
