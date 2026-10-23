@@ -209,3 +209,12 @@ what users must do.
 Tests check what a program can: every flag and configuration key is
 documented and every link resolves.
 
+## Security and problem reports are written down like Go and OpenBSD
+
+Problem reports use forms that ask for what OpenBSD asks for: exact
+steps, exact output and the version, without customer data.
+The security policy follows the Go project's (private reports, tracks,
+7 days to acknowledge, 90 days to fix or disclose), and
+`.github/SECURE-CODING.md` turns SECURITY.md's promises into rules,
+a review checklist and an audit every three months.
+

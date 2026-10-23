@@ -111,6 +111,8 @@ cd "/path/to/working-folder" && numb-form
   `CHANGES.md` in the same pull request
   ([.github/DOCUMENTATION.md](.github/DOCUMENTATION.md)); tests and the
   *changes listed* job enforce it.
+* Follow the rules and the review checklist of
+  [.github/SECURE-CODING.md](.github/SECURE-CODING.md).
 * Documentation follows the OpenBSD style: short declarative sentences,
   imperative instructions, no marketing.
   Every procedure is a single command, labelled **Unix-like** (macOS,
