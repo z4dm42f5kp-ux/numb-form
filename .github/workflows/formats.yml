@@ -2,13 +2,18 @@ name: formats
 
 # Real-world format tests: templates and spreadsheets written by
 # LibreOffice (.odt, .fodt, .rtf, .docx, legacy .doc and .xls, .ods,
-# .fods) are filled and read by numb-form. Runs when format code changes,
-# on main and nightly.
+# .fods) are filled and read by numb-form. Runs once per pull request
+# change (not again for the push of the same commit), on main and
+# nightly.
+#
+# The job runs in Debian 13 and installs LibreOffice from deb.debian.org,
+# which a CDN serves quickly. Ubuntu's mirror for GitHub's runners
+# sometimes served the ~105 MB of packages at 25 kB/s (42 minutes).
+# apt verifies every package against the signed archive index.
 
 on:
   push:
-    # main, and agent branches (tested on GitHub, never locally: #8)
-    branches: [main, "claude/**"]
+    branches: [main]
     paths:
       - "internal/**"
       - go.mod
@@ -31,6 +36,9 @@ concurrency:
 jobs:
   libreoffice:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    container:
+      image: debian:13@sha256:4c25275446ca371766b8b093c696782eabce06263fccacb8d5d813b3dc44b308
     permissions:
       contents: read
     steps:
@@ -42,15 +50,16 @@ jobs:
           go-version: stable
           check-latest: true
           cache: false
-      - name: Install LibreOffice (Ubuntu packages)
+      - name: Install LibreOffice (Debian packages)
         run: |
-          sudo apt-get update -q
-          sudo apt-get install -y -q --no-install-recommends libreoffice-writer-nogui libreoffice-calc-nogui \
-            || sudo apt-get install -y -q --no-install-recommends libreoffice-writer libreoffice-calc
+          apt="apt-get -q -o Acquire::Retries=5 -o Acquire::http::Timeout=30"
+          $apt update
+          DEBIAN_FRONTEND=noninteractive $apt install -y --no-install-recommends ca-certificates libreoffice-writer-nogui libreoffice-calc-nogui
           soffice --version
       - name: Format tests with LibreOffice
         env:
           NUMBFORM_TEST_SOFFICE: "1"
+          CGO_ENABLED: "0"
         run: |
           set +e
           go test -count=1 -v ./internal/formats/ > test.log 2>&1
