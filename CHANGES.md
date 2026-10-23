@@ -24,6 +24,9 @@ Releases up to v1.2.1 are described on the
   `scripts/check-deps.sh` now also refuses `math/rand`, cgo, and
   `unsafe` outside the Windows system calls.
 * The guide explains the words it uses.
+* CI: the LibreOffice format tests cache LibreOffice's packages and run
+  once per change, instead of waiting up to 45 minutes for a slow
+  Ubuntu mirror twice.
 
 ## v1.2.3
 
