@@ -8,6 +8,14 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.6.4
+
+* numb-commit's review accepts the correction of a misspelt or cut-off
+  city or country after a company name in the Excel list, for example
+  `Foo SAS, Bogta` to `Foo SAS, Bogotá`.
+  Any other change to a name still fails the review with
+  `… only report dates and place corrections may change`.
+
 ## v1.6.3
 
 * Internal: reading the company names of the overview spreadsheet with
