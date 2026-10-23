@@ -157,3 +157,32 @@ func TestWhere(t *testing.T) {
 		t.Error(got)
 	}
 }
+
+// Enter on a blank address, or on the legal form of a name without one,
+// writes the standard text, as for the representatives.
+func TestStandardTexts(t *testing.T) {
+	base := t.TempDir()
+	root := filepath.Join(base, "Clients")
+	must := func(err error) {
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	must(os.MkdirAll(filepath.Join(root, "Overview"), 0o750))
+	must(os.WriteFile(filepath.Join(root, "Overview", "list.csv"), testfix.CSV([]string{"D1"}, []string{"Foo Trading"}, ";", false), 0o600))
+	must(os.WriteFile(filepath.Join(root, "Appendix A - Risk Assessment.odt"), testfix.ODT(t), 0o600))
+	cfg := direct(t)
+	cfg.OverviewDir = "overview"
+	var out bytes.Buffer
+	in := "P\n\n\n\n\na\n" // person, use it, legal form, address, representatives, accept
+	if code := Run(Options{Parent: root, AllowNonTTY: true, Config: cfg, In: strings.NewReader(in), Out: &out, Now: fixedNow}); code != ExitOK {
+		t.Fatalf("exit %d\n%s", code, out.String())
+	}
+	b, err := os.ReadFile(filepath.Join(root, "Foo Trading", "Appendix A - Risk Assessment - Foo Trading.odt"))
+	must(err)
+	got, err := (odt.Format{}).ReadBack(b)
+	must(err)
+	if got[form.FieldLegalForm] != NoLegalFormText || got[form.FieldAddress] != NoAddressText || got[form.FieldReps] != NoRepsText {
+		t.Fatalf("got %v", got)
+	}
+}

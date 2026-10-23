@@ -81,8 +81,8 @@ unchanged, and no formatting is added.
 | Field | Value |
 | --- | --- |
 | Name / Company Name of the Contracting Party | the literal spreadsheet cell |
-| Legal form | found in the name: at the end, before a branch or country note (`Foo GmbH (Wien)`), before a city or country (`Foo SAS, Bogotá, Colombia`, `Foo S.A.C.I. Paraguay`), or first (`Ets Foo`); accents, dots and spaces may differ (`SOCIEDAD ANONIMA`, `S A`); written as in the name with conventional capitals (`GMBH` gives `GmbH`); asked only when the name has none |
-| Headquarters / Address | typed by the user; Enter leaves it blank |
+| Legal form | found in the name: at the end, before a branch or country note (`Foo GmbH (Wien)`), before a city or country (`Foo SAS, Bogotá, Colombia`, `Foo S.A.C.I. Paraguay`), or first (`Ets Foo`); accents, dots and spaces may differ (`SOCIEDAD ANONIMA`, `S A`); written as in the name with conventional capitals (`GMBH` gives `GmbH`); asked only when the name has none, where Enter writes the no-legal-form text below and `-` leaves it blank |
+| Headquarters / Address | typed by the user; Enter writes the no-address text below, `-` leaves it blank |
 | Commercial Registry Number | always `No commercial registry number was found online consult internal sources for further information`; it can be replaced with the number with *edit* |
 | Authorized Representatives | typed by the user as `Full Name (Role 1, Role 2), Full Name (Role)`, roles in English; Enter writes the no-representatives text below, `-` leaves it blank |
 | Date of the evaluation | today, `date_format` (default `DD/MM/YYYY`) |
@@ -91,9 +91,13 @@ unchanged, and no formatting is added.
 numb-form makes no online lookups for companies.
 Only `numb-form update` contacts GitHub.
 
-When the representatives are left empty, the field reads:
+When a value is left empty (Enter alone), the field reads:
 
-> No representatives were found online, please consult other internal sources for more accurate information
+| Field | Text |
+| --- | --- |
+| Legal form | `No legal form was found online due to little to no information available` |
+| Headquarters / Address | `No address was found online due to little to no information available` |
+| Authorized Representatives | `No representatives were found online, please consult other internal sources for more accurate information` |
 
 **numb-commit** applies to review runs only.
 It copies the accepted folders of a run back into the real working

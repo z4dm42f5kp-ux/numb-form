@@ -57,7 +57,9 @@ cd "/path/to/working-folder" && numb-form
 * Use these texts exactly, including the spelling:
   * `No commercial registry number was found online consult internal sources for further information`
   * `No representatives were found online, please consult other internal sources for more accurate information`
-    (written when the person leaves the representatives empty)
+  * `No address was found online due to little to no information available`
+  * `No legal form was found online due to little to no information available`
+  (written when the person leaves that field empty)
 * Address and representatives are typed by the person; numb-form makes
   no online lookups for companies.
   Do not add web search, scraping or lookup code back.

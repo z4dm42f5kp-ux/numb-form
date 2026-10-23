@@ -28,6 +28,10 @@ const (
 	// NoRepsText is written when the person leaves the representatives
 	// empty.
 	NoRepsText = "No representatives were found online, please consult other internal sources for more accurate information"
+	// NoAddressText and NoLegalFormText are written when the person leaves
+	// the address, or the legal form of a name without one, empty.
+	NoAddressText   = "No address was found online due to little to no information available"
+	NoLegalFormText = "No legal form was found online due to little to no information available"
 	// RegistryText always fills the Commercial Registry Number field; the
 	// user may replace it with the number when editing the form.
 	RegistryText = "No commercial registry number was found online consult internal sources for further information"

@@ -150,3 +150,11 @@ skipped them; a stable release tagged on the translation commit was then
 newer than rolling.
 The rolling build now always builds the newest `main`, and runs after a
 release is published and after translations are committed.
+
+## Standard texts for a missing address or legal form
+
+Enter on an empty address, or on the legal form of a name that has
+none, now writes a standard text like the one for representatives:
+"No address was found online due to little to no information available"
+and "No legal form was found online due to little to no information
+available". `-` still leaves the field blank.
