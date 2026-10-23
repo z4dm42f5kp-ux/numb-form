@@ -9,9 +9,15 @@ updates:
       interval: weekly
     cooldown:
       default-days: 14
+  # Only Argos Translate itself: its dependencies must fit together, so
+  # the lock is regenerated as a whole with the uv command at the top of
+  # requirements.txt. Single-package bumps (torch, stanza, thinc) broke
+  # the translations. Security updates still arrive for every package.
   - package-ecosystem: pip
     directory: /.github/translate
     schedule:
       interval: monthly
     cooldown:
       default-days: 14
+    allow:
+      - dependency-name: argostranslate
