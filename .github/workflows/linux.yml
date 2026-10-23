@@ -8,6 +8,9 @@ name: linux
 # release binary and the build from source). scripts/linux-check.sh does
 # the work.
 #
+# The images are pinned by digest; updates.yml refreshes the digests
+# daily, so security updates of the distributions arrive within a day.
+#
 # It runs for minor releases only: pull requests titled "vX.Y.0: ...".
 # Patch releases, pushes to main and the rolling build do not run it. It
 # also runs when the check itself changes, and by hand.
@@ -38,15 +41,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { distro: debian, image: "debian:13" }
-          - { distro: fedora, image: "fedora:44" }
-          - { distro: arch, image: "archlinux:latest" }
-          - { distro: gentoo, image: "gentoo/stage3:latest" }
-          - { distro: void, image: "ghcr.io/void-linux/void-glibc-full:latest" }
-          - { distro: opensuse-tumbleweed, image: "opensuse/tumbleweed:latest" }
-          - { distro: opensuse-leap, image: "opensuse/leap:16.0" }
-          - { distro: alpine, image: "alpine:latest" }
-          - { distro: nixos, image: "nixos/nix:latest" }
+          - { distro: debian, image: "debian:13@sha256:4c25275446ca371766b8b093c696782eabce06263fccacb8d5d813b3dc44b308" }
+          - { distro: fedora, image: "fedora:44@sha256:43b29f65a41eb9c35e1cd5323e3bdf3b655c2357a9f4f1ff2f9c2798e5045d80" }
+          - { distro: arch, image: "archlinux:latest@sha256:52dfbd5afb23a220d5ee92dafcb4c788d96c026ed04179890c23adef4c897fa0" }
+          - { distro: gentoo, image: "gentoo/stage3:latest@sha256:916dc4d8cf38d316da9a838c2e20f32f16b7d4f21ef137b4682b66d68874c2c5" }
+          - { distro: void, image: "ghcr.io/void-linux/void-glibc-full:latest@sha256:9eb02d7ed63f77b785f5b597099292767fab23bbb824aa987f93ac583d8aa44f" }
+          - { distro: opensuse-tumbleweed, image: "opensuse/tumbleweed:latest@sha256:c2dc2e1dfcefd411a433b9fa00f368eafef4db17b7623d4b1b1c16d26dd89dc4" }
+          - { distro: opensuse-leap, image: "opensuse/leap:16.0@sha256:40b8e1fc290b203380b9adc7cd147ef2141f5a613c7cf7117f678f626855654e" }
+          - { distro: alpine, image: "alpine:latest@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a" }
+          - { distro: nixos, image: "nixos/nix:latest@sha256:f159a58f390677f41e8e900a74b6e2f9c7f27b364122ae6acf7a652ce6c551c0" }
     runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:

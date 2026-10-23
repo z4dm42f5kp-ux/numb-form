@@ -283,4 +283,8 @@ The Linux distributions the team uses are tested in containers with
 their own Go and the documented commands, only for minor releases
 (pull requests titled `vX.Y.0:`), because the check takes long.
 Patch releases, `main` and the rolling build are not held up by it.
+The rolling distributions (Arch, Gentoo, Void, Tumbleweed, Alpine,
+NixOS) change daily, so their images are pinned by digest and the daily
+updates workflow proposes new digests rather than letting tests run on
+whatever `latest` is.
 

@@ -24,6 +24,9 @@ Releases up to v1.2.1 are described on the
   downloads another Go toolchain, and works on NixOS and Guix in one
   command.
 * `numb-form man` no longer shows comment lines of the documentation.
+* CI tests OpenBSD 8.0 and NetBSD 11.0 (FreeBSD 15.1 is current).
+  The test systems' container images are pinned by digest, and a daily
+  check proposes their security updates and reports newer releases.
 
 ## v1.5.0
 
