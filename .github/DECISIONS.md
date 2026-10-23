@@ -299,3 +299,14 @@ The rolling distributions (Arch, Gentoo, Void, Tumbleweed, Alpine,
 NixOS) change daily, so their images are pinned by digest and the daily
 updates workflow proposes new digests rather than letting tests run on
 whatever `latest` is.
+
+## Every day, the languages are checked too
+
+The daily checks covered the actions, the Go tools, Go for the
+published binaries and, since v1.7.7, the test systems.
+They now also cover Go's support window and the pinned Python packages.
+`go.mod` still allows Go 1.21 although Go fixes security bugs only in
+its two newest releases: the release binaries are always built with the
+newest Go, and source builds use the Go of the distributions, which
+backport security fixes (Debian 13 ships Go 1.24).
+The daily issue keeps the question open until the minimum is raised.

@@ -60,6 +60,12 @@ desktop site if Settings is hidden):
   `ci: security updates of the test systems`. When a distribution or
   FreeBSD, OpenBSD or NetBSD has a newer release, it opens or updates
   the issue *Newer operating system releases to test*.
+* It checks the languages. When a newer stable Go is out, it opens a
+  pull request `docs: goX.Y.Z in the build instructions`. When Go no
+  longer fixes security bugs in the Go that `go.mod` allows or that CI
+  tests, or a pinned Python package has a known vulnerability (OSV
+  database), it opens or updates the issue *Languages and tools to
+  review*, and closes it when nothing is left.
 * It also checks the binaries of the newest release and of the rolling
   build with govulncheck. When a newer stable Go fixes what it finds, it
   rebuilds the rolling build, and proposes the next patch version of the

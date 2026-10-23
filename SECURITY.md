@@ -246,6 +246,9 @@ change rather than for each push):
 | New dependencies in pull requests | dependency review |
 
 OpenSSF Scorecard checks the repository's practices.
+The daily updates workflow also checks the test systems, Go's support
+window and the pinned Python packages against the OSV database
+([.github/RELEASING.md](.github/RELEASING.md)).
 Pull requests, including Dependabot's, never need write permissions:
 results that require them are uploaded only from `main`.
 
