@@ -31,10 +31,11 @@ func TestCompanyFolder(t *testing.T) {
 }
 
 // listFolders sees what numb-form sees: no overview folder, no hidden
-// folders.
+// folders. Folder names end without a dot, as SafeName makes them:
+// Windows drops a trailing dot.
 func TestListFolders(t *testing.T) {
 	_, real, _ := setup(t)
-	for _, d := range []string{".hidden/Foo Corp", "D10629 Foo S.A./2025"} {
+	for _, d := range []string{".hidden/Foo Corp", "D10629 Foo S.A/2025"} {
 		if err := os.MkdirAll(filepath.Join(real, filepath.FromSlash(d)), 0o750); err != nil {
 			t.Fatal(err)
 		}
@@ -46,7 +47,7 @@ func TestListFolders(t *testing.T) {
 			t.Errorf("%s named %q", f.rel, f.name)
 		}
 	}
-	for _, want := range []string{"Foo GmbH", "Archive", "Archive/foo-corp", "D10629 Foo S.A.", "D10629 Foo S.A./2025"} {
+	for _, want := range []string{"Foo GmbH", "Archive", "Archive/foo-corp", "D10629 Foo S.A", "D10629 Foo S.A/2025"} {
 		if !got[want] {
 			t.Errorf("%s not listed: %v", want, got)
 		}
