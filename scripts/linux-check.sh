@@ -8,6 +8,10 @@
 set -eu
 step=${1:?usage: linux-check.sh prepare|test|install DISTRO}
 distro=${2:?usage: linux-check.sh prepare|test|install DISTRO}
+# The nixos/nix image has no sed or grep: run in a shell that has them.
+if [ "$distro" = nixos ] && [ -z "${IN_NIX_SHELL:-}" ]; then
+	exec nix-shell -p gnused gnugrep coreutils --run "sh '$0' '$step' '$distro'"
+fi
 src=/src
 [ -d "$src/scripts" ] || src=$(pwd)
 t=$src/scripts/install/templates
