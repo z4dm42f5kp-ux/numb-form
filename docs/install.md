@@ -64,6 +64,23 @@ cd "$(mktemp -d)" && curl --proto '=https' --tlsv1.2 -fsSLO https://github.com/z
 ```
 <!-- /install:linux-arm64 -->
 
+If the command reports that `curl` or another program is missing,
+install it first:
+
+<!-- install:linux-tools -->
+| Distribution | Install what the command needs (once) |
+| --- | --- |
+| Debian 13 and systems based on it | `sudo apt-get update && sudo apt-get install -y curl ca-certificates` |
+| Fedora 44 (curl is installed) | `sudo dnf install -y tar gzip` |
+| Arch Linux | `sudo pacman -S --needed curl tar gzip` |
+| Gentoo | `sudo emerge --ask --noreplace net-misc/curl` |
+| Void Linux | `sudo xbps-install -Sy curl` |
+| openSUSE Tumbleweed and Leap 16 | `sudo zypper install -y curl tar gzip` |
+| Alpine Linux | `doas apk add curl` |
+| NixOS | `nix-shell -p curl` (a shell with curl; run the command inside it) |
+| Guix System | `guix shell curl tar gzip coreutils` (a shell with them; run the command inside it) |
+<!-- /install:linux-tools -->
+
 ### macOS
 
 Apple silicon (M1 and later):
@@ -227,9 +244,45 @@ cosign verify-blob --bundle SHA256SUMS.sigstore.json --certificate-identity-rege
 ## Building from source
 
 The project has no third-party modules: `go.mod` has no `require` lines
-and the build downloads nothing.
-The builds below use a temporary Go build cache that is deleted
-afterwards, so no cache is left on disk.
+and the build downloads nothing but Go itself.
+The commands below build the same stable release as the binaries above,
+from its tag, with Go 1.21 or later.
+They use a temporary build cache that is deleted afterwards, set
+`GOTOOLCHAIN=local` so that Go never downloads another toolchain, and
+install into `~/.local/bin` (Windows: `%LOCALAPPDATA%\Programs\numb-form`).
+A program built from source prints `dev` as its version, and
+`numb-form update` does not replace it.
+
+1. Install Go and git, with or without administrator rights (below).
+2. Run the build command of your system.
+3. Check the result: `numb-form -version` prints `dev`.
+
+### Go with administrator rights
+
+<!-- install:go-packages -->
+| System | Install Go and git |
+| --- | --- |
+| Debian 13 and systems based on it | `sudo apt-get update && sudo apt-get install -y golang-go git ca-certificates` |
+| Fedora 44 | `sudo dnf install -y golang git` |
+| Arch Linux (official repositories, no AUR) | `sudo pacman -S --needed go git` |
+| Gentoo | `sudo emerge --ask --noreplace dev-lang/go dev-vcs/git` |
+| Void Linux | `sudo xbps-install -Sy go git` |
+| openSUSE Tumbleweed and Leap 16 | `sudo zypper install -y go git` |
+| Alpine Linux | `doas apk add go git` |
+| NixOS | none: the NixOS command below brings Go and git |
+| Guix System | none: the Guix command below brings Go and git |
+| macOS | `brew install go git` |
+| FreeBSD | `su -m root -c 'pkg install -y go git'` |
+| OpenBSD | `doas pkg_add go git` |
+| NetBSD | `su -m root -c 'pkgin -y install go git' && PATH=$(ls -d /usr/pkg/go1*/bin \| tail -n 1):$PATH && export PATH` |
+| Windows (Command Prompt or PowerShell 7) | `winget install --id GoLang.Go -e && winget install --id Git.Git -e` |
+| Windows PowerShell 5.1 | `winget install --id GoLang.Go -e; if ($?) { winget install --id Git.Git -e }` |
+<!-- /install:go-packages -->
+
+On NetBSD, pkgsrc installs Go in a versioned folder such as
+`/usr/pkg/go126/bin`; the table entry adds the newest one to `PATH`.
+If the installed Go is older than 1.21, the build stops with an error;
+install a newer Go.
 
 ### Go without administrator rights
 
@@ -259,50 +312,39 @@ Command Prompt:
 On the BSDs, use the release binary when you have no administrator
 rights; Go's archives for them need the system's own packages anyway.
 
-### Go with administrator rights
-
-| System | Install Go and git |
-| --- | --- |
-| Alpine Linux | `doas apk add go git` |
-| Arch Linux (official repositories only) | `sudo pacman -S --needed go git` |
-| Debian 13, Ubuntu 24.04 or later | `sudo apt-get update && sudo apt-get install -y golang-go git` |
-| Debian 12 | `echo 'deb http://deb.debian.org/debian bookworm-backports main' \| sudo tee /etc/apt/sources.list.d/backports.list && sudo apt-get update && sudo apt-get install -y -t bookworm-backports golang-go && sudo apt-get install -y git` |
-| Fedora, RHEL, Rocky, Alma | `sudo dnf install -y golang git` |
-| FreeBSD | `su -m root -c 'pkg install -y go git'` |
-| Gentoo | `sudo emerge --ask --noreplace dev-lang/go dev-vcs/git` |
-| macOS | `brew install go git` |
-| NetBSD | `su -m root -c 'pkgin -y install go git' && PATH=$(ls -d /usr/pkg/go1*/bin \| tail -n 1):$PATH && export PATH` |
-| OpenBSD | `doas pkg_add go git` |
-| Void Linux | `sudo xbps-install -Sy go git` |
-| Windows (Command Prompt or PowerShell 7) | `winget install --id GoLang.Go -e && winget install --id Git.Git -e` |
-| Windows PowerShell 5.1 | `winget install --id GoLang.Go -e; if ($?) { winget install --id Git.Git -e }` |
-
-On NetBSD, pkgsrc installs Go in a versioned folder such as
-`/usr/pkg/go126/bin`; the table entry adds the newest one to `PATH`.
-If the installed Go is older than 1.21, the build stops with an error;
-install a newer Go rather than letting it download a toolchain.
-
 ### Build and install
 
-Linux, macOS and the BSDs (installs into `~/.local/bin`):
+Linux, macOS and the BSDs:
 
+<!-- install:source-unix -->
 ```
-cd "$(mktemp -d)" && git clone --depth 1 https://github.com/z4dm42f5kp-ux/numb-form.git && cd numb-form && export GOCACHE="$(mktemp -d)" GOFLAGS='-trimpath -mod=readonly' CGO_ENABLED=0 && go build -o numb-form ./cmd/numb-form && go build -o numb-commit ./cmd/numb-commit && go build -o numb-date ./cmd/numb-date && go build -o numb-typo ./cmd/numb-typo && mkdir -p "$HOME/.local/bin" && install -m 0755 numb-form numb-commit numb-date numb-typo "$HOME/.local/bin/" && go clean -cache && rm -rf "$GOCACHE" && cd / && rm -rf "$OLDPWD/.." && echo OK
+t="$(mktemp -d)" && cd "$t" && git clone --depth 1 --branch v1.2.1 https://github.com/z4dm42f5kp-ux/numb-form.git && cd numb-form && export GOCACHE="$t/cache" GOFLAGS="-trimpath -mod=readonly" CGO_ENABLED=0 GOTOOLCHAIN=local && go build -o bin/ ./cmd/... && mkdir -p "$HOME/.local/bin" && install -m 0755 bin/* "$HOME/.local/bin/" && cd / && rm -rf "$t" && "$HOME/.local/bin/numb-form" -version
 ```
+<!-- /install:source-unix -->
 
-Windows (no git needed; installs into `%LOCALAPPDATA%\Programs\numb-form`
-and adds it to your `PATH`).
-Windows PowerShell:
+NixOS (brings Go and git for this command only):
 
+<!-- install:source-nixos -->
 ```
-& { $ErrorActionPreference = 'Stop'; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $t = Join-Path $env:TEMP ('numb-form-' + [guid]::NewGuid()); $d = Join-Path $env:LOCALAPPDATA 'Programs\numb-form'; New-Item -ItemType Directory -Force $t, $d | Out-Null; try { Set-Location $t; Invoke-WebRequest -UseBasicParsing 'https://github.com/z4dm42f5kp-ux/numb-form/archive/refs/heads/main.zip' -OutFile src.zip; Expand-Archive src.zip -DestinationPath $t; Set-Location (Join-Path $t 'numb-form-main'); $env:GOCACHE = Join-Path $t 'cache'; $env:GOFLAGS = '-trimpath -mod=readonly'; $env:CGO_ENABLED = '0'; foreach ($c in 'numb-form', 'numb-commit', 'numb-date', 'numb-typo') { go build -o (Join-Path $d "$c.exe") "./cmd/$c"; if ($LASTEXITCODE -ne 0) { throw "building $c failed" } } } finally { Set-Location $env:TEMP; Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $t; Remove-Item Env:GOCACHE, Env:GOFLAGS, Env:CGO_ENABLED -ErrorAction SilentlyContinue }; $p = [Environment]::GetEnvironmentVariable('Path', 'User'); if (-not $p) { $p = '' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';') + ';' + $d).TrimStart(';'), 'User') }; 'OK, open a new PowerShell window' }
+nix-shell -p go git cacert --run 't="$(mktemp -d)" && cd "$t" && git clone --depth 1 --branch v1.2.1 https://github.com/z4dm42f5kp-ux/numb-form.git && cd numb-form && export GOCACHE="$t/cache" GOFLAGS="-trimpath -mod=readonly" CGO_ENABLED=0 GOTOOLCHAIN=local && go build -o bin/ ./cmd/... && mkdir -p "$HOME/.local/bin" && install -m 0755 bin/* "$HOME/.local/bin/" && cd / && rm -rf "$t" && "$HOME/.local/bin/numb-form" -version'
 ```
+<!-- /install:source-nixos -->
 
-Command Prompt:
+Guix System (brings Go and git for this command only):
 
+<!-- install:source-guix -->
 ```
-cd /d "%TEMP%" && curl.exe -fL -o numb-form-src.zip https://github.com/z4dm42f5kp-ux/numb-form/archive/refs/heads/main.zip && tar -xf numb-form-src.zip && del numb-form-src.zip && cd numb-form-main && set "GOCACHE=%TEMP%\numb-form-gocache" && set "GOFLAGS=-trimpath -mod=readonly" && set "CGO_ENABLED=0" && (if not exist "%LOCALAPPDATA%\Programs\numb-form" mkdir "%LOCALAPPDATA%\Programs\numb-form") && go build -o "%LOCALAPPDATA%\Programs\numb-form\numb-form.exe" ./cmd/numb-form && go build -o "%LOCALAPPDATA%\Programs\numb-form\numb-commit.exe" ./cmd/numb-commit && go build -o "%LOCALAPPDATA%\Programs\numb-form\numb-date.exe" ./cmd/numb-date && go build -o "%LOCALAPPDATA%\Programs\numb-form\numb-typo.exe" ./cmd/numb-typo && go clean -cache && cd /d "%TEMP%" && rmdir /s /q numb-form-main && powershell -NoProfile -Command "$d=$env:LOCALAPPDATA+'\Programs\numb-form'; $p=[Environment]::GetEnvironmentVariable('Path','User'); if (-not $p) { $p='' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';')+';'+$d).TrimStart(';'), 'User') }" && echo OK, open a new Command Prompt
+guix shell go git nss-certs coreutils -- sh -c 'export SSL_CERT_DIR="$GUIX_ENVIRONMENT/etc/ssl/certs" GIT_SSL_CAINFO="$GUIX_ENVIRONMENT/etc/ssl/certs/ca-certificates.crt" && t="$(mktemp -d)" && cd "$t" && git clone --depth 1 --branch v1.2.1 https://github.com/z4dm42f5kp-ux/numb-form.git && cd numb-form && export GOCACHE="$t/cache" GOFLAGS="-trimpath -mod=readonly" CGO_ENABLED=0 GOTOOLCHAIN=local && go build -o bin/ ./cmd/... && mkdir -p "$HOME/.local/bin" && install -m 0755 bin/* "$HOME/.local/bin/" && cd / && rm -rf "$t" && "$HOME/.local/bin/numb-form" -version'
 ```
+<!-- /install:source-guix -->
+
+Windows PowerShell (no git needed):
+
+<!-- install:source-windows -->
+```
+& { $ErrorActionPreference = 'Stop'; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $t = Join-Path $env:TEMP ('numb-form-' + [guid]::NewGuid()); $d = Join-Path $env:LOCALAPPDATA 'Programs\numb-form'; New-Item -ItemType Directory -Force $t, $d | Out-Null; try { Set-Location $t; Invoke-WebRequest -UseBasicParsing 'https://github.com/z4dm42f5kp-ux/numb-form/archive/refs/tags/v1.2.1.zip' -OutFile src.zip; Expand-Archive src.zip -DestinationPath $t; Set-Location (Join-Path $t 'numb-form-1.2.1'); $env:GOCACHE = Join-Path $t 'cache'; $env:GOFLAGS = '-trimpath -mod=readonly'; $env:CGO_ENABLED = '0'; $env:GOTOOLCHAIN = 'local'; go build -o $d ./cmd/...; if ($LASTEXITCODE -ne 0) { throw 'the build failed' } } finally { Set-Location $env:TEMP; Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $t; Remove-Item Env:GOCACHE, Env:GOFLAGS, Env:CGO_ENABLED, Env:GOTOOLCHAIN -ErrorAction SilentlyContinue }; $p = [Environment]::GetEnvironmentVariable('Path', 'User'); if (-not $p) { $p = '' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';') + ';' + $d).TrimStart(';'), 'User') }; & (Join-Path $d 'numb-form.exe') -version; 'OK, open a new PowerShell window' }
+```
+<!-- /install:source-windows -->
 
 ## Office software
 
