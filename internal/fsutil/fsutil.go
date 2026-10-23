@@ -249,7 +249,7 @@ func ReplaceVerified(path, have string, data []byte) error {
 		return fmt.Errorf("%s changed since it was read; nothing was written", filepath.Base(path))
 	}
 	want := SHA256Bytes(data)
-	tmp := filepath.Join(filepath.Dir(path), ".numb-date-tmp-"+randHex(6))
+	tmp := filepath.Join(filepath.Dir(path), ".numb-replace-"+randHex(6))
 	f, err := os.OpenFile(tmp, os.O_WRONLY|os.O_CREATE|os.O_EXCL, info.Mode().Perm()) // #nosec G304
 	if err != nil {
 		return err
