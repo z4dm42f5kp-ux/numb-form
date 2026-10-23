@@ -361,8 +361,8 @@ numb-commit review
 
 **`spreadsheet cell … changed; only report dates and place corrections may change`**
 : The working copy's spreadsheet was edited by hand. numb-commit only
-  carries report dates and corrections of misspelt or cut-off places
-  after a company name; make other changes in the real spreadsheet.
+  carries report dates from numb-date and place corrections from
+  numb-typo; make other changes in the real spreadsheet.
 
 **`… is not a working folder: it has no template and "Übersicht" folder`**
 : Give the folder that holds the template and the overview folder, not
@@ -374,5 +374,5 @@ numb-commit review
 
 ## SEE ALSO
 
-[numb-form](usage.md), [numb-date](numb-date.md),
+[numb-form](usage.md), [numb-date](numb-date.md), [numb-typo](numb-typo.md),
 [configuration.md](configuration.md), [the guide](guide.md)

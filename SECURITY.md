@@ -107,6 +107,12 @@ numb-form handles customer documents, so the design rules are strict.
   result read back from disk; *undo* restores it, checked with SHA-256.
   It refuses to run while Excel or LibreOffice has the file open.
   Forms are only read.
+* **numb-typo** writes the same way, to cells of the company-name column
+  only: it corrects a misspelt or cut-off city or country after a comma
+  ("…, Ciudad de Me" to "…, Ciudad de México") from a built-in list of
+  places, never the name before the first comma or a legal form, leaves
+  names of companies that already have a folder alone, and writes only
+  the corrections the user takes.
 * Documents are not re-serialised.
   The XML is only scanned for byte offsets and values are spliced into the
   original bytes; all other parts of the `.docx` are copied byte for byte.

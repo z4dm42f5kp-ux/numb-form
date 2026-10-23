@@ -8,6 +8,21 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.7.0
+
+* New program **numb-typo**: it corrects misspelt or cut-off places at
+  the end of company names in the overview spreadsheet, for example
+  "Ciudad de Me" to "Ciudad de México", after you agree to each one.
+  It leaves the names of companies that already have a folder alone,
+  and writes only the name cells, with the same checks and undo as
+  numb-date.
+  See [docs/numb-typo.md](docs/numb-typo.md) or
+  `numb-form man numb-typo`.
+* `numb-form update`, the release archives and the container image
+  include numb-typo.
+
+**Action needed:** none. The next `numb-form update` installs numb-typo.
+
 ## v1.6.5
 
 * Internal: the dialogue of a program that corrects misspelt or cut-off

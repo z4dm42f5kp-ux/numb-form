@@ -1,4 +1,4 @@
-// Package update replaces the installed numb-form, numb-commit and numb-date
+// Package update replaces the installed numb-form, numb-commit, numb-date and numb-typo
 // programs with those of the newest GitHub release (stable) or of the
 // edge development build. It does what the install commands in
 // docs/install.md do: download the archive and SHA256SUMS over HTTPS,
@@ -29,11 +29,11 @@ const (
 )
 
 // Programs are the files replaced by an update, without extension.
-var Programs = []string{"numb-form", "numb-commit", "numb-date"}
+var Programs = []string{"numb-form", "numb-commit", "numb-date", "numb-typo"}
 
 // Optional programs may be missing from older releases; numb-form must
 // stay first.
-var Optional = map[string]bool{"numb-date": true}
+var Optional = map[string]bool{"numb-date": true, "numb-typo": true}
 
 // Options describes one update.
 type Options struct {
