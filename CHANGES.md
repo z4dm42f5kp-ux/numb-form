@@ -14,6 +14,7 @@ Releases up to v1.2.1 are described on the
   real folder: only when the real spreadsheet still has the checksum it
   had when the request was made, after keeping the old version in the
   log folder, through a checked temporary copy.
+  Both versions of the spreadsheet are read with the 256 MB limit.
   Nothing uses it yet. No change in behaviour.
 * numb-date's temporary copy beside the spreadsheet is now named
   `.numb-replace-…` instead of `.numb-date-tmp-…`, as numb-commit will
