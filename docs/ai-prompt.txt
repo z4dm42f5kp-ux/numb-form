@@ -22,4 +22,4 @@ Legal Form: [legal form]
 
 Headquarters/Address: [address]
 
-Authorized Representatives: [representatives]
+Authorized Representatives: Person Name (Placeholder Field, Placeholder Field), Person Name 2 (Placeholder Field), etc.
