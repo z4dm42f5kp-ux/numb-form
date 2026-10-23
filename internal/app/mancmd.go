@@ -53,7 +53,7 @@ func Man(out io.Writer, args []string) int {
 			return ExitOK
 		case "en", "es", "de":
 			lang = strings.ToLower(a)
-		case "numb-form", "numb-commit":
+		case "numb-form":
 			// "numb-form man numb-form" (from man.cmd) means the whole manual.
 		default:
 			if _, ok := manual.Find(a); !ok {

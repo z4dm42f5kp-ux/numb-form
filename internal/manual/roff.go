@@ -98,7 +98,7 @@ func Roff(docs fs.FS, version string, now time.Time) (string, error) {
 	b.WriteString(".SH SYNOPSIS\n.nf\nnumb-form [-f conf] [-y] [-offline] [-root dir] [-downloads dir] [-timeout d]\n" +
 		"numb-form [-f conf] check-template template [sample]\nnumb-form [-f conf] config [init | set key value]\n" +
 		"numb-form [-f conf] update [stable | rolling | v1.2.3]\nnumb-form rollback\nnumb-form man [topic] [en | es | de]\n" +
-		"numb-commit [-f conf] [-run dir] [-downloads dir]\nnumb-date [-f conf] [-y] [-root dir] [-timeout d]\n.fi\n")
+		"numb-commit [-f conf] [-from dir] [-to dir] [review]\nnumb-commit [-f conf] [-run dir] [-downloads dir]\nnumb-date [-f conf] [-y] [-root dir] [-timeout d]\n.fi\n")
 	for _, t := range Topics {
 		md, err := Source(docs, t, "en")
 		if err != nil {

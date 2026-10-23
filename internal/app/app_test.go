@@ -203,7 +203,7 @@ func TestRunAndCommit(t *testing.T) {
 	}
 	// A second commit has nothing to do; a second run finds every folder.
 	out.Reset()
-	if code := Commit(CommitOptions{Downloads: dl, In: strings.NewReader(""), Out: &out, Now: now}); code != ExitOK {
+	if code := Commit(CommitOptions{Downloads: dl, Config: review(), In: strings.NewReader(""), Out: &out, Now: now}); code != ExitOK || !strings.Contains(out.String(), "There is nothing to commit.") {
 		t.Fatalf("second commit exit %d\n%s", code, out.String())
 	}
 	out.Reset()
