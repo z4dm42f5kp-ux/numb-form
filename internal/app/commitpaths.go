@@ -10,6 +10,7 @@ import (
 
 	"github.com/z4dm42f5kp-ux/numb-form/internal/config"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/fsutil"
+	"github.com/z4dm42f5kp-ux/numb-form/internal/runlog"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/sheet"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/ui"
 )
@@ -20,6 +21,29 @@ const (
 	askFrom = "Which directory should be committed (insert absolute path)?: "
 	askTo   = "Which directory is the target?: "
 )
+
+// folderMode reports whether numb-commit compares a working copy with the
+// real folder rather than committing a review run. It does unless -run
+// is given, or nothing names a folder and either mode = review or review
+// runs are waiting in Downloads.
+func folderMode(opt CommitOptions) bool {
+	if opt.RunDir != "" {
+		return false
+	}
+	cfg := opt.Config
+	if opt.Review || opt.From != "" || opt.To != "" || (cfg != nil && (cfg.CommitFrom != "" || cfg.CommitTo != "")) {
+		return true
+	}
+	if cfg != nil && cfg.Mode == "review" {
+		return false
+	}
+	dl := opt.Downloads
+	if dl == "" {
+		dl, _ = fsutil.DownloadsDir()
+	}
+	runs, _ := pendingRuns(runlog.RunsDir(dl))
+	return len(runs) == 0
+}
 
 // cleanPath removes the quotes that "Copy as path" adds and surrounding
 // spaces.
@@ -95,6 +119,12 @@ func pickFolders(u *ui.UI, givenFrom, givenTo string, cfg config.Config) (from, 
 		return "", "", err
 	}
 	return from, to, nil
+}
+
+// folders resolves the working copy (from) and the real folder (to).
+func (opt CommitOptions) folders(u *ui.UI) (from, to string, err error) {
+	cfg := *opt.Config
+	return pickFolders(u, firstOf(opt.From, cfg.CommitFrom), firstOf(opt.To, cfg.CommitTo), cfg)
 }
 
 func firstOf(a ...string) string {
