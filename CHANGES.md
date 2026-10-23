@@ -1,0 +1,31 @@
+# Changes
+
+What changed in each release, newest first.
+Every pull request that changes the programs adds its lines here, under
+the version it will be released as
+([.github/DOCUMENTATION.md](.github/DOCUMENTATION.md)).
+**Action needed** lists what users must do after updating.
+Releases up to v1.2.1 are described on the
+[releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
+
+## v1.2.4
+
+* Documentation standard after OpenBSD and FreeBSD: a change to what a
+  person sees updates its manual page in the same pull request, and is
+  listed here.
+  Tests fail when a flag or a configuration key is undocumented or a link
+  in the documentation points nowhere.
+* `numb-form man changes` shows this file.
+
+## v1.2.3
+
+* The AI prompt is rewritten so that it leaves nothing to interpret:
+  the exact entity, sources ranked by trust with the registers that work
+  for little-known companies by country, the format of every field,
+  numb-form's standard texts, and no em dashes or semicolons.
+
+## v1.2.2
+
+* The AI prompt for finding a company's legal form, address and
+  representatives is a separate download, `ai-prompt.txt`, with every
+  release ([docs/ai-prompt.md](docs/ai-prompt.md)).

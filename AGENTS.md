@@ -107,6 +107,10 @@ cd "/path/to/working-folder" && numb-form
   --only-binary :all:` and install them with `--require-hashes --no-deps`.
 * Do not edit `docs/es` or `docs/de` by hand; the translate workflow
   regenerates them from the English files.
+* A change to what a person sees updates its manual page and
+  `CHANGES.md` in the same pull request
+  ([.github/DOCUMENTATION.md](.github/DOCUMENTATION.md)); tests and the
+  *changes listed* job enforce it.
 * Documentation follows the OpenBSD style: short declarative sentences,
   imperative instructions, no marketing.
   Every procedure is a single command, labelled **Unix-like** (macOS,

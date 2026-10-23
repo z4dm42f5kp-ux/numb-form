@@ -32,6 +32,7 @@ var Topics = []Topic{
 	{"formats", "docs/formats.md", "File formats"},
 	{"containers", "docs/containers.md", "Docker, Podman and Kubernetes"},
 	{"security", "SECURITY.md", "Security"},
+	{"changes", "CHANGES.md", "Changes in each release"},
 }
 
 var aliases = map[string]string{"config": "configuration", "settings": "configuration", "conf": "configuration", "update": "install", "docker": "containers", "kubernetes": "containers", "podman": "containers", "help": "guide", "start": "guide", "prompt": "ai-prompt", "ai": "ai-prompt"}
