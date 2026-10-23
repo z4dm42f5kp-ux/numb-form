@@ -29,7 +29,7 @@ INDEX = ("https://raw.githubusercontent.com/argosopentech/argospm-index/"
 PINS = HERE / "models.sha256"
 LANGS = {"es": "Español", "de": "Deutsch"}
 SOURCES = ["README.md", "SECURITY.md", "docs/guide.md", "docs/install.md", "docs/usage.md", "docs/configuration.md",
-           "docs/formats.md", "docs/containers.md"]
+           "docs/formats.md", "docs/containers.md", "docs/ai-prompt.md"]
 NOTE = {
     "es": "> Traducción automática (Argos Translate) del [original en inglés]({src}). "
           "La versión en inglés es la que vale.",

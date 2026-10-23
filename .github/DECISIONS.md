@@ -177,6 +177,44 @@ at once). Go and the pinned Go tools have no Dependabot support here:
 and, when a newer Go fixes a vulnerability in the newest release's
 binaries, proposes a patch release of the same code built with that Go.
 
+## The AI prompt is a separate download
+
+numb-form makes no online lookups, so the address and the
+representatives come from the person.
+The team finds them with an AI assistant and a fixed prompt.
+The prompt is kept in the repository (`docs/ai-prompt.txt`) and shipped
+with every release as its own file, checksummed in `SHA256SUMS`, so
+that everyone uses the same version.
+It is not built into the programs.
+
+## The AI prompt leaves nothing to interpret
+
+The prompt now defines the entity, ranks the sources (official registers
+first, aggregators and news only as leads), names the registers that
+work for little-known companies in Germany, Austria, Switzerland, Spain
+and Latin America, and fixes the format of every field.
+It matches numb-form: the legal form in its conventional casing
+(`GmbH`, `S.A.`) rather than in capitals, the representatives as
+`Full Name (Role)` with the roles in English, and numb-form's standard
+texts when nothing is found.
+The assistant writes no em dashes, en dashes or semicolons.
+"innacurate" in the caution became "inaccurate".
+
+## Documentation and security are written down like the BSDs and Go
+
+The manual is part of the program, as on OpenBSD and FreeBSD: a change
+to what a person sees updates its manual page in the same pull request,
+and `CHANGES.md` (FreeBSD's RELNOTES and UPDATING) says what changed and
+what users must do.
+Tests check what a program can: every flag and configuration key is
+documented and every link resolves.
+Problem reports use forms that ask for what OpenBSD asks for: exact
+steps, exact output and the version, without customer data.
+The security policy follows the Go project's (private reports, tracks,
+7 days to acknowledge, 90 days to fix or disclose), and
+`.github/SECURE-CODING.md` turns SECURITY.md's promises into rules,
+a review checklist and an audit every three months.
+
 ## Standard texts for a missing address or legal form
 
 Enter on an empty address, or on the legal form of a name that has
