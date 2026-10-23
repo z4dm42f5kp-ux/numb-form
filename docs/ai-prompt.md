@@ -38,8 +38,9 @@ The prompt tells the assistant:
   and news, with the registers that work for each country,
 * how to write each field: the legal form as the name writes it
   (`GmbH`, `S.A.`, `Ltda.`), the address on one line, the
-  representatives as `Full Name (Role 1, Role 2)` with the roles in
-  English,
+  representatives as `Full Name (Role 1, Role 2)` with every role in
+  English (`General Director`, never `Director General`) and no
+  explanation of why a person holds it,
 * to end a field with
   `Caution: This field might differ from internal sources or be inaccurate due to insufficient information online`
   when no official source confirms it,
