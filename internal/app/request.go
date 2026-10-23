@@ -116,8 +116,8 @@ func scanRequest(ctx context.Context, from, to string, rc reviewConfig) (*reques
 		}
 		rel, _ := filepath.Rel(from, p)
 		slash := filepath.ToSlash(rel)
-		if strings.ContainsAny(rel, "\t\r\n") {
-			return fmt.Errorf("%q has a tab or line break in its name; rename it first", rel)
+		if strings.ContainsAny(rel, "\t\r\n") || strings.ContainsRune(slash, '\\') {
+			return fmt.Errorf("%q has a tab, line break or backslash in its name; rename it first", rel)
 		}
 		if why := residue(rel, d.IsDir()); why != "" {
 			if !d.IsDir() || !strings.HasPrefix(d.Name(), ".") {
