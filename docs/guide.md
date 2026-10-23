@@ -288,8 +288,9 @@ running `numb-form man -install` once.
   Versions 0.1.1 and older look for `Company Name` instead; there, run
   `numb-form config set header "Customer Name"` once.
 
-**`Time limit of 25m0s reached`**
-: A run stops after 25 minutes for safety.
+**`Time limit of 30m0s reached`**
+: A time limit was set with `timeout` in the settings or with
+  `-timeout`; there is none by default.
   Start it again; companies already done are skipped.
 
 **Version 0.1.0 does not start inside GWG**

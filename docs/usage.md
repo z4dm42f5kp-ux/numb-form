@@ -81,7 +81,7 @@ unchanged, and no formatting is added.
 | Field | Value |
 | --- | --- |
 | Name / Company Name of the Contracting Party | the literal spreadsheet cell |
-| Legal form | found in the name, also before a branch or country note (`Foo GmbH (Wien)`), written as in the name with conventional capitals (`GMBH` gives `GmbH`); asked only when the name has none |
+| Legal form | found in the name: at the end, before a branch or country note (`Foo GmbH (Wien)`), before a city or country (`Foo SAS, Bogotá, Colombia`, `Foo S.A.C.I. Paraguay`), or first (`Ets Foo`); accents, dots and spaces may differ (`SOCIEDAD ANONIMA`, `S A`); written as in the name with conventional capitals (`GMBH` gives `GmbH`); asked only when the name has none |
 | Headquarters / Address | typed by the user; Enter leaves it blank |
 | Commercial Registry Number | always `No commercial registry number was found online consult internal sources for further information`; it can be replaced with the number with *edit* |
 | Authorized Representatives | typed by the user as `Full Name (Role 1, Role 2), Full Name (Role)`, roles in English; Enter writes the no-representatives text below, `-` leaves it blank |
@@ -205,7 +205,8 @@ The log is `numb-date.log` in the per-user state folder (or `log_dir`).
 : Review mode: put the copy in *dir*.
 
 `-timeout duration`
-: Stop safely after *duration*; at most `25m`.
+: Stop safely after *duration*, for example `30m`; overrides a longer
+  `timeout` in the configuration. Without it there is no time limit.
 
 `-run dir`
 : (numb-commit) Commit this run folder instead of the newest uncommitted

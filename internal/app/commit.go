@@ -41,10 +41,7 @@ func Commit(opt CommitOptions) int {
 	if opt.Now == nil {
 		opt.Now = time.Now
 	}
-	if opt.Timeout <= 0 || opt.Timeout > MaxRunTime {
-		opt.Timeout = MaxRunTime
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), opt.Timeout)
+	ctx, cancel := runContext(opt.Timeout)
 	defer cancel()
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
 	defer stop()

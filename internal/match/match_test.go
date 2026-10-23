@@ -48,6 +48,37 @@ func TestLegalForm(t *testing.T) {
 		"Foo e.U.":    {"e.U.", "Foo"},
 		"Agua Sana":   {"", "Agua Sana"},
 		"Casa Grande": {"", "Casa Grande"},
+		// Places written after the name.
+		"Foo SAS, Bogota, Colombia":     {"SAS", "Foo"},
+		"Foo. LTDA, El Alto":            {"Ltda", "Foo."},
+		"Foo Labs, SRL, Santo Domingo.": {"SRL", "Foo Labs"},
+		"Foo C.I.S.A, San Lorenzo":      {"C.I.S.A", "Foo"},
+		"Foo Freight LLC, Dubai":        {"LLC", "Foo Freight"},
+		"Foo INC, Miami, FL":            {"Inc", "Foo"},
+		"Foo S.A., Quito - Ecuador":     {"S.A.", "Foo"},
+		"Foo CIA. LTDA., Guayaquil":     {"Cia. Ltda.", "Foo"},
+		"Foo S.A.C.I. Paraguay":         {"S.A.C.I.", "Foo"},
+		"Foo SARL, Douala, Cameroun":    {"SARL", "Foo"},
+		"Foo Chile SPA,":                {"SpA", "Foo Chile"},
+		// Forms written first, and forms added for Latin America, Africa
+		// and the Gulf.
+		"ETS Foo, Douala.":       {"Ets", "Foo"},
+		"Etablissements Foo":     {"Etablissements", "Foo"},
+		"Foo S.A.S. BIC":         {"S.A.S. BIC", "Foo"},
+		"Foo S.A. E.S.P.":        {"S.A. E.S.P.", "Foo"},
+		"Foo LIMITADA":           {"Limitada", "Foo"},
+		"Foo SOCIEDAD ANONIMA":   {"Sociedad Anonima", "Foo"},
+		"Foo S.R.L. DE C.V.":     {"S.R.L. de C.V.", "Foo"},
+		"Foo S.A.C.I.F.I.A.":     {"S.A.C.I.F.I.A.", "Foo"},
+		"Foo FZE":                {"FZE", "Foo"},
+		"Foo FZ-LLC":             {"FZ-LLC", "Foo"},
+		"Foo W.L.L.":             {"W.L.L.", "Foo"},
+		"Foo LTDA EPP":           {"Ltda", "Foo"},
+		"Foo S.A.S ZOMAC":        {"S.A.S", "Foo"},
+		"Foo & CIA. LTDA.":       {"Ltda.", "Foo & CIA."},
+		"Juan Perez, Bogota":     {"", "Juan Perez, Bogota"},
+		"Distribuidora Colombia": {"", "Distribuidora Colombia"},
+		"Establecimientos Foo":   {"", "Establecimientos Foo"},
 	}
 	for in, want := range cases {
 		f, b := LegalForm(in)

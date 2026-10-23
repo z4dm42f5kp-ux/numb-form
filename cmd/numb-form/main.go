@@ -35,7 +35,7 @@ func realMain() int {
 	root := fs.String("root", "", "working folder (default: the current folder if it is one, else the single folder inside it)")
 	downloads := fs.String("downloads", "", "review mode: folder for the copy (default: the user's Downloads)")
 	offline := fs.Bool("offline", false, "update: do not contact GitHub")
-	timeout := fs.Duration("timeout", 0, "stop safely after this long (at most 25m)")
+	timeout := fs.Duration("timeout", 0, "stop safely after this long, such as 30m (default: timeout in the configuration, none: no limit)")
 	allowPipe := fs.Bool("allow-non-tty", false, "accept answers from a pipe (testing only)")
 	version := fs.Bool("version", false, "print the version and exit")
 	fs.Usage = func() {
@@ -82,10 +82,6 @@ func realMain() int {
 		return app.CheckTemplate(os.Stdout, cfg, rest[0], rest[1])
 	default:
 		fs.Usage()
-		return app.ExitUsage
-	}
-	if *timeout > app.MaxRunTime {
-		fmt.Fprintln(os.Stderr, "numb-form: -timeout may not exceed 25m")
 		return app.ExitUsage
 	}
 	if !*allowPipe && !ui.IsTerminal(os.Stdin) {

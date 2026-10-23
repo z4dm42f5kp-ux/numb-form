@@ -48,16 +48,25 @@ func TestRetiredKeys(t *testing.T) {
 }
 
 func TestErrors(t *testing.T) {
-	for _, in := range []string{"nokey\n", "colour = red\n", "mode = maybe\n", "timeout = soon\n", "online = maybe\n"} {
+	for _, in := range []string{"nokey\n", "colour = red\n", "mode = maybe\n", "timeout = soon\n", "timeout = -5m\n", "online = maybe\n"} {
 		c := Defaults()
 		if _, err := c.Apply([]byte(in), "x", false); err == nil {
 			t.Errorf("%q accepted", in)
 		}
 	}
 	c := Defaults()
-	c.Timeout = time.Hour
+	c.Timeout = -time.Second
 	if c.Validate() == nil {
-		t.Error("timeout over 25m accepted")
+		t.Error("negative timeout accepted")
+	}
+	c = Defaults()
+	if c.Timeout != 0 {
+		t.Error("default must be no time limit")
+	}
+	for in, want := range map[string]time.Duration{"timeout = none\n": 0, "timeout = 2h\n": 2 * time.Hour, "timeout = 0\n": 0} {
+		if _, err := c.Apply([]byte(in), "x", false); err != nil || c.Timeout != want {
+			t.Errorf("%q: %v %v", in, err, c.Timeout)
+		}
 	}
 }
 

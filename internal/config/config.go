@@ -21,13 +21,13 @@ type Config struct {
 	Mode   string // direct | review
 	Online bool   // numb-form update may contact GitHub
 
-	OverviewDir  string // folder name pattern of the overview folder
-	Header       string // spreadsheet column with company names
-	IDHeader     string // spreadsheet column with customer ids
-	TemplateName string // template file name without extension
-	Person       string // person processing the form; empty = ask
-	DateFormat   string // DD, MM, YYYY, YY tokens
-	Timeout      time.Duration
+	OverviewDir  string        // folder name pattern of the overview folder
+	Header       string        // spreadsheet column with company names
+	IDHeader     string        // spreadsheet column with customer ids
+	TemplateName string        // template file name without extension
+	Person       string        // person processing the form; empty = ask
+	DateFormat   string        // DD, MM, YYYY, YY tokens
+	Timeout      time.Duration // 0: no time limit
 	MaxWriteMB   int
 	Fuzzy        float64
 
@@ -45,9 +45,6 @@ type Config struct {
 	Origin map[string]string
 }
 
-// MaxTimeout is the hard upper bound for a run.
-const MaxTimeout = 25 * time.Minute
-
 // Defaults returns the built-in configuration, equal to the documented
 // behaviour.
 func Defaults() Config {
@@ -59,7 +56,6 @@ func Defaults() Config {
 		IDHeader:         "Customer ID",
 		TemplateName:     "Appendix A - Risk Assesment",
 		DateFormat:       "DD/MM/YYYY",
-		Timeout:          MaxTimeout,
 		MaxWriteMB:       100,
 		Fuzzy:            0.85,
 		PagesConverter:   "auto",
@@ -81,8 +77,8 @@ func GoDateLayout(f string) (string, error) {
 
 // Validate checks combinations that individual keys cannot.
 func (c *Config) Validate() error {
-	if c.Timeout <= 0 || c.Timeout > MaxTimeout {
-		return fmt.Errorf("timeout must be between 1s and 25m")
+	if c.Timeout < 0 {
+		return fmt.Errorf("timeout must be a duration such as 30m, or none")
 	}
 	if c.MaxWriteMB < 1 || c.MaxWriteMB > 100 {
 		return fmt.Errorf("max_write_mb must be between 1 and 100")

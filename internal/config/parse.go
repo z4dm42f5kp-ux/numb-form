@@ -58,7 +58,15 @@ func keyTable(c *Config) map[string]setter {
 		"legacy_formats":    boolean(&c.LegacyFormats),
 		"legacy_output":     oneOf(&c.LegacyOutput, "docx", "same"),
 		"timeout": func(_ *Config, v string) error {
+			switch strings.ToLower(v) {
+			case "none", "off", "no", "0":
+				c.Timeout = 0
+				return nil
+			}
 			d, err := time.ParseDuration(v)
+			if err == nil && d <= 0 {
+				err = fmt.Errorf("must be positive, or none")
+			}
 			c.Timeout = d
 			return err
 		},

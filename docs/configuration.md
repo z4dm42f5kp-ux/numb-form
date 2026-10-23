@@ -69,8 +69,9 @@ numb-form config init && numb-form config
 : Let `numb-form update` contact GitHub (default yes).
   Companies are never looked up online.
 
-`timeout = 25m`
-: Stop safely after this long; at most `25m`.
+`timeout = none`
+: Stop safely after this long, for example `30m` or `2h`; **none**
+  (default) means no time limit.
 
 `max_write_mb = 100`
 : Most megabytes of documents one run may write (1-100).

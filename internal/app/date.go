@@ -26,7 +26,7 @@ const DateLogName = "numb-date.log"
 // program that writes to the spreadsheet, and only to those cells.
 func Date(opt Options) int {
 	cfg := opt.defaults()
-	ctx, cancel := context.WithTimeout(context.Background(), cfg.Timeout)
+	ctx, cancel := runContext(cfg.Timeout)
 	defer cancel()
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
 	defer stop()
