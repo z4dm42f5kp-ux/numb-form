@@ -53,7 +53,7 @@ Releases up to v1.2.1 are described on the
 
 * Documentation: numb-date has its own manual page,
   [docs/numb-date.md](docs/numb-date.md), shown by
-  `numb-form man numb-date` (or `man date`).
+  `numb-form man numb-date` (or `numb-form man date`).
   It lists every question, the files it writes and what to do when
   something goes wrong.
 
