@@ -19,9 +19,6 @@ import (
 	"github.com/z4dm42f5kp-ux/numb-form/internal/ui"
 )
 
-// MaxRunTime is the hard limit for one run.
-const MaxRunTime = config.MaxTimeout
-
 // BigCopyBytes is the review-copy size above which the user is asked.
 const BigCopyBytes = 2 << 30
 
@@ -87,11 +84,8 @@ func (o *Options) defaults() config.Config {
 	if o.Downloads != "" {
 		c.Downloads = o.Downloads
 	}
-	if o.Timeout > 0 && o.Timeout < c.Timeout {
+	if o.Timeout > 0 && (c.Timeout == 0 || o.Timeout < c.Timeout) {
 		c.Timeout = o.Timeout
-	}
-	if c.Timeout <= 0 || c.Timeout > MaxRunTime {
-		c.Timeout = MaxRunTime
 	}
 	return c
 }
@@ -99,7 +93,7 @@ func (o *Options) defaults() config.Config {
 // Run executes numb-form and returns the process exit code.
 func Run(opt Options) int {
 	cfg := opt.defaults()
-	ctx, cancel := context.WithTimeout(context.Background(), cfg.Timeout)
+	ctx, cancel := runContext(cfg.Timeout)
 	defer cancel()
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
 	defer stop()
@@ -127,6 +121,14 @@ func Run(opt Options) int {
 }
 
 func (r *run) logf(format string, a ...any) { r.log.Printf(format, a...) }
+
+// runContext stops after d, or never when d is 0.
+func runContext(d time.Duration) (context.Context, context.CancelFunc) {
+	if d > 0 {
+		return context.WithTimeout(context.Background(), d)
+	}
+	return context.WithCancel(context.Background())
+}
 
 func (r *run) finish() {
 	if r.man != nil && r.runDir != "" {

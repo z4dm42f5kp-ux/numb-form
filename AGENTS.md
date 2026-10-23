@@ -68,7 +68,8 @@ cd "/path/to/working-folder" && numb-form
 * Date: `DD/MM/YYYY` from the system clock.
 * Ignore every spreadsheet column except `Customer Name`;
   the folder tree is the source of truth for which reports exist.
-* Runs take at most 25 minutes and leave no cache behind.
+* Runs leave no cache behind. They have no time limit unless `timeout`
+  or `-timeout` sets one.
 * Never commit customer files, logs or run folders to this public
   repository.
 

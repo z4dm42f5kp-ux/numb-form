@@ -1,11 +1,11 @@
 package app
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/z4dm42f5kp-ux/numb-form/internal/config"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/form"
@@ -17,7 +17,7 @@ import (
 // path it also writes a filled example there (the path must not exist).
 // The template itself is only read.
 func CheckTemplate(out io.Writer, cfg config.Config, tplPath, sample string) int {
-	ctx, cancel := context.WithTimeout(context.Background(), cfg.Timeout)
+	ctx, cancel := runContext(cfg.Timeout)
 	defer cancel()
 	t, err := formats.LoadTemplate(ctx, tplPath, cfg)
 	if err != nil {
@@ -74,7 +74,7 @@ func ShowConfig(out io.Writer, cfg config.Config, notes []string) int {
 		fmt.Fprintln(out, "note:", n)
 	}
 	fmt.Fprintf(out, "\nmode = %s\nonline = %v\noverview_dir = %s\nheader = %s\ntemplate_name = %s\nperson = %s\ntimeout = %s\nlegacy_formats = %v\npages_write = %v\n",
-		cfg.Mode, cfg.Online, cfg.OverviewDir, cfg.Header, cfg.TemplateName, cfg.Person, cfg.Timeout, cfg.LegacyFormats, cfg.PagesWrite)
+		cfg.Mode, cfg.Online, cfg.OverviewDir, cfg.Header, cfg.TemplateName, cfg.Person, timeoutText(cfg.Timeout), cfg.LegacyFormats, cfg.PagesWrite)
 	for k, o := range cfg.Origin {
 		fmt.Fprintf(out, "  (%s set in %s)\n", k, o)
 	}
@@ -116,4 +116,12 @@ func SetConfig(out io.Writer, key, value string) int {
 	}
 	fmt.Fprintf(out, "Saved %s = %s in %s\n", key, value, p)
 	return ExitOK
+}
+
+// timeoutText shows a time limit, or "none".
+func timeoutText(d time.Duration) string {
+	if d <= 0 {
+		return "none"
+	}
+	return d.String()
 }

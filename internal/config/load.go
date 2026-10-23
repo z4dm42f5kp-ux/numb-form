@@ -146,7 +146,7 @@ func Template() string {
 	line("template file name without extension", "template_name", d.TemplateName)
 	line("person processing the form; empty means ask once per run", "person", "")
 	line("evaluation date format (DD, MM, YYYY, YY)", "date_format", d.DateFormat)
-	line("stop safely after this long (at most 25m)", "timeout", "25m")
+	line("stop safely after this long, such as 30m; none means no time limit", "timeout", "none")
 	line("most megabytes of documents one run may write (at most 100)", "max_write_mb", "100")
 	line("how close a folder name must be to be offered as a match (0.5-1)", "fuzzy_threshold", "0.85")
 	line("review mode: folder for the copy; empty means your Downloads folder", "downloads", "")

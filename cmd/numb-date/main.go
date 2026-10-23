@@ -24,7 +24,7 @@ func realMain() int {
 	fs := flag.NewFlagSet("numb-date", flag.ContinueOnError)
 	conf := fs.String("f", "", "configuration file read after the system and per-user files")
 	root := fs.String("root", "", "working folder (default: the current folder if it is one, else the single folder inside it)")
-	timeout := fs.Duration("timeout", 0, "stop safely after this long (at most 25m)")
+	timeout := fs.Duration("timeout", 0, "stop safely after this long, such as 30m (default: timeout in the configuration, none: no limit)")
 	allowPipe := fs.Bool("allow-non-tty", false, "accept answers from a pipe (testing only)")
 	version := fs.Bool("version", false, "print the version and exit")
 	fs.Usage = func() {
@@ -40,10 +40,6 @@ func realMain() int {
 	}
 	if fs.NArg() != 0 {
 		fs.Usage()
-		return app.ExitUsage
-	}
-	if *timeout > app.MaxRunTime {
-		fmt.Fprintln(os.Stderr, "numb-date: -timeout may not exceed 25m")
 		return app.ExitUsage
 	}
 	if !*allowPipe && !ui.IsTerminal(os.Stdin) {

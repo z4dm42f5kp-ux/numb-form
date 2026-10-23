@@ -121,3 +121,14 @@ Cells are spliced into the sheet XML like values in templates; every
 write is checked with SHA-256 and a cell-by-cell comparison, and the
 user accepts the result read back from disk or undoes it.
 Only `.xlsx` and `.xlsm` are written.
+
+## No time limit by default; legal forms in real names
+
+The 25-minute limit stopped long runs that a person was working through
+by hand, so `timeout` is now `none` by default; it can still be set.
+Legal forms were missed in names written with their city or country
+(`Foo SAS, Bogotá, Colombia`), without accents, with a form first
+(`Ets Foo`), or with forms that were not listed (free-zone, Gulf,
+Colombian BIC and E.S.P., Argentine and Paraguayan combinations).
+Trailing places are now removed before the form is looked for, accents
+are ignored when matching, and the list was extended.

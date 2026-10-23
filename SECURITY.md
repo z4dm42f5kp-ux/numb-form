@@ -59,10 +59,12 @@ numb-form handles customer documents, so the design rules are strict.
 * Every document is read back from disk after writing.
   A person sees and accepts it, and the programs refuse to run without
   an interactive terminal.
-* A run stops safely after at most 25 minutes.
+* A run has no time limit unless `timeout` sets one; Ctrl+C or the limit
+  stops it safely.
   It writes at most 100 MB of documents besides the copy, and leaves no
-  cache or temporary files: temporary files are renamed or removed, and converters run in a private
-  temporary folder with a throwaway office profile, deleted afterwards.
+  cache or temporary files: temporary files are renamed or removed, and
+  converters run in a private temporary folder with a throwaway office
+  profile, deleted afterwards.
 
 ## Configuration and formats
 
