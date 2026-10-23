@@ -2,6 +2,8 @@ package app
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,7 +12,100 @@ import (
 	"github.com/z4dm42f5kp-ux/numb-form/internal/formats"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/fsutil"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/sheet"
+	"github.com/z4dm42f5kp-ux/numb-form/internal/ui"
 )
+
+// Prompts for the two folders, unless -from/-to or commit_from/commit_to
+// answer them.
+const (
+	askFrom = "Which directory should be committed (insert absolute path)?: "
+	askTo   = "Which directory is the target?: "
+)
+
+// cleanPath removes the quotes that "Copy as path" adds and surrounding
+// spaces.
+func cleanPath(s string) string {
+	s = strings.TrimSpace(s)
+	if len(s) >= 2 && (s[0] == '"' && s[len(s)-1] == '"' || s[0] == '\'' && s[len(s)-1] == '\'') {
+		s = strings.TrimSpace(s[1 : len(s)-1])
+	}
+	return s
+}
+
+// pickFolder returns given after checking it, or asks until an answer
+// passes the check. A given folder that fails is an error: it came from
+// the command line or the configuration.
+func pickFolder(u *ui.UI, given, prompt string, check func(string) error) (string, error) {
+	if given != "" {
+		p, err := filepath.Abs(cleanPath(given))
+		if err != nil {
+			return "", err
+		}
+		return p, check(p)
+	}
+	for {
+		a, err := u.Ask(prompt)
+		if err != nil {
+			return "", err
+		}
+		p := cleanPath(a)
+		switch {
+		case p == "":
+			continue
+		case !filepath.IsAbs(p):
+			u.Println(`  Give the whole path, for example C:\Users\you\Downloads\14. GWG or F:\14. GWG.`)
+			continue
+		}
+		p = filepath.Clean(p)
+		if err := check(p); err != nil {
+			u.Printf("  %v\n", err)
+			continue
+		}
+		return p, nil
+	}
+}
+
+// pickFolders resolves the working copy (from) and the real folder (to):
+// the given folders, or the answers to askFrom and askTo. Both must be
+// working folders, different, and not inside each other.
+func pickFolders(u *ui.UI, givenFrom, givenTo string, cfg config.Config) (from, to string, err error) {
+	isWF := func(what string) func(string) error {
+		return func(p string) error {
+			if st, err := os.Stat(p); err != nil || !st.IsDir() {
+				return fmt.Errorf("%s is not reachable (is the drive connected?)", p)
+			}
+			if !isWorkingFolder(p, cfg) {
+				return fmt.Errorf("%s is not %s: it has no template and %q folder", p, what, cfg.OverviewDir)
+			}
+			return nil
+		}
+	}
+	if from, err = pickFolder(u, givenFrom, askFrom, isWF("a working folder")); err != nil {
+		return "", "", err
+	}
+	checkTo := func(p string) error {
+		switch {
+		case strings.EqualFold(p, from):
+			return errors.New("the target is the folder to commit")
+		case fsutil.IsUnder(from, p) || fsutil.IsUnder(p, from):
+			return errors.New("the two folders must not be inside each other")
+		}
+		return isWF("a working folder")(p)
+	}
+	if to, err = pickFolder(u, givenTo, askTo, checkTo); err != nil {
+		return "", "", err
+	}
+	return from, to, nil
+}
+
+func firstOf(a ...string) string {
+	for _, s := range a {
+		if s != "" {
+			return s
+		}
+	}
+	return ""
+}
 
 // reviewSetup reads what the scan and the review need from the working
 // copy: the spreadsheet's companies and ids, and the templates.
