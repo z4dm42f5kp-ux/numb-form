@@ -8,6 +8,24 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.4.0
+
+* numb-commit copies the new forms from a working copy (for example in
+  Downloads) into the real folder.
+  It asks for both folders, or reads `-from`, `-to`, `commit_from` and
+  `commit_to`.
+  It stages the files to copy in Downloads, writes
+  `numb-commit-request.txt` with the folder tree before and after, and
+  copies only after you agree.
+  It never overwrites a file, and skips a new folder of a company the
+  real folder already has under its customer ID.
+* `numb-commit review` reviews the request, by you or automatically
+  until it is right.
+* Each program has its own manual page: `numb-form man numb-commit`,
+  `numb-form man numb-date`.
+* **Action needed**: none. With `mode = review`, numb-commit commits
+  review runs as before.
+
 ## v1.3.0
 
 * numb-form: Enter on an empty address writes "No address was found
