@@ -71,9 +71,6 @@ func commitFolders(ctx context.Context, u *ui.UI, opt CommitOptions) error {
 	if err != nil {
 		return err
 	}
-	for _, n := range removeOldStages(filepath.Dir(dir), opt.Now()) {
-		u.Printf("Removed %q, left in Downloads by an earlier numb-commit.\n", n)
-	}
 	defer func() {
 		if _, err := os.Stat(dir); err == nil && removeStage(dir) == nil {
 			u.Println("The staged copy in Downloads was removed.")

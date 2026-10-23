@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/z4dm42f5kp-ux/numb-form/internal/config"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/docx"
@@ -85,14 +84,6 @@ func noStage(t *testing.T, dl string) {
 
 func TestFolderCommit(t *testing.T) {
 	real, cp := workingCopy(t, dateOf("Foo Ltd"))
-	// A staged copy left by a numb-commit killed two days ago goes too.
-	old := filepath.Join(filepath.Dir(cp), stagePrefix+"2026-10-21 10.00.00 abcd")
-	if err := os.MkdirAll(filepath.Join(old, "Foo"), 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.Chtimes(old, time.Now().Add(-48*time.Hour), time.Now().Add(-48*time.Hour)); err != nil {
-		t.Fatal(err)
-	}
 	tplBefore, _, _ := fsutil.SHA256File(filepath.Join(real, "Appendix A - Risk Assesment.docx"))
 	code, out := runCommit(t, cp, real, "r\ny\n", false)
 	if code != ExitOK || !strings.Contains(out, "Verdict: OK to commit") || !strings.Contains(out, "staged in") {
@@ -118,9 +109,6 @@ func TestFolderCommit(t *testing.T) {
 	}
 	noStage(t, filepath.Dir(cp))
 	req, _ := os.ReadFile(filepath.Join(cp, RequestName))
-	if !strings.HasPrefix(string(req), "\ufeff") {
-		t.Error("the request has no byte order mark")
-	}
 	for _, want := range []string{"Status: applied", "New folder  Foo Ltd", "made by numb-form, unchanged", "After the commit:",
 		"Foo Ltd   ", "+ new folder", "~ replaced"} {
 		if !strings.Contains(string(req), want) {

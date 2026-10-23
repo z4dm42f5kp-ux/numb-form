@@ -84,9 +84,7 @@ waiting, and neither `-from`, `-to`, `commit_from`, `commit_to` nor
 7. It reviews the target once more: every file must be there with its
    checksum.
 8. It removes the staged copy, also when you answer no, when a check
-   fails, when you press Ctrl+C or when you close the window.
-   A staged copy left by a numb-commit that was killed (for example by
-   a power cut) is removed by the next numb-commit after one day.
+   fails or when you press Ctrl+C.
 
 What is copied:
 
@@ -273,8 +271,6 @@ prepared.
 
 `<working copy>/numb-commit-request.txt`
 : The request: what is (or was) copied.
-  UTF-8 with a byte order mark, so Notepad and Windows PowerShell 5.1
-  (`Get-Content`) show the tree correctly.
 
 `<Downloads>/numb-commit staged copy <date> <time> <id>/`
 : The files to copy, while numb-commit runs. Removed at the end.

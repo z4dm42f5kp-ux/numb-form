@@ -76,21 +76,6 @@ func (q *request) unstage(rel string) {
 	_ = os.Remove(p)
 }
 
-// removeOldStages deletes staged copies in downloads left by a numb-commit
-// that was killed more than a day ago, and returns their names.
-func removeOldStages(downloads string, now time.Time) []string {
-	es, _ := os.ReadDir(downloads)
-	var out []string
-	for _, e := range es {
-		if fi, err := e.Info(); err == nil && e.IsDir() && strings.HasPrefix(e.Name(), stagePrefix) && now.Sub(fi.ModTime()) > 24*time.Hour {
-			if removeStage(filepath.Join(downloads, e.Name())) == nil {
-				out = append(out, e.Name())
-			}
-		}
-	}
-	return out
-}
-
 // removeStage deletes a staged copy, after checking that it is one.
 func removeStage(dir string) error {
 	if dir == "" {
