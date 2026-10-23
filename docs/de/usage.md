@@ -100,7 +100,7 @@ Nur die aufgeführten Zellen ändern sich; siehe [../SECURITY.md](SECURITY.md) f
 : Lesen Sie *Datei * nach dem System und den Konfigurationsdateien pro Benutzer.
 
 `-y`
-: (numb-form, numb-date) Nehmen Sie einen Ordner mit einem ähnlichen Namen wie den Ordner des Unternehmens, anstatt zu fragen: "Ist der vorhandene Ordner ... der Ordner dieses Unternehmens?". Der Ordner wird auf dem Bildschirm und im Protokoll benannt. Jedes Dokument wird noch gezeigt und muss akzeptiert werden.
+: (numb-form, numb-date) Nehmen Sie einen Ordner mit einem ähnlichen Namen wie den Ordner des Unternehmens, anstatt zu fragen: "Ist der vorhandene Ordner ... der Ordner dieses Unternehmens?". Der Ordner wird auf dem Bildschirm und im Protokoll benannt, und die Zusammenfassung sagt, wie viele Ordner auf diese Weise genommen wurden. Jedes Dokument wird noch gezeigt und muss akzeptiert werden. `-Y` ist das gleiche.
 
 `-offline`
 : Mit `update`: weigern Sie sich, GitHub zu kontaktieren.

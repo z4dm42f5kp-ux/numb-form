@@ -100,7 +100,7 @@ Sólo las células listadas cambian; vea [../SECURITY.md](SECURITY.md) para los 
 : Lea *file* después de los archivos de configuración del sistema y del usuario.
 
 `-y`
-: (numb-form, numb-date) Tome una carpeta con un nombre similar como la carpeta de la empresa en lugar de preguntar "¿Es la carpeta existente ... la carpeta de esta empresa?". La carpeta se llama en pantalla y en el registro. Cada documento se muestra y debe ser aceptado.
+: (numb-form, numb-date) Tome una carpeta con un nombre similar como la carpeta de la empresa en lugar de preguntar "¿Es la carpeta existente ... la carpeta de esta empresa?". La carpeta se llama en pantalla y en el registro, y el resumen dice cuántas carpetas fueron tomadas de esta manera. Cada documento se muestra y debe ser aceptado. `-Y` es el mismo.
 
 `-offline`
 : Con `update`: negarse a contactar con GitHub.
