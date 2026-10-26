@@ -4,9 +4,50 @@
 
 ## Reporting a vulnerability
 
-Utilice la información de vulnerabilidad privada de GitHub: *Security* → *Informe una vulnerabilidad* en este repositorio. No abra una cuestión pública. No adjuntar los datos del cliente; describir el problema con los nombres inventados.
+Informe en privado en GitHub: abra la pestaña * Seguridad* del repositorio y seleccione *Informe una vulnerabilidad* (<https://github.com/z4dm42f5kp-ux/numb-form/security/advisories/new>). No abra una cuestión pública para una vulnerabilidad.
 
-Sólo se admite la última versión.
+Mantenga el informe corto:
+
+* What the problem is, and which program and version (`numb-form -version`) has it.
+* Cómo se puede explotar.
+* Un pequeño archivo, comando o prueba que lo muestra.
+
+Envía un problema por informe. Nunca adjuntar los datos del cliente: describir el problema con los nombres de maquillaje (`Foo GmbH`), y reemplazar los archivos reales con los pequeños hechos.
+
+Los informes escritos por herramientas AI son bienvenidos sólo después de que una persona ha comprobado que cada hallazgo es real y es un problema de seguridad.
+
+## ¿Qué pasa después?
+
+El proceso sigue el proyecto [Go's](https://go.dev/doc/security/policy).
+
+* El informe se reconoce en un plazo de 7 días.
+* Se fija, o se hace público, dentro de 90 días después de eso.
+* Cada vulnerabilidad confirmada recibe un asesor de seguridad GitHub y, si califica, un CVE. El reportero se acredita a menos que pidan no serlo.
+
+Cada informe se pone en una de las tres vías:
+
+| Pista | Cuando | Cómo se fija |
+| --- | --- | --- |
+| **URGENT** | o los datos del cliente pueden filtrar o ser destruidos sin ninguna acción por la persona que ejecuta el programa | en privado, liberado a la vez como un parche |
+| **PRIVATE** | explotable con un archivo elaborado o descarga, pero necesita que la persona lo use | en privado, liberado como un parche |
+| **PUBLIC** | difícil de explotar, o endurecimiento | en una solicitud de tirada pública, en el próximo lanzamiento |
+
+Sólo se admite la última versión. Actualizar es `numb-form update`.
+
+## Lo que no es una vulnerabilidad
+
+Estos están fuera del modelo de amenaza:
+
+* Alguien que ya puede cambiar los programas, los archivos de configuración o la carpeta de trabajo en el ordenador.
+* La persona que ejecuta los programas confirma una forma equivocada o una fecha equivocada. Cada cambio se muestra y debe ser aceptado.
+* Respuestas de un asistente de AI utilizado con el [AI prompt](ai-prompt.md). El aviso pide un cheque contra fuentes internas.
+* Software de oficina que numb-form comienza para conversiones comportándose como está documentado.
+
+Los errores que no son problemas de seguridad van al formulario de informe de fallos (*Issues* → *Nuevo problema*).
+
+## Codificación y auditorías seguras
+
+Las reglas del código siguen, la lista de verificación de revisión y la rutina de auditoría están en [.github/SECURE-CODING.md](../../.github/SECURE-CODING.md).
 
 ## Lo que prometen los programas
 
