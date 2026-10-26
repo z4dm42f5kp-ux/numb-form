@@ -4,6 +4,29 @@
 
 Dieser Leitfaden richtet sich an alle, die die Risikobeurteilungsformulare auf **Windows** ausfüllen (10, 11). Sie benötigen keine technischen Kenntnisse. Sie kopieren, fügen nur ein und drücken Enter. Auf **macOS, Linux oder BSD** installieren Sie mit [install.md](install.md); die Fragen und Antworten sind die gleichen, und Befehle, die mit `;` verbunden sind, werden dort mit `&&` verbunden.
 
+## Wörter, die in diesem Leitfaden verwendet werden
+
+**Arbeitsordner**
+: Der Ordner des Teams mit dem leeren Formular, der Excel-Liste und einem Ordner pro Unternehmen, zum Beispiel `F:\14. GWG`. Der Guide nennt es GWG.
+
+**template**
+: Die leere Form, `Appendix A - Risk Assesment.docx`, direkt in GWG.
+
+**Excelliste**
+: Die Tabelle im Ordner `3. Übersichten` mit einer Firma pro Zeile in der Spalte *Kundenname*.
+
+**PowerShell**
+: Das blaue Fenster, in dem Sie Befehle eingeben. Öffnen Sie es in einem Ordner, indem Sie `powershell` in die Adressleiste von File Explorer eingeben und **Enter** drücken.
+
+**command**
+: Eine Zeile, die Sie in PowerShell eingeben oder einfügen und mit **Enter** bestätigen, zum Beispiel `numb-form`.
+
+**path**
+: Wenn eine Datei oder ein Ordner vollständig ausgeschrieben ist, z. B. `C:\Users\you\Downloads\14. GWG`. Halten Sie in File Explorer **Shift**, klicken Sie mit der rechten Maustaste auf den Ordner und wählen Sie *Kopieren als Pfad*.
+
+**log**
+: Eine Textdatei, in der die Programme notieren, was sie getan haben. Sie drucken dort, wo es am Ende ist, nach `Log:`.
+
 ## Was numb-form tut
 
 Ihr Team führt einen Arbeitsordner, zum Beispiel **GWG**. Es sieht so aus:
@@ -73,7 +96,7 @@ Viele Fragen zeigen einen Vorschlag in eckigen Klammern, wie `[GmbH]` oder `[y/N
 
 Jedes Unternehmen beginnt mit einer Zeile wie `[3/11] Foo GmbH  (Customer ID D1001, row 5)`: das dritte von elf Unternehmen, seine Kundennummer und seine Zeile in der Excel-Liste.
 
-Die Rechtsform wird dem Firmennamen entnommen, ohne zu fragen. numb-form fragt Sie dann nach der Adresse und den Vertretern; es sucht online nichts nach. *Commercial Registry Number* erhält immer den Satz "Keine kommerzielle Registrierungsnummer wurde online gefunden, konsultieren Sie interne Quellen für weitere Informationen"; um die Nummer stattdessen zu setzen, wählen Sie `e` (Bearbeitung) und Feld 4 am Ende.
+Die Rechtsform wird dem Firmennamen entnommen, ohne zu fragen. numb-form fragt Sie dann nach der Adresse und den Vertretern; es sucht online nichts nach. Um sie zu finden, geben Sie einem KI-Assistenten [ die AI prompt](ai-prompt.md) und den Namen des Unternehmens und überprüfen Sie die Antwort mit Ihren internen Quellen. *Commercial Registry Number* erhält immer den Satz "Keine kommerzielle Registrierungsnummer wurde online gefunden, konsultieren Sie interne Quellen für weitere Informationen"; um die Nummer stattdessen zu setzen, wählen Sie `e` (Bearbeitung) und Feld 4 am Ende.
 
 | numb-form fragt | Was es bedeutet | Was Sie normalerweise tun |
 | --- | --- | --- |
@@ -210,3 +233,19 @@ Geben Sie `numb-form man` ein, um alles im blauen Fenster zu lesen. Schlüssel f
 : Bitten Sie Ihre IT-Abteilung, `%LOCALAPPDATA%\Programs\numb-form\numb-form.exe` zuzulassen.
 
 Für alles andere, siehe das [reference-Handbuch](usage.md) und die [settings](configuration.md).
+
+## Melden eines Problems
+
+Wenn etwas schief geht und dieser Leitfaden nicht hilft, melden Sie es auf GitHub: *Issues *, *New Issue *, *Bug report *. Ein falscher oder unklarer Satz in diesem Handbuch ist auch ein Problem: Wählen Sie *Dokumentationsfehler *.
+
+In dem Formular wird Folgendes verlangt:
+
+1. die Version: Geben Sie `numb-form -version` ein und kopieren Sie, was es druckt,
+2. jeden Schritt, den du gemacht hast, mit dem, was du getippt hast,
+3. den Text im Fenster, kopiert, einschließlich jeder Fehlermeldung,
+4. Was Sie stattdessen erwartet haben,
+5. das Ende des Protokolls, wenn das Programm eines gedruckt hat.
+
+Die Berichte sind öffentlich. Bevor Sie eine senden, ersetzen Sie jeden Kundennamen, den Namen und die Adresse der Person durch eine erfundene, zum Beispiel `Foo GmbH`. Fügen Sie niemals ein Formular oder die Excel-Liste an.
+
+Ein Problem, das Kundendaten aufdecken oder beschädigen könnte, ist ein Sicherheitsproblem: Melden Sie es privat, wie [SECURITY.md](SECURITY.md) sagt.
