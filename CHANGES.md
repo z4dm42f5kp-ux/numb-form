@@ -316,9 +316,11 @@ Press **Ctrl+C** to leave.
 
 ## v1.2.6
 
-* CI: the LibreOffice format tests run in Debian 13 and install
-  LibreOffice from Debian's CDN, once per change, instead of waiting up
-  to 45 minutes for a slow Ubuntu mirror twice.
+* CI: the LibreOffice format tests run side by side in Alpine Linux
+  3.24 (LibreOffice 25.8) and Debian 13 (LibreOffice 25.2), the two
+  release lines people install. Both install from their project's CDN,
+  once per change, instead of waiting up to 45 minutes for a slow Ubuntu
+  mirror twice.
 
 ## v1.2.5
 
