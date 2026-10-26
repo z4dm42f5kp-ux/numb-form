@@ -4,6 +4,29 @@
 
 Esta guía es para todos los que llenan los formularios de evaluación de riesgos en **Windows** (10, 11). No necesitas ningún conocimiento técnico. Sólo copia, pega y pulsa Enter. En **macOS, Linux o BSD**, instalar con [install.md](install.md); las preguntas y respuestas son las mismas, y los comandos unidos con `;` aquí se unen con `&&` allí.
 
+## Palabras utilizadas en esta guía
+
+Carpeta **working**
+: La carpeta del equipo con la forma vacía, la lista de Excel y una carpeta por compañía, por ejemplo `F:\14. GWG`. El guía lo llama GWG.
+
+**template**
+: La forma vacía, `Appendix A - Risk Assesment.docx`, directamente en GWG.
+
+**Excel list**
+: La hoja de cálculo en la carpeta `3. Übersichten`, con una empresa por fila en la columna *Nombre del cliente*.
+
+**PowerShell**
+: La ventana azul donde escribe comandos. Ábrelo en una carpeta escribiendo `powershell` en la barra de direcciones de File Explorer y pulsando **Enter**.
+
+**command**
+: Una línea que escriba o pega en PowerShell y confirme con **Enter**, por ejemplo `numb-form`.
+
+**path**
+: Donde un archivo o carpeta está, escrito en su totalidad, por ejemplo `C:\Users\you\Downloads\14. GWG`. En File Explorer, mantenga **Shift**, haga clic con el botón derecho en la carpeta y seleccione *Copiar como ruta*.
+
+**log**
+: Un archivo de texto en el que los programas notan lo que hicieron. Imprimen dónde está al final, después de `Log:`.
+
 ## Qué hace numb-form
 
 Your team keeps a working folder, for example **GWG**. It looks like this:
@@ -210,3 +233,19 @@ Type `numb-form man` to read everything in the blue window. Keys work at once, w
 : Pídale a su departamento de TI que permita `%LOCALAPPDATA%\Programs\numb-form\numb-form.exe`.
 
 Para todo lo demás, consulte el manual [reference](usage.md) y el [settings](configuration.md).
+
+## Reportar un problema
+
+Si algo sale mal y esta guía no ayuda, reporte sobre GitHub: *Issues*, *Nuevo problema*, *Informe de error*. Una frase incorrecta o poco clara en esta guía también es un problema: elegir * error de documentación*.
+
+El formulario pide:
+
+1. la versión: escriba `numb-form -version` y copie lo que imprime,
+2. cada paso que tomaste, con lo que escribiste,
+3. el texto en la ventana, copiado, incluyendo cada mensaje de error,
+4. lo que esperabas en su lugar,
+5. el final del registro, si el programa imprimió uno.
+
+Los informes son públicos. Antes de enviar uno, sustitúyase cada nombre del cliente, nombre y dirección de la persona por uno compuesto, por ejemplo `Foo GmbH`. Nunca adjuntar un formulario o la lista de Excel.
+
+Un problema que podría exponer o dañar los datos del cliente es un problema de seguridad: reportarlo en privado como dice [SECURITY.md](SECURITY.md).
