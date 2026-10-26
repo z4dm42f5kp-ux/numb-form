@@ -2,19 +2,36 @@
 
 > Maschinelle Übersetzung (Argos Translate) des [englischen Originals](../ai-prompt.md). Maßgeblich ist die englische Fassung.
 
-numb-form macht keine Online-Lookups. Es fragt Sie nach der Rechtsform, der Adresse und den Vertretern. Um sie zu finden, geben Sie einem KI-Assistenten mit Web-Suche diese Aufforderung, dann den Namen des Unternehmens. Überprüfen Sie die Antwort mit Ihren internen Quellen, bevor Sie sie in numb-form eingeben.
+numb-form macht keine Online-Lookups. Es fragt Sie nach der Rechtsform, der Adresse und den Vertretern. Um sie zu finden, geben Sie einem KI-Assistenten mit Web-Suche diese Aufforderung und den Namen des Unternehmens. Überprüfen Sie die Antwort mit Ihren internen Quellen, bevor Sie sie in numb-form eingeben.
 
 Die Eingabeaufforderung ist die Datei [ai-prompt.txt](../ai-prompt.txt). Es ist Klartext und ist nicht Teil der Programme.
 
 ## Verwenden Sie
 
 1. Öffnen Sie die Eingabeaufforderung und kopieren Sie alles.
-2. Fügen Sie es in den AI-Assistenten ein.
-3. Fügen Sie darunter den Namen des Unternehmens genau so hinzu, wie die Tabelle es schreibt, zum Beispiel seinen * Kundennamen *.
-4. Senden Sie es. Die Antwort hat drei Zeilen: *Rechtsform *, *Hauptquartier / Adresse * und * Authorized Representatives *.
-5. Geben Sie diese Werte an numb-form, wenn es danach fragt.
+2. Fügen Sie es in einen KI-Assistenten ein, der das Web durchsuchen kann.
+3. Am Ende, nach `Company name:`, fügen Sie den Namen des Unternehmens genau so hinzu, wie die Tabelle es schreibt. Fügen Sie nach `Country` das Land hinzu, wenn Sie es kennen.
+4. Senden Sie es. Die Antwort ist drei Zeilen:
 
-Die Standardtexte in der Eingabeaufforderung sind die, die numb-form schreibt, wenn Sie Enter in einem leeren Feld drücken. Eine Zeile, die mit `Caution:` beginnt, benötigt eine Überprüfung mit internen Quellen.
+   ```
+   Legal Form: S.A. de C.V.
+   Headquarters/Address: Calle Foo 12, 06600, Ciudad de México, CDMX, Mexico
+   Authorized Representatives: Ana María Pérez Gómez (Legal Representative)
+   ```
+
+5. Überprüfen Sie jede Zeile mit Ihren internen Quellen.
+6. Fügen Sie jeden Wert in numb-form ein, wenn er danach gefragt wird.
+
+Die Aufforderung sagt dem Assistenten:
+
+* welches Unternehmen zählt (genaue Rechtsbezeichnung und Rechtsform, niemals Mutter-, Tochter- oder ähnliche Bezeichnung);
+* welche Quellen in der Reihenfolge zu vertrauen sind: offizielle Register, die eigenen rechtlichen Hinweise des Unternehmens, der LEI-Index, dann Geschäftsinformationsseiten und Nachrichten, mit den Registern, die für jedes Land funktionieren,
+* wie man jedes Feld schreibt: die Rechtsform, wie der Name es schreibt (`GmbH`, `S.A.`, `Ltda.`), die Adresse auf einer Zeile, die Vertreter als `Full Name (Role 1, Role 2)` mit jeder Rolle in Englisch (`General Director`, niemals `Director General`) und keine Erklärung, warum eine Person es hält,
+* ein Feld mit `Caution: This field might differ from internal sources or be inaccurate due to insufficient information online` zu beenden, wenn keine offizielle Quelle es bestätigt,
+* den Standardtext von numb-form zu schreiben, wenn nichts gefunden wird,
+* Klartext ohne Em Dashes, En Dashes oder Semikolons zu schreiben.
+
+Eine Zeile mit `Caution:` benötigt eine Überprüfung mit internen Quellen, bevor Sie sie verwenden.
 
 ## Herunterladen
 
