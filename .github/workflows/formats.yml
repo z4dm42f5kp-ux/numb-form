@@ -6,10 +6,11 @@ name: formats
 # change (not again for the push of the same commit), on main and
 # nightly.
 #
-# The job runs in Debian 13 and installs LibreOffice from deb.debian.org,
-# which a CDN serves quickly. Ubuntu's mirror for GitHub's runners
-# sometimes served the ~105 MB of packages at 25 kB/s (42 minutes).
-# apt verifies every package against the signed archive index.
+# The job runs in Alpine Linux 3.24 and installs LibreOffice from
+# dl-cdn.alpinelinux.org, which a CDN serves quickly; the image is a few
+# MB and apk installs without post-install scripts. Ubuntu's mirror for
+# GitHub's runners sometimes served the ~105 MB of packages at 25 kB/s
+# (42 minutes). apk verifies every package against the signed index.
 
 on:
   push:
@@ -38,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
-      image: debian:13@sha256:4c25275446ca371766b8b093c696782eabce06263fccacb8d5d813b3dc44b308
+      image: alpine:3.24@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a
     permissions:
       contents: read
     steps:
@@ -50,11 +51,10 @@ jobs:
           go-version: stable
           check-latest: true
           cache: false
-      - name: Install LibreOffice (Debian packages)
+      - name: Install LibreOffice (Alpine packages)
+        # One font, so that LibreOffice has something to lay text out with.
         run: |
-          apt="apt-get -q -o Acquire::Retries=5 -o Acquire::http::Timeout=30"
-          $apt update
-          DEBIAN_FRONTEND=noninteractive $apt install -y --no-install-recommends ca-certificates libreoffice-writer-nogui libreoffice-calc-nogui
+          apk add --no-cache libreoffice-writer libreoffice-calc font-dejavu
           soffice --version
       - name: Format tests with LibreOffice
         env:

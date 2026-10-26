@@ -10,8 +10,8 @@ Releases up to v1.2.1 are described on the
 
 ## v1.2.6
 
-* CI: the LibreOffice format tests run in Debian 13 and install
-  LibreOffice from Debian's CDN, once per change, instead of waiting up
+* CI: the LibreOffice format tests run in Alpine Linux 3.24 and install
+  LibreOffice from Alpine's CDN, once per change, instead of waiting up
   to 45 minutes for a slow Ubuntu mirror twice.
 
 ## v1.2.5
