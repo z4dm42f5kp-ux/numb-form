@@ -13,6 +13,7 @@ Español: [docs/es/README.md](../es/README.md) · Deutsch: [docs/de/README.md](R
 * Installation: [docs/install.md](install.md)
 * Verwendung: [docs/usage.md](usage.md)
 * Konfigurieren: [docs/configuration.md](configuration.md)
+* Finden Sie die Adresse und Vertreter mit einem AI-Assistenten: [docs/ai-prompt.md](ai-prompt.md)
 * Office Suiten und Formate: [docs/formats.md](formats.md)
 * Container: [docs/containers.md](containers.md)
 * Sicherheit: [SECURITY.md](SECURITY.md)
