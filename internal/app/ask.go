@@ -17,21 +17,21 @@ func (r *run) askValues(name string) (form.Values, error) {
 	if lf != "" {
 		r.ui.Printf("  Legal form: %s (from the name)\n", ui.Safe(lf))
 	} else {
-		v, err := r.ui.Ask("  Legal form (the name has none; Enter = blank): ")
+		v, err := r.askText("  Legal form (the name has none; Enter or '-' = blank): ", "")
 		if err != nil {
 			return nil, err
 		}
 		lf = v
 	}
-	vals[form.FieldLegalForm] = textutil.OneLine(lf)
+	vals[form.FieldLegalForm] = lf
 
-	addr, err := r.ui.Ask("  Headquarters / Address (one line, Enter = blank): ")
+	addr, err := r.askText("  Headquarters / Address (one line, Enter or '-' = blank): ", "")
 	if err != nil {
 		return nil, err
 	}
-	vals[form.FieldAddress] = textutil.OneLine(addr)
+	vals[form.FieldAddress] = addr
 
-	r.ui.Println("  Authorized Representatives: Full Name (Role 1, Role 2), Full Name (Role) — roles in English.")
+	r.ui.Println("  Authorized Representatives: Full Name (Role 1, Role 2), Full Name (Role), roles in English.")
 	reps, err := r.askText("  Representatives (Enter = \"No representatives were found…\", '-' = blank): ", NoRepsText)
 	if err != nil {
 		return nil, err
