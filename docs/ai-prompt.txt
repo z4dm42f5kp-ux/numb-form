@@ -1,25 +1,138 @@
-Identify the publicly documented authorized legal representatives of the exact company specified below. Conduct thorough, multi-source research before answering, prioritizing the latest official corporate registries, government records, regulatory filings, official documents, company websites, and reputable legal databases, including local-language sources. Cross-check all findings.
+TASK
 
-Mandatory entity verification: Verify that every listed representative is legally authorized to represent the exact legal entity named. Never infer authority from a parent, subsidiary, affiliate, shareholder, group company, brand, or similarly named entity. Do not list a person as verified without reliable evidence establishing their authority for the specific entity.
+Find three facts about one company: its legal form, its registered address and its authorized legal representatives. The company is named in the COMPANY section at the end of this prompt. Research it on the web now, following every rule below, and answer in the exact format of the OUTPUT section. Do not ask questions. Do not explain. Do not answer from memory: use only what you find during this research. If you cannot search the web, answer with the three standard texts of section 6.
 
-Required information:
 
-Legal Form: The exact short legal-form designation, preferably uppercase, preserving conventional punctuation (e.g., LLC, LTDA., C.A., GMBH). No expanded descriptions.
-Headquarters/Address: The best-supported headquarters or registered address, on one line.
-Authorized Representatives: Each person's full name and profession, field, or position in English, including multiple relevant roles where applicable.
+1. THE EXACT ENTITY
 
-Resolve conflicting information using the most authoritative, recent sources. Do not invent facts.
+1.1 The company is one legal entity, identified by its full legal name including its legal form, for example "Foo S.A. de C.V." or "Foo GmbH".
+1.2 A place written after a comma in the name ("Foo S.A., Quito") or a code before the name ("D10629 Foo S.A.") tells you where the company is or how the team files it. It is not part of the legal name.
+1.3 The entity you report on must have the same legal name and the same legal form as the COMPANY, in the COUNTRY when one is given. Differences in capital letters, accents, punctuation and spacing do not matter.
+1.4 Never use information about a parent company, subsidiary, branch, affiliate, shareholder, group company, brand, franchise, former name or any other entity with a similar name. Each one is a different entity.
+1.5 If two or more entities match and you cannot tell which one is meant, treat the company as not found: use the standard texts of section 6 for the address and the representatives, and take the legal form from the name as section 3.3 says.
 
-If a person is plausibly identified through reliable public evidence but their details or authority cannot be fully verified, include them with this exact warning: Caution: This field might differ from internal sources or be innacurate due to insufficient information online
 
-If no individual representative can be identified from reliable public sources after thorough research, use this exact text instead: No representatives were found online, please consult other internal sources for more accurate information
+2. WHERE TO LOOK, IN THIS ORDER OF TRUST
 
-Do not use the no-representatives message if any plausible representative has been identified. Apply the warning to uncertain information, not as a substitute for reporting identifiable individuals.
+Tier 1, official registers and authorities of the company's country:
+commercial registers, company registers, tax authority lookups, official gazettes and supervisory authorities.
+Tier 2, the company's own legal notices:
+the legal notice of its website (Impressum, Aviso legal, Aviso de privacidad, Política de tratamiento de datos, Términos y condiciones, Mentions légales), its official filings, invoices and letterhead.
+Tier 3, the Global LEI Index at search.gleif.org, which gives the legal name, legal form and registered address of entities that have an LEI.
+Tier 4, business information sites that copy official registers, for example North Data, OpenCorporates, Moneyhouse, Dun & Bradstreet and Kompass.
+Tier 5, news, LinkedIn, social media and directories.
 
-Output only the following three fields, in this order. Include no introduction, conclusion, sources, citations, or other text.
+2.1 Search in the company's own language as well as in English. Use the local words for the facts you need, for example "Geschäftsführer", "Sitz", "Handelsregister", "representante legal", "gerente general", "domicilio fiscal", "administrador único", "sócio administrador".
+2.2 Tier 1 and Tier 2 confirm a fact. Tier 3 confirms the legal name, legal form and address only.
+2.3 Tier 4 and Tier 5 only give leads. Look for a Tier 1 or Tier 2 source that confirms the lead. A fact found only in Tier 4 or Tier 5 must carry the caution of section 5.
+2.4 When sources disagree, the higher tier wins. Within the same tier, the source with the most recent date wins.
+2.5 Companies with little online presence are often found only in official registers, official gazettes and the legal notice of their own website. Check these before you conclude that nothing exists.
 
-Legal Form: [legal form]
+Sources that usually work, by country (examples, not a complete list):
+Germany: Handelsregister (handelsregister.de, free, current print "AD" lists the managing directors and the business address), Unternehmensregister (unternehmensregister.de), Bundesanzeiger (bundesanzeiger.de, annual accounts often name the managing directors), the Impressum of the company website (required by law, names the Geschäftsführer and the register number).
+Austria: Firmenbuch (justiz.gv.at), WKO Firmen A bis Z (firmen.wko.at), the Impressum of the company website.
+Switzerland: Zefix (zefix.ch, lists persons with signing authority), Swiss Official Gazette of Commerce SHAB (shab.ch).
+Spain: BORME (boe.es), which publishes every appointment of administrators, the Aviso legal of the company website.
+Mexico: Publicaciones de Sociedades Mercantiles PSM (psm.economia.gob.mx), Diario Oficial de la Federación (dof.gob.mx), INEGI DENUE (inegi.org.mx) for addresses, the Aviso de privacidad of the company website (it must state the company's legal name and address), public procurement records that name the legal representative.
+Colombia: RUES (rues.org.co, shows the legal representative), the chamber of commerce of the city, SECOP public procurement records.
+Ecuador: Superintendencia de Compañías, Valores y Seguros (supercias.gob.ec, lists the current administrators), SRI RUC lookup (sri.gob.ec).
+Peru: SUNAT Consulta RUC (sunat.gob.pe, has a "Representantes legales" view), SUNARP, the official gazette El Peruano.
+Chile: Registro de Empresas y Sociedades (registrodeempresasysociedades.cl), Diario Oficial (diariooficial.interior.gob.cl, publishes extracts of company deeds), SII.
+Argentina: Boletín Oficial, second section (boletinoficial.gob.ar, publishes appointments of directors and managers), IGJ, ARCA (formerly AFIP) CUIT lookup.
+Brazil: Receita Federal CNPJ lookup with QSA (the list of partners and administrators), the Junta Comercial of the state.
+Venezuela: SENIAT RIF lookup (seniat.gob.ve) for the tax address, Gaceta Oficial, the company's own documents.
+Bolivia: SEPREC (seprec.gob.bo, formerly Fundempresa).
+Guatemala: Registro Mercantil (registromercantil.gob.gt, shows the legal representative).
+Costa Rica: Registro Nacional (rnpdigital.com).
+Panama: Registro Público de Panamá (rp.gob.pa, directors and officers are public).
+Dominican Republic: DGII RNC lookup (dgii.gov.do), the Registro Mercantil of the local Cámara de Comercio y Producción.
+United Kingdom: Companies House.
+United States: the business entity search of the Secretary of State of the state of incorporation.
+United Arab Emirates: the trade licence search of the issuing authority, for example the Dubai Department of Economy and Tourism or the free zone authority.
+Any other country: its commercial register, its tax authority and its official gazette.
 
-Headquarters/Address: [address]
 
-Authorized Representatives: Person Name (Placeholder Field, Placeholder Field), Person Name 2 (Placeholder Field), etc.
+3. LEGAL FORM
+
+3.1 Write the short legal form as the company's legal name writes it, with its conventional capital letters and periods, for example "GmbH", "GmbH & Co. KG", "AG", "S.A.", "S.A. de C.V.", "S. de R.L. de C.V.", "S.A.S.", "Ltda.", "C.A.", "LLC", "Ltd", "SpA", "S.R.L.", "EIRL".
+3.2 Never write the long form ("Sociedad Anónima", "Gesellschaft mit beschränkter Haftung") and never translate it.
+3.3 If the legal name contains the legal form, use it. If it does not, use the legal form that a Tier 1 or Tier 2 source states.
+
+
+4. ADDRESS AND REPRESENTATIVES
+
+4.1 Address: the registered office of the entity (Sitz, domicilio social, domicilio fiscal, sede). Use the head office only when no registered office is published. Never use a branch, a warehouse or a sales office.
+4.2 Write the address on one line in this order: street and number, postal code, city, state or region when the country uses one, country. Separate the parts with commas. Write the street and the city as the source writes them, with their accents. Write the country in English.
+4.3 Write only the parts that a source states. Never guess a street, a number or a postal code. An address with missing parts is allowed and must carry the caution of section 5.
+4.4 Authorized representatives are the natural persons who may legally act for and sign for the entity: managing directors, legal representatives, general managers, sole administrators, members of a board who represent the company, holders of a general power of attorney or Prokura.
+4.5 Do not list shareholders, partners, auditors, statutory examiners (comisarios), supervisory board members, founders or employees unless a source shows that they hold one of the roles in 4.4.
+4.6 When another company is the administrator or general partner (for example the GmbH of a GmbH & Co. KG), do not list that company. List the natural persons who represent it, only if a Tier 1 source names them, with their role followed by "of the General Partner" or "of the Corporate Administrator", for example: Hans Müller (Managing Director of the General Partner)
+4.7 List only persons whose role is current. Leave out every person whose appointment ended, who resigned or who died.
+4.8 Write each person as: Full Name (Role). A person with several roles: Full Name (Role 1, Role 2). Separate persons with a comma and a space. Example: Ana María Pérez Gómez (Legal Representative, General Manager), Hans Müller (Managing Director)
+4.9 Write the full name exactly as the best source writes it, with all given names, surnames and accents. Never abbreviate a name. Never add titles such as Dr., Ing., Lic. or Mag.
+4.10 Write only the name and the roles. Never explain why a person holds a role, and never add descriptions, dates, shares, sources or notes about a person.
+4.11 Write every role in English, always. Never leave a role in the company's language, even when it looks like English or has no exact translation: use the English title with the same meaning, in English word order. For example, "Director General" is "General Director". Use these translations:
+Geschäftsführer, Geschäftsführerin, gérant: Managing Director
+Gerente General: General Manager
+Director General, Directora General: General Director
+Gerente, Socio Gerente: Manager
+Representante Legal: Legal Representative
+Representante Legal Suplente: Alternate Legal Representative
+Administrador Único: Sole Administrator
+Vorstand, Vorstandsmitglied: Member of the Management Board
+Vorstandsvorsitzender, Vorstandsvorsitzende: Chair of the Management Board
+Presidente del Directorio, Presidente del Consejo de Administración: Chair of the Board of Directors
+Director, Directora, Consejero, Consejera: Member of the Board of Directors
+Prokurist, Prokuristin: Authorized Signatory (Prokura)
+Apoderado, Apoderado General, Procurador: Attorney-in-Fact
+Sócio Administrador, Socio Administrador: Managing Partner
+Presidente, Secretario, Tesorero (officers of a board): President, Secretary, Treasurer
+For any other role, use the plain English job title that has the same meaning.
+
+
+5. THE CAUTION
+
+5.1 A field gets the caution in each of these cases:
+a) no Tier 1 or Tier 2 source confirms its value,
+b) the only confirming source is a dated publication (a gazette entry, a filing, annual accounts) more than three years old, and no current register lookup or current company website confirms it,
+c) sources disagree and you chose by the rule of 2.4,
+d) the address has missing parts.
+A current register lookup or print and the company's current website are never too old.
+5.2 The caution is this exact sentence, added at the end of the field's line after a period and one space. If the value already ends with a period, add only the space.
+Caution: This field might differ from internal sources or be inaccurate due to insufficient information online
+5.3 Use the caution only for a value you found. Never use it instead of the standard texts of section 6, and never use a standard text when you found a plausible value.
+
+
+6. THE STANDARD TEXTS WHEN NOTHING IS FOUND
+
+Use these texts exactly, character for character, when no value can be found in any source after the research of section 2:
+Legal form: No legal form was found online due to little to no information available
+Address: No address was found online due to little to no information available
+Representatives: No representatives were found online, please consult other internal sources for more accurate information
+
+
+7. WRITING RULES
+
+7.1 Write plain text only. No Markdown, no bold, no italics, no headings, no bullets, no numbering, no tables, no code blocks, no emojis.
+7.2 Never use an em dash, an en dash, a semicolon, an ellipsis, curly quotation marks, footnote marks or reference numbers, even where grammar would allow them. Separate parts with commas and end sentences with periods. Hyphens, apostrophes, "&" and other characters that are part of a name, an address or a legal form stay as the source writes them.
+7.3 Write each field on a single line. Never break a field over several lines.
+7.4 Do not add sources, links, citations, notes, comments, greetings, an introduction or a conclusion.
+7.5 Keep the letters with accents and other characters of names and addresses as the source writes them.
+
+
+OUTPUT
+
+Answer with exactly these three lines, with these labels, in this order, and nothing before, between or after them. Replace each description in angle brackets, including the brackets:
+
+Legal Form: <the legal form of section 3, or its standard text>
+Headquarters/Address: <the address of section 4, or its standard text>
+Authorized Representatives: <the persons of section 4, or its standard text>
+
+The representatives line looks like this, with as many persons as there are:
+Authorized Representatives: Person Name (Role 1, Role 2), Person Name 2 (Role)
+
+
+COMPANY
+
+Company name:
+Country (leave empty if not known):
