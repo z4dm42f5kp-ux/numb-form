@@ -1,8 +1,6 @@
 package app
 
 import (
-	"strings"
-
 	"github.com/z4dm42f5kp-ux/numb-form/internal/form"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/match"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/textutil"
@@ -34,16 +32,25 @@ func (r *run) askValues(name string) (form.Values, error) {
 	vals[form.FieldAddress] = textutil.OneLine(addr)
 
 	r.ui.Println("  Authorized Representatives: Full Name (Role 1, Role 2), Full Name (Role) — roles in English.")
-	reps, err := r.ui.Ask("  Representatives (Enter = \"No representatives were found…\", '-' = blank): ")
+	reps, err := r.askText("  Representatives (Enter = \"No representatives were found…\", '-' = blank): ", NoRepsText)
 	if err != nil {
 		return nil, err
 	}
-	switch reps = textutil.OneLine(reps); {
-	case reps == "":
-		reps = NoRepsText
-	case strings.TrimSpace(reps) == "-":
-		reps = ""
-	}
 	vals[form.FieldReps] = reps
 	return vals, nil
+}
+
+// askText asks for one line: Enter gives none (the standard text for a
+// value that was not found), "-" leaves the field blank.
+func (r *run) askText(prompt, none string) (string, error) {
+	a, err := r.ui.Ask(prompt)
+	switch a = textutil.OneLine(a); {
+	case err != nil:
+		return "", err
+	case a == "":
+		return none, nil
+	case a == "-":
+		return "", nil
+	}
+	return a, nil
 }
