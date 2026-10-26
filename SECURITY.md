@@ -208,7 +208,8 @@ Pull requests run a fast gate (formatting, vet, staticcheck, tests on
 Linux, macOS and Windows, govulncheck, gosec, zizmor, the history scan
 and dependency review).
 Pushes to `main` and agent branches, and a nightly schedule, run
-everything:
+everything (the LibreOffice format tests run once per pull request
+change rather than for each push):
 
 | Check | Tool |
 | --- | --- |

@@ -80,9 +80,10 @@ cd "/path/to/working-folder" && numb-form
   If a dependency seems necessary, stop and ask the maintainer, and never
   add a package name you have not verified exists.
 * Test on GitHub, never locally.
-  Push to a branch named `claude/<topic>`; the ci, security and formats
-  workflows run on it (Linux, macOS, Windows, FreeBSD, OpenBSD, NetBSD,
-  LibreOffice formats, fuzzing).
+  Push to a branch named `claude/<topic>`; the ci and security
+  workflows run on it, and formats runs on its pull request (Linux,
+  macOS, Windows, FreeBSD, OpenBSD, NetBSD, LibreOffice formats,
+  fuzzing).
   Read the results, including failure annotations, through the API:
 
   ```

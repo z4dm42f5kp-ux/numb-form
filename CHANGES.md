@@ -8,6 +8,14 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.2.6
+
+* CI: the LibreOffice format tests run side by side in Alpine Linux
+  3.24 (LibreOffice 25.8) and Debian 13 (LibreOffice 25.2), the two
+  release lines people install. Both install from their project's CDN,
+  once per change, instead of waiting up to 45 minutes for a slow Ubuntu
+  mirror twice.
+
 ## v1.2.5
 
 * Problem reports: GitHub forms for bugs and for documentation errors,
