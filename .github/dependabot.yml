@@ -15,7 +15,9 @@ updates:
   # Only Argos Translate itself: its dependencies must fit together, so
   # the lock is regenerated as a whole with the uv command at the top of
   # requirements.txt. Single-package bumps (torch, stanza, thinc) broke
-  # the translations. Security updates still arrive for every package.
+  # the translations. An advisory for another package arrives as an
+  # alert, and its Dependabot job fails with "all versions ignored": raise
+  # the version in overrides.txt and regenerate the lock instead.
   - package-ecosystem: pip
     directory: /.github/translate
     schedule:

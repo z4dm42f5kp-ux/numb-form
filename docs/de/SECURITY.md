@@ -4,9 +4,50 @@
 
 ## Meldung einer Schwachstelle
 
-Verwenden Sie GitHubs Private Vulnerability Reporting: *Security* → *Report a Vulnerability* on this repository. Öffnen Sie kein öffentliches Problem. Fügen Sie keine Kundendaten an; beschreiben Sie das Problem mit erfundenen Namen.
+Melden Sie es privat auf GitHub: Öffnen Sie die Registerkarte *Security* des Repositorys und wählen Sie *Report a vulnerability* (<https://github.com/z4dm42f5kp-ux/numb-form/security/advisories/new>). Öffnen Sie kein öffentliches Problem für eine Schwachstelle.
 
-Nur das neueste Release wird unterstützt.
+Den Bericht kurz halten:
+
+* Was das Problem ist und welches Programm und welche Version (`numb-form -version`) es hat.
+* Wie es ausgenutzt werden kann.
+* Eine kleine Datei, Befehl oder Test, die es zeigt.
+
+Senden Sie ein Problem pro Bericht. Fügen Sie niemals Kundendaten an: Beschreiben Sie das Problem mit erfundenen Namen (`Foo GmbH`) und ersetzen Sie echte Dateien durch kleine erfundene.
+
+Berichte, die von KI-Tools geschrieben wurden, sind nur willkommen, nachdem eine Person überprüft hat, dass jeder Befund real ist und ein Sicherheitsproblem darstellt.
+
+## Was als nächstes passiert
+
+Der Prozess folgt dem [Go-Projekt ](https://go.dev/doc/security/policy).
+
+* Der Bericht wird innerhalb von 7 Tagen bestätigt.
+* Es wird innerhalb von 90 Tagen danach behoben oder veröffentlicht.
+* Jede bestätigte Schwachstelle erhält eine GitHub-Sicherheitsempfehlung und, wenn sie qualifiziert ist, eine CVE. Der Reporter wird gutgeschrieben, es sei denn, er bittet darum, es nicht zu sein.
+
+Jeder Bericht wird auf eine von drei Spuren gesetzt:
+
+| Spurweite | Wann | Wie es festgelegt ist |
+| --- | --- | --- |
+| **URGENT** | ausgenutzt oder Kundendaten können ohne Aktion der Person, die das Programm ausführt, auslaufen oder zerstört werden | privat, sofort als Patch-Release veröffentlicht |
+| **PRIVATE** | Ausnutzbar mit einer handgefertigten Datei oder Download, aber braucht die Person, um es zu verwenden | privat, veröffentlicht als Patch-Release |
+| **PUBLIC** | schwer auszubeuten oder zu härten | in einem öffentlichen Pull Request, im nächsten Release |
+
+Nur das neueste Release wird unterstützt. Update ist `numb-form update`.
+
+## Was ist keine Vulnerabilität
+
+Diese liegen außerhalb des Bedrohungsmodells:
+
+* Jemand, der bereits die Programme, die Konfigurationsdateien oder den Arbeitsordner auf dem Computer ändern kann.
+* Die Person, die die Programme ausführt, bestätigt ein falsches Formular oder ein falsches Datum. Jede Veränderung wird gezeigt und muss akzeptiert werden.
+* Antworten eines KI-Assistenten, der mit der [AI prompt](ai-prompt.md) verwendet wird. Die Eingabeaufforderung bittet um eine Überprüfung mit internen Quellen.
+* Office-Software, die numb-form für Konvertierungen startet, die sich so verhalten, wie sie dokumentiert ist.
+
+Bugs, die keine Sicherheitsprobleme darstellen, gehen in das Bug-Berichtsformular (*Issues* → *New Issue*).
+
+## Sichere Codierung und Audits
+
+Die Regeln, denen der Code folgt, die Überprüfungs-Checkliste und die Audit-Routine sind in [.github/SECURE-CODING.md](../../.github/SECURE-CODING.md).
 
 ## Was die Programme versprechen
 
