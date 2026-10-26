@@ -6,10 +6,13 @@ name: formats
 # change (not again for the push of the same commit), on main and
 # nightly.
 #
-# The job runs in Debian 13 and installs LibreOffice from deb.debian.org,
-# which a CDN serves quickly. Ubuntu's mirror for GitHub's runners
-# sometimes served the ~105 MB of packages at 25 kB/s (42 minutes).
-# apt verifies every package against the signed archive index.
+# Two jobs run side by side, one per LibreOffice release line that
+# people install: Alpine Linux 3.24 has the fresh line (25.8), Debian 13
+# the still line (25.2). The file content depends on the LibreOffice
+# version, not on the distribution. Both install from their project's
+# CDN and verify every package against the signed index; Ubuntu's mirror
+# for GitHub's runners sometimes served the ~105 MB of packages at
+# 25 kB/s (42 minutes).
 
 on:
   push:
@@ -35,10 +38,19 @@ concurrency:
 
 jobs:
   libreoffice:
+    name: libreoffice (${{ matrix.system }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - system: alpine
+            image: alpine:3.24@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a
+          - system: debian
+            image: debian:13@sha256:4c25275446ca371766b8b093c696782eabce06263fccacb8d5d813b3dc44b308
     container:
-      image: debian:13@sha256:4c25275446ca371766b8b093c696782eabce06263fccacb8d5d813b3dc44b308
+      image: ${{ matrix.image }}
     permissions:
       contents: read
     steps:
@@ -50,7 +62,14 @@ jobs:
           go-version: stable
           check-latest: true
           cache: false
+      - name: Install LibreOffice (Alpine packages)
+        if: matrix.system == 'alpine'
+        # One font, so that LibreOffice has something to lay text out with.
+        run: |
+          apk add --no-cache libreoffice-writer libreoffice-calc font-dejavu
+          soffice --version
       - name: Install LibreOffice (Debian packages)
+        if: matrix.system == 'debian'
         run: |
           apt="apt-get -q -o Acquire::Retries=5 -o Acquire::http::Timeout=30"
           $apt update
