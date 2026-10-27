@@ -206,14 +206,18 @@ For the others it opens the company's form (only to read it), takes the
 
 ```
 Dates to write into Kundenliste.xlsx (column "Report created AB"):
-  F13    16-10-2026  Foo Ltda
+  1  F13    16-10-2026  Foo Ltda  (Foo Ltda\Appendix A - Risk Assesment - Foo Ltda.docx)
 ```
+
+It never asks you for a date.
+Companies without a folder, a form or a date in the form are skipped, and
+listed with the reason, for example
+`Foo GmbH — no form in the folder Foo GmbH`, so you can fill them by hand.
 
 | numb-date asks | What you do |
 | --- | --- |
-| `Is the folder "Fooo Inc" this company's folder? (...) [y/N]` | `y` if it is the same company, otherwise Enter |
-| `Date (DD-MM-YYYY, Enter = skip):` | The form has no readable date: type it, or Enter to skip the company |
-| `Write these 1 date(s)? Nothing else in the spreadsheet changes. [y/N]` | `y` to write them; Enter writes nothing |
+| `Is the folder "Fooo Inc" this company's folder? (...) [y/N]` | `y` if it is the same company, otherwise Enter. Start with `numb-date -y` to answer `y` to all of these |
+| `Write these 1 date(s)? Nothing else in the spreadsheet changes. [a]ccept, [e]dit a date, [r]eject:` | `a` writes them; `e` changes one date (or leaves a company out with `-`); `r` writes nothing |
 | `Is this correct? [a]ccept, [u]ndo:` | numb-date shows the cells as the file now reads; `a` to keep them, `u` to put the file back exactly as it was |
 
 **Close the Excel list first.**
