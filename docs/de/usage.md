@@ -4,7 +4,7 @@
 
 ## NAME
 
-**numb-form**, **numb-commit**, **numb-date** — Formulare für die Risikobewertung ausfüllen
+**numb-form**, **numb-commit** — Formulare zur Risikobewertung ausfüllen (mit **numb-date**)
 
 ## SYNOPSIS
 
@@ -15,8 +15,9 @@ numb-form [-f conf] config [init | set key value]
 numb-form [-f conf] update [stable | rolling | v1.2.3]
 numb-form rollback
 numb-commit [-f conf] [-run dir] [-downloads dir]
-numb-date [-f conf] [-y] [-root dir] [-timeout duration]
 ```
+
+numb-date hat eine eigene Seite: [numb-date.md](numb-date.md).
 
 ## DESCRIPTION
 
@@ -66,14 +67,7 @@ Wenn ein Wert leer bleibt (Enter alone), lautet das Feld:
 
 **numb-commit** applies to review runs only. It copies the accepted folders of a run back into the real working folder. It only adds new folders, never overwrites or deletes anything, and refuses folders that appeared in the real tree in the meantime. Each folder is copied to a temporary name, verified with SHA-256 and then renamed. Documents edited during review are listed before the user confirms. Afterwards it offers to delete the review copy; the logs are kept.
 
-**numb-date** füllt die Berichtsdatumsspalte der Tabelle. Es wird wie numb-form in oder über dem Arbeitsordner gestartet und findet die gleiche Übersichtstabelle, die `.xlsx` oder `.xlsm` sein muss.
-
-1. Die Unternehmensspalte wird von `header`, dann von gemeinsamen Namen (`Customer Name`, `Customer`, `Company Name`, `Kunde`, `Cliente` und andere, ignorieren Fall) gefunden; die Datumsspalte in der gleichen Kopfzeile von `Report created AB`, `Report created`, `Report date`, `Created` und ähnliche Namen, oder jede Überschrift, die einen Bericht und seine Erstellung oder Datum erwähnt.
-2. Zeilen, deren Datumszelle eine Ziffer enthält, werden übersprungen: Sie haben bereits ein Datum.
-3. Für die anderen Zeilen wird der Ordner des Unternehmens als numb-form gefunden (beinahe Übereinstimmungen werden gefragt). Die Formulare `.docx`, `.odt`, `.fodt` oder `.rtf` im Ordner (und eine Ebene unten) werden gelesen, das Risikobeurteilungsformular zuerst: das *Date of the evaluation* von Abschnitt A oder, in anders angelegten Formularen, das Datum, das nach einem Datumsetikett geschrieben wurde. Daten wie `16/10/2026`, `16.10.2026`, `2026-10-16` und `16 October 2026` werden verstanden. Wenn kein Datum gefunden wird, gibt der Benutzer es ein oder überspringt das Unternehmen.
-4. Die Daten werden aufgelistet, als `DD-MM-YYYY` geschrieben, nachdem der Benutzer zugestimmt hat, von der Festplatte zurückgelesen und angezeigt; Der Benutzer akzeptiert sie oder macht das Schreiben rückgängig.
-
-Nur die aufgeführten Zellen ändern sich; siehe [../SECURITY.md](SECURITY.md) für die Prüfungen. Formulare werden nur gelesen. Die Datei darf nicht in Excel oder LibreOffice geöffnet sein. Das Protokoll ist `numb-date.log` im Statusordner pro Benutzer (oder `log_dir`).
+**numb-date** füllt die *Report created* Spalte der Tabelle aus den Formularen: siehe [numb-date.md](numb-date.md).
 
 ## COMMANDS
 
@@ -93,7 +87,7 @@ Nur die aufgeführten Zellen ändern sich; siehe [../SECURITY.md](SECURITY.md) f
 : Wechseln Sie zurück zu der Version, die das letzte `update` ersetzt hat. Die zurückgerollte Version wird an ihrem Platz gehalten, so dass ein zweiter `rollback` zu ihr zurückkehrt. Ohne eine gespeicherte Version installieren Sie stattdessen ein Release nach Nummer: `numb-form update v0.1.1`.
 
 `man` [*topic*] [`en` | `es` | `de`]
-: Zeigen Sie dieses Handbuch im Terminal, wie less(1): Tasten handeln sofort, ohne Enter. Space oder PageDown: next page; b oder PageUp: previous page; Enter, j oder Down: next line; k oder Up: previous line; g oder Home: start; G oder End: end; /text und Enter: search, n und N: next and previous match; h: help; q: quit. Unter macOS, Linux und den BSDs wird das installierte `less` verwendet, wenn es eines gibt. Ohne ein Thema wird das gesamte Handbuch angezeigt, beginnend mit dem Leitfaden. Themen: `guide`, `usage`, `configuration`, `install`, `formats`, `containers`, `security`; `numb-form man topics` listet sie auf. Die Sprache folgt `LANG` oder wird angegeben. `numb-form man -install` lässt `man numb-form` funktionieren: Unter Linux, macOS und den BSDs schreibt es die Handbuchseite zu `~/.local/share/man/man1` (erneuert von `numb-form update`); Unter Windows schreibt es `man.cmd` neben `numb-form.exe` für Command Prompt. Windows PowerShell behält `man` für seine eigene Hilfe: dort, Typ `numb-form man`.
+: Zeigen Sie dieses Handbuch im Terminal, wie less(1): Tasten handeln sofort, ohne Enter. Space oder PageDown: next page; b oder PageUp: previous page; Enter, j oder Down: next line; k oder Up: previous line; g oder Home: start; G oder End: end; /text und Enter: search, n und N: next and previous match; h: help; q: quit. Unter macOS, Linux und den BSDs wird das installierte `less` verwendet, wenn es eines gibt. Ohne ein Thema wird das gesamte Handbuch angezeigt, beginnend mit dem Leitfaden. Themen: `guide`, `usage`, `numb-date`, `configuration`, `install`, `formats`, `containers`, `security`; `numb-form man topics` listet sie auf. Die Sprache folgt `LANG` oder wird angegeben. `numb-form man -install` lässt `man numb-form` funktionieren: unter Linux, macOS und den BSDs schreibt es die Handbuchseite zu `~/.local/share/man/man1` (erneuert von `numb-form update`); unter Windows schreibt es `man.cmd` neben `numb-form.exe` für Command Prompt. Windows PowerShell behält `man` für seine eigene Hilfe: dort, Typ `numb-form man`.
 
 `update` [`stable` | `rolling` | *v1.2.3*]
 : Ersetzen Sie das installierte `numb-form` und `numb-commit`: **stable** durch das neueste stabile Release, **rolling** durch den aktuellen Rolling Build von `main` (nach jeder Änderung neu erstellt; `edge` wird als älterer Name akzeptiert), oder *v1.2.3* mit genau diesem Release. Die ersetzte Version wird neben den Programmen als `numb-form.previous` und `numb-commit.previous` für `rollback` beibehalten. Es funktioniert wie die Installationsbefehle: Das Archiv und `SHA256SUMS` werden nur von GitHub über HTTPS heruntergeladen, die Prüfsumme muss übereinstimmen und das neue `numb-form` muss starten, bevor etwas ersetzt wird. Ohne Argument wird der Kanal des laufenden Builds verwendet. Einstellungen werden beibehalten. Verweigert mit `-offline`, mit `online = no` und für Builds von der Quelle. Unter Windows wird das alte Programm in `numb-form.old.exe` umbenannt und beim nächsten Start entfernt.
@@ -104,7 +98,7 @@ Nur die aufgeführten Zellen ändern sich; siehe [../SECURITY.md](SECURITY.md) f
 : Lesen Sie *Datei * nach dem System und den Konfigurationsdateien pro Benutzer.
 
 `-y`
-: (numb-form, numb-date) Nehmen Sie einen Ordner mit einem ähnlichen Namen wie den Ordner des Unternehmens, anstatt zu fragen: "Ist der vorhandene Ordner ... der Ordner dieses Unternehmens?". Der Ordner wird auf dem Bildschirm und im Protokoll benannt, und die Zusammenfassung sagt, wie viele Ordner auf diese Weise genommen wurden. Jedes Dokument wird noch gezeigt und muss akzeptiert werden. `-Y` ist das gleiche.
+: Nehmen Sie einen Ordner mit einem ähnlichen Namen wie den Ordner des Unternehmens, anstatt zu fragen: "Ist der vorhandene Ordner ... der Ordner dieses Unternehmens?". Der Ordner wird auf dem Bildschirm und im Protokoll benannt, und die Zusammenfassung sagt, wie viele Ordner auf diese Weise genommen wurden. Jedes Dokument wird noch gezeigt und muss akzeptiert werden. `-Y` ist das gleiche.
 
 `-offline`
 : Mit `update`: weigern Sie sich, GitHub zu kontaktieren.
@@ -146,14 +140,13 @@ Nur die aufgeführten Zellen ändern sich; siehe [../SECURITY.md](SECURITY.md) f
 `<log folder>/<run>/manifest.json`
 : Maschinenlesbare Aufzeichnung des Laufs.
 
-`<log folder>/<run>_date/numb-date.log`
-: Protokoll eines numb-date-laufs, mit dem sha-256 der tabelle davor und danach.
-
 `Downloads/numb-form-runs/<run>/<working folder>/`
 : Review-Modus: die Kopie.
 
 `Downloads/numb-form-runs/<run>/numb-commit.log`
 : Review-Modus: Protokoll des Commits.
+
+Die Dateien von numb-date sind auf seiner Seite aufgeführt.
 
 Kein Cache oder temporäre Dateien bleiben zurück. Dokumente werden durch eine temporäre Datei geschrieben, die umbenannt oder entfernt wird, und Konverter arbeiten in einem privaten temporären Ordner, der gelöscht wird.
 
@@ -201,4 +194,4 @@ cd "H:\GWG"; numb-form -f review.conf; if ($?) { numb-commit }
 
 ## SEE ALSO
 
-[configuration.md](configuration.md), [formats.md](formats.md), [install.md](install.md), [containers.md](containers.md), [../SECURITY.md](SECURITY.md), [../AGENTS.md](../../AGENTS.md)
+[numb-date.md](numb-date.md), [configuration.md](configuration.md), [formats.md](formats.md), [install.md](install.md), [containers.md](containers.md), [../SECURITY.md](SECURITY.md), [../AGENTS.md](../../AGENTS.md)
