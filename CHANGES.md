@@ -10,10 +10,13 @@ Releases up to v1.2.1 are described on the
 
 ## v1.3.2
 
-* Internal: numb-form can tell a form it filled and nobody edited since
-  from one changed by hand, by filling the template again with the
-  values the form holds and comparing.
-  Nothing uses it yet. No change in behaviour.
+* Security: every file is read with a size limit
+  ([.github/SECURE-CODING.md](.github/SECURE-CODING.md), rule 3).
+  numb-date reads a form only up to 50 MB, the template is refused
+  before it is read when it is larger than 50 MB, and a `.numbers`
+  spreadsheet when it is larger than 40 MB, the limit of the
+  conversion.
+* Maintenance: removed two functions that nothing called.
 
 ## v1.3.1
 

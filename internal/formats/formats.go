@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -15,6 +14,7 @@ import (
 	"github.com/z4dm42f5kp-ux/numb-form/internal/convert"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/docx"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/form"
+	"github.com/z4dm42f5kp-ux/numb-form/internal/fsutil"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/odt"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/rtf"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/sheet"
@@ -81,12 +81,9 @@ func ReadFilled(b []byte, ext string) (form.Values, error) {
 
 // LoadTemplate reads and, if needed, converts the template at p.
 func LoadTemplate(ctx context.Context, p string, cfg config.Config) (*Template, error) {
-	data, err := os.ReadFile(p) // #nosec G304 -- the user's own template.
+	data, err := fsutil.ReadFileMax(p, 50<<20)
 	if err != nil {
 		return nil, err
-	}
-	if len(data) > 50<<20 {
-		return nil, errors.New("template is larger than 50 MB")
 	}
 	ext := strings.ToLower(filepath.Ext(p))
 	t := &Template{Name: filepath.Base(p), OutExt: ext}
@@ -197,7 +194,7 @@ func LoadSheet(ctx context.Context, p string, cfg config.Config) (rows []sheet.R
 		rows, warns, err = sheet.ReadFile(p, opt)
 		return rows, warns, sheet.IsLegacy(ext), err
 	}
-	data, err := os.ReadFile(p) // #nosec G304 -- the user's own spreadsheet, read only.
+	data, err := fsutil.ReadFileMax(p, convert.MaxBytes)
 	if err != nil {
 		return nil, nil, false, err
 	}
@@ -215,14 +212,4 @@ func LoadSheet(ctx context.Context, p string, cfg config.Config) (rows []sheet.R
 	}
 	rows, warns, err = sheet.Read(x, ".xlsx", opt)
 	return rows, append(warns, "the .numbers spreadsheet was converted in memory; the original is untouched"), false, err
-}
-
-// AsFilled reports whether doc is this template filled by numb-form and
-// unchanged since. Only templates filled directly (.docx, .odt, .fodt,
-// .rtf) can tell; for the others it returns an error.
-func (t *Template) AsFilled(doc []byte) (bool, error) {
-	if t.finish != nil || t.toCheck != nil {
-		return false, errors.New("forms of converted templates cannot be compared")
-	}
-	return form.AsFilled(t.filler, t.data, doc)
 }
