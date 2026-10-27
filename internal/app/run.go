@@ -76,6 +76,7 @@ type run struct {
 	written  int64
 	person   string
 	date     string
+	skipped  []string // numb-date: companies left out, with the reason
 }
 
 var errAbort = errors.New("aborted by user")
