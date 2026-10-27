@@ -7,7 +7,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/z4dm42f5kp-ux/numb-form/internal/config"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/sheet"
 )
 
@@ -16,7 +15,7 @@ func scanned(t *testing.T) (real, cp string, rc reviewConfig, q *request) {
 	t.Helper()
 	real, cp = scanCopy(t)
 	ctx := context.Background()
-	rc, err := reviewSetup(ctx, cp, real, config.Defaults())
+	rc, err := reviewSetup(ctx, cp, real, testConfig(t, filepath.Dir(cp)))
 	if err != nil {
 		t.Fatal(err)
 	}
