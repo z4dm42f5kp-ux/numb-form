@@ -99,7 +99,7 @@ part by part.
 A form is labelled:
 
 * `made by numb-form, unchanged` when they are equal;
-* `a form edited after filling, or made by hand` when section A can be
+* `a form edited after filling, made by hand or filled on another computer` when section A can be
   read but something differs;
 * nothing, for other files.
 
