@@ -61,17 +61,6 @@ func (o Options) idHeader() string {
 // Extensions lists every spreadsheet extension Read understands.
 var Extensions = []string{".xlsx", ".xlsm", ".ods", ".fods", ".csv", ".tsv", ".xls"}
 
-// Supported reports whether ext (with dot, any case) can be read.
-func Supported(ext string) bool {
-	ext = strings.ToLower(ext)
-	for _, e := range Extensions {
-		if e == ext {
-			return true
-		}
-	}
-	return false
-}
-
 // IsLegacy reports whether ext is a legacy binary format.
 func IsLegacy(ext string) bool { return strings.EqualFold(ext, ".xls") }
 
