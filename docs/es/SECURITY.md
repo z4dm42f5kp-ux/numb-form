@@ -109,7 +109,7 @@ Una ejecución de formularios no hace conexiones de red. Los nombres de las empr
 
 ## Gasoducto de pruebas de seguridad
 
-Pull requests run a fast gate (formatting, vet, staticcheck, tests en Linux, macOS y Windows, govulncheck, gosec, zizmor, the history scan and dependncy review). Empuja a `main` y ramas de agente, y un horario nocturno, ejecutar todo:
+Pull requests run a fast gate (formatting, vet, staticcheck, tests en Linux, macOS y Windows, govulncheck, gosec, zizmor, the history scan and dependncy review). Empuja a `main` y las ramas de agente, y un horario nocturno, ejecutar todo (las pruebas de formato LibreOffice funcionan una vez por petición de tirada cambiar en lugar de por cada empuje):
 
 | Check | Herramienta |
 | --- | --- |
