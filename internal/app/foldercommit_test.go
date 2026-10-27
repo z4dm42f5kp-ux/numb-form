@@ -14,6 +14,7 @@ import (
 	"github.com/z4dm42f5kp-ux/numb-form/internal/docx"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/form"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/fsutil"
+	"github.com/z4dm42f5kp-ux/numb-form/internal/runlog"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/sheet"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/testfix"
 )
@@ -39,6 +40,15 @@ func workingCopy(t *testing.T, edit func(sheetBytes []byte, tb *sheet.Table) map
 	must(err)
 	must(os.Mkdir(filepath.Join(cp, "Foo Ltd"), 0o750))
 	must(os.WriteFile(filepath.Join(cp, "Foo Ltd", "Appendix A - Risk Assesment - Foo Ltd.docx"), doc, 0o600))
+	// The record of the numb-form run that wrote the form, committed
+	// already, so it does not wait for numb-commit.
+	runDir := filepath.Join(runlog.RunsDir(dl), "2026-10-16_120000_ab")
+	must(os.MkdirAll(runDir, 0o750))
+	man := &runlog.Manifest{Version: 1, Tool: "numb-form", Complete: true, Committed: true, Companies: []runlog.Company{
+		{Name: "Foo Ltd", Status: "accepted", Committed: true, Files: []runlog.File{{Rel: "Foo Ltd/Appendix A - Risk Assesment - Foo Ltd.docx",
+			SHA256: fsutil.SHA256Bytes(doc), Size: int64(len(doc))}}},
+	}}
+	must(man.Save(runDir))
 	must(os.WriteFile(filepath.Join(cp, "Foo Ltd", "~$pendix A.docx"), []byte("lock"), 0o600))
 	must(os.WriteFile(filepath.Join(cp, "numb-form.log"), []byte("log"), 0o600))
 	must(os.WriteFile(filepath.Join(cp, "Appendix A - Risk Assesment.docx"), []byte("changed template"), 0o600))
