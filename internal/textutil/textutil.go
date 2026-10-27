@@ -131,21 +131,3 @@ func levenshtein(a, b []rune) int {
 	}
 	return prev[len(b)]
 }
-
-// Fold lowercases s and folds accents and umlauts to plain letters
-// (ä = a, ł = l, ß = ss). Other characters are kept.
-func Fold(s string) string {
-	var b strings.Builder
-	for _, r := range strings.ToLower(s) {
-		if v, ok := umlautShort[r]; ok {
-			b.WriteString(v)
-			continue
-		}
-		if v, ok := fold[r]; ok {
-			b.WriteString(v)
-			continue
-		}
-		b.WriteRune(r)
-	}
-	return b.String()
-}
