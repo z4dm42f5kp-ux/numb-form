@@ -47,8 +47,8 @@ Sólo se llenan las líneas de la sección A, *Information About the Contracting
 | Campo | Valor |
 | --- | --- |
 | Name / Company Name of the Contracting Party | la hoja de cálculo literal |
-| Legal form | found in the name: at the end, before a branch or country note (`Foo GmbH (Wien)`), before a city or country (`Foo SAS, Bogotá, Colombia`, `Foo S.A.C.I. Paraguay`), or first (`Ets Foo`); accents, dots and spaces may differ (`SOCIEDAD ANONIMA`, `S A`); written as in the name with conventional capitals (`GMBH` gives `GmbH`); asked only when the name has none |
-| Headquarters / Address | escrito por el usuario; Introduzca las hojas en blanco |
+| Legal form | found in the name: at the end, before a branch or country note (`Foo GmbH (Wien)`), before a city or country (`Foo SAS, Bogotá, Colombia`, `Foo S.A.C.I. Paraguay`), or first (`Ets Foo`); accents, dots and spaces may differ (`SOCIEDAD ANONIMA`, `S A`); written as in the name with conventional capitals (`GMBH` gives `GmbH`); asked only when the name has none, where Enter writes the no-legal-form text below and `-` leaves it blank |
+| Headquarters / Address | escrito por el usuario; Enter escribe el texto de no dirección a continuación, `-` deja en blanco |
 | Commercial Registry Number | siempre `No commercial registry number was found online consult internal sources for further information`; puede ser reemplazado por el número con *edit* |
 | Authorized Representatives | escrito por el usuario como `Full Name (Role 1, Role 2), Full Name (Role)`, roles en inglés; Enter escribe el texto no representativo a continuación, `-` deja en blanco |
 | Date of the evaluation | hoy, `date_format` (predeterminado `DD/MM/YYYY`) |
@@ -56,9 +56,13 @@ Sólo se llenan las líneas de la sección A, *Information About the Contracting
 
 numb-form no hace ninguna búsqueda en línea para las empresas. Sólo `numb-form update` contacta con GitHub.
 
-Cuando los representantes quedan vacíos, el campo dice:
+Cuando un valor queda vacío (Enter solo), el campo lee:
 
-> No se encontraron representantes en línea, consulte otras fuentes internas para obtener información más precisa
+| Campo | Texto |
+| --- | --- |
+| Legal form | `No legal form was found online due to little to no information available` |
+| Headquarters / Address | `No address was found online due to little to no information available` |
+| Authorized Representatives | `No representatives were found online, please consult other internal sources for more accurate information` |
 
 **numb-commit** applies to review runs only. It copies the accepted folders of a run back into the real working folder. It only adds new folders, never overwrites or deletes anything, and refuses folders that appeared in the real tree in the meantime. Each folder is copied to a temporary name, verified with SHA-256 and then renamed. Documents edited during review are listed before the user confirms. Afterwards it offers to delete the review copy; the logs are kept.
 

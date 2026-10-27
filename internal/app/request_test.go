@@ -12,6 +12,7 @@ import (
 	"github.com/z4dm42f5kp-ux/numb-form/internal/docx"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/form"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/fsutil"
+	"github.com/z4dm42f5kp-ux/numb-form/internal/runlog"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/sheet"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/testfix"
 )
@@ -50,6 +51,19 @@ func scanCopy(t *testing.T) (real, cp string) {
 		must(os.Mkdir(filepath.Join(cp, name), 0o750))
 		must(os.WriteFile(filepath.Join(cp, name, "Appendix A - Risk Assesment - "+name+".docx"), doc, 0o600))
 	}
+	// The run's manifest records the forms numb-form wrote, before Bar
+	// Ltd's was edited.
+	foo, n, err := fsutil.SHA256File(filepath.Join(cp, "Foo Ltd", "Appendix A - Risk Assesment - Foo Ltd.docx"))
+	must(err)
+	unedited := fill("Bar Ltd")
+	bar, m := fsutil.SHA256Bytes(unedited), int64(len(unedited))
+	runDir := filepath.Join(runlog.RunsDir(dl), "2026-10-16_120000_ab")
+	must(os.MkdirAll(runDir, 0o750))
+	man := &runlog.Manifest{Version: 1, Tool: "numb-form", Companies: []runlog.Company{
+		{Name: "Foo Ltd", Status: "accepted", Files: []runlog.File{{Rel: "Foo Ltd/Appendix A - Risk Assesment - Foo Ltd.docx", SHA256: foo, Size: n}}},
+		{Name: "Bar Ltd", Status: "accepted", Files: []runlog.File{{Rel: "Bar Ltd/Appendix A - Risk Assesment - Bar Ltd.docx", SHA256: bar, Size: m}}},
+	}}
+	must(man.Save(runDir))
 	must(os.WriteFile(filepath.Join(cp, "Foo Ltd", "~$pendix A.docx"), []byte("lock"), 0o600))
 	must(os.WriteFile(filepath.Join(cp, "numb-form.log"), []byte("log"), 0o600))
 	must(os.WriteFile(filepath.Join(cp, "Appendix A - Risk Assesment.docx"), []byte("changed template"), 0o600))
@@ -65,13 +79,21 @@ func scanCopy(t *testing.T) (real, cp string) {
 	return real, cp
 }
 
+// testConfig reads run manifests only from the test's Downloads folder
+// dl and an empty log folder, never from the computer's own.
+func testConfig(t *testing.T, dl string) config.Config {
+	cfg := config.Defaults()
+	cfg.Downloads, cfg.LogDir = dl, t.TempDir()
+	return cfg
+}
+
 // The scan adds new files, replaces only the spreadsheet, never copies
 // residue or the template and never overwrites a changed file. It tells
 // numb-form's unedited forms from edited ones.
 func TestScanRequest(t *testing.T) {
 	real, cp := scanCopy(t)
 	ctx := context.Background()
-	rc, err := reviewSetup(ctx, cp, real, config.Defaults())
+	rc, err := reviewSetup(ctx, cp, real, testConfig(t, filepath.Dir(cp)))
 	if err != nil {
 		t.Fatal(err)
 	}
