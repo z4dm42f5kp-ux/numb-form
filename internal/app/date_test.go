@@ -43,8 +43,8 @@ func runDate(t *testing.T, parent string, answers ...string) string {
 func TestDateFillsOnlyTheDateCell(t *testing.T) {
 	parent, path := dateSetup(t)
 	before, _ := os.ReadFile(path)
-	// "Fooo Inc" is not Foo Inc's folder; write; accept.
-	out := runDate(t, parent, "n", "y", "a")
+	// "Fooo Inc" is not Foo Inc's folder; accept the plan; accept the file.
+	out := runDate(t, parent, "n", "a", "a")
 	after, _ := os.ReadFile(path)
 	tb, err := sheet.ReadTable(after, "Customer Name", "Customer ID")
 	if err != nil {
@@ -79,13 +79,51 @@ func TestDateFillsOnlyTheDateCell(t *testing.T) {
 func TestDateUndoAndDecline(t *testing.T) {
 	parent, path := dateSetup(t)
 	h0, _, _ := fsutil.SHA256File(path)
-	runDate(t, parent, "n", "y", "u") // undo after writing
+	runDate(t, parent, "n", "a", "u") // undo after writing
 	if h, _, _ := fsutil.SHA256File(path); h != h0 {
 		t.Fatal("undo did not restore the original")
 	}
-	runDate(t, parent, "n", "n") // decline before writing
+	runDate(t, parent, "n", "r") // reject before writing
 	if h, _, _ := fsutil.SHA256File(path); h != h0 {
 		t.Fatal("declined run changed the spreadsheet")
+	}
+}
+
+// numb-date never asks for a date: a company without one is skipped with
+// the reason, and a date can be edited before writing.
+func TestDateSkipsAndEdits(t *testing.T) {
+	parent, path := dateSetup(t)
+	before, _ := os.ReadFile(path)
+	root := filepath.Dir(filepath.Dir(path))
+	b, _, err := docx.Format{}.Fill(testfix.Template(t), form.Values{form.FieldName: "Foo S.A.S."})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "FOO S.A.S", "Appendix A - Risk Assesment - Foo S.A.S.docx"), b, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	// Fooo Inc is not Foo Inc's folder; edit date 1; accept; accept.
+	out := runDate(t, parent, "n", "e", "1", "17.10.2026", "a", "a")
+	for _, want := range []string{"skipped: no folder for this company", "skipped: no form in the folder Foo GmbH",
+		"skipped: no date in", "Skipped (", "Foo Inc — no folder for this company"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("output lacks %q:\n%s", want, out)
+		}
+	}
+	if strings.Contains(out, "Date (") {
+		t.Errorf("numb-date asked for a date:\n%s", out)
+	}
+	after, _ := os.ReadFile(path)
+	tb, err := sheet.ReadTable(after, "Customer Name", "Customer ID")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, r := range tb.Rows {
+		if r.Name == "Foo Ltda" {
+			if err := sheet.CheckEdit(before, after, tb.Sheet, map[string]string{r.DateRef: "17-10-2026"}); err != nil {
+				t.Fatalf("%v\n%s", err, out)
+			}
+		}
 	}
 }
 
