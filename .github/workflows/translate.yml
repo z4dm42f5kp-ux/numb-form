@@ -22,8 +22,11 @@ on:
 
 permissions: {}
 
+# One queue for main (each run translates and commits the newest
+# documentation, so a newer one replaces an older one) and one per pull
+# request. A pull request's test run never cancels main's run.
 concurrency:
-  group: translate
+  group: translate-${{ github.event_name == 'pull_request' && github.ref || 'main' }}
   cancel-in-progress: true
 
 jobs:
