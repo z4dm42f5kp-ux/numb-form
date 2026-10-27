@@ -47,8 +47,8 @@ Nur die Zeilen von Abschnitt A, *Information About the Contracting Party*, sind 
 | Feld | Wert |
 | --- | --- |
 | Name / Company Name of the Contracting Party | die wörtliche Tabellenkalkulationszelle |
-| Legal form | gefunden im Namen: am Ende, vor einer Verzweigung oder Landnote (`Foo GmbH (Wien)`), vor einer Stadt oder einem Land (`Foo SAS, Bogotá, Colombia`, `Foo S.A.C.I. Paraguay`) oder zuerst (`Ets Foo`); Akzente, Punkte und Leerzeichen können sich unterscheiden (`SOCIEDAD ANONIMA`, `S A`); geschrieben wie im Namen mit herkömmlichen Großbuchstaben (`GMBH` gibt `GmbH`); nur gefragt, wenn der Name keine hat, wo Enter oder `-` es leer lässt |
-| Headquarters / Address | vom Benutzer eingegeben; Enter oder `-` lässt es leer |
+| Legal form | gefunden im Namen: am Ende, vor einer Zweig- oder Ländernote (`Foo GmbH (Wien)`), vor einer Stadt oder einem Land (`Foo SAS, Bogotá, Colombia`, `Foo S.A.C.I. Paraguay`) oder zuerst (`Ets Foo`); Akzente, Punkte und Leerzeichen können sich unterscheiden (`SOCIEDAD ANONIMA`, `S A`); geschrieben wie im Namen mit herkömmlichen Großbuchstaben (`GMBH` gibt `GmbH`); nur gefragt, wenn der Name keine hat, wobei Enter den Text ohne Rechtsform unten schreibt und `-` es leer lässt |
+| Headquarters / Address | vom Benutzer eingegeben; Enter schreibt den No-Adress-Text unten, `-` lässt ihn leer |
 | Commercial Registry Number | immer `No commercial registry number was found online consult internal sources for further information`; es kann durch die Nummer mit *edit* ersetzt werden |
 | Authorized Representatives | vom Benutzer als `Full Name (Role 1, Role 2), Full Name (Role)` eingegeben, Rollen in Englisch; Enter schreibt den Text ohne Vertreter unten, `-` lässt ihn leer |
 | Date of the evaluation | heute `date_format` (Standard `DD/MM/YYYY`) |
@@ -56,9 +56,13 @@ Nur die Zeilen von Abschnitt A, *Information About the Contracting Party*, sind 
 
 numb-form macht keine Online-Lookups für Unternehmen. Nur `numb-form update` kontaktiert GitHub.
 
-Wenn die Vertreter leer bleiben, lautet das Feld:
+Wenn ein Wert leer bleibt (Enter alone), lautet das Feld:
 
-> Es wurden keine Vertreter online gefunden, konsultieren Sie bitte andere interne Quellen für genauere Informationen
+| Feld | Text |
+| --- | --- |
+| Legal form | `No legal form was found online due to little to no information available` |
+| Headquarters / Address | `No address was found online due to little to no information available` |
+| Authorized Representatives | `No representatives were found online, please consult other internal sources for more accurate information` |
 
 **numb-commit** applies to review runs only. It copies the accepted folders of a run back into the real working folder. It only adds new folders, never overwrites or deletes anything, and refuses folders that appeared in the real tree in the meantime. Each folder is copied to a temporary name, verified with SHA-256 and then renamed. Documents edited during review are listed before the user confirms. Afterwards it offers to delete the review copy; the logs are kept.
 
