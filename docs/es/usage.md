@@ -47,8 +47,8 @@ Sólo se llenan las líneas de la sección A, *Information About the Contracting
 | Campo | Valor |
 | --- | --- |
 | Name / Company Name of the Contracting Party | la hoja de cálculo literal |
-| Legal form | found in the name: at the end, before a branch or country note (`Foo GmbH (Wien)`), before a city or country (`Foo SAS, Bogotá, Colombia`, `Foo S.A.C.I. Paraguay`), or first (`Ets Foo`); accents, dots and spaces may differ (`SOCIEDAD ANONIMA`, `S A`); written as in the name with conventional capitals (`GMBH` gives `GmbH`); asked only when the name has none |
-| Headquarters / Address | escrito por el usuario; Introduzca las hojas en blanco |
+| Legal form | found in the name: at the end, before a branch or country note (`Foo GmbH (Wien)`), before a city or country (`Foo SAS, Bogotá, Colombia`, `Foo S.A.C.I. Paraguay`), or first (`Ets Foo`); accents, dots and spaces may differ (`SOCIEDAD ANONIMA`, `S A`); written as in the name with conventional capitals (`GMBH` gives `GmbH`); asked only when the name has none, where Enter or `-` leaves it blank |
+| Headquarters / Address | escrito por el usuario; Enter o `-` lo deja en blanco |
 | Commercial Registry Number | siempre `No commercial registry number was found online consult internal sources for further information`; puede ser reemplazado por el número con *edit* |
 | Authorized Representatives | escrito por el usuario como `Full Name (Role 1, Role 2), Full Name (Role)`, roles en inglés; Enter escribe el texto no representativo a continuación, `-` deja en blanco |
 | Date of the evaluation | hoy, `date_format` (predeterminado `DD/MM/YYYY`) |

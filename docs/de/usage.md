@@ -47,8 +47,8 @@ Nur die Zeilen von Abschnitt A, *Information About the Contracting Party*, sind 
 | Feld | Wert |
 | --- | --- |
 | Name / Company Name of the Contracting Party | die wörtliche Tabellenkalkulationszelle |
-| Legal form | gefunden im Namen: am Ende, vor einer Zweig- oder Ländernote (`Foo GmbH (Wien)`), vor einer Stadt oder einem Land (`Foo SAS, Bogotá, Colombia`, `Foo S.A.C.I. Paraguay`) oder zuerst (`Ets Foo`); Akzente, Punkte und Leerzeichen können sich unterscheiden (`SOCIEDAD ANONIMA`, `S A`); geschrieben wie im Namen mit herkömmlichen Großbuchstaben (`GMBH` gibt `GmbH`); nur gefragt, wenn der Name keine hat |
-| Headquarters / Address | vom Benutzer eingegeben; Enter lässt es leer |
+| Legal form | gefunden im Namen: am Ende, vor einer Verzweigung oder Landnote (`Foo GmbH (Wien)`), vor einer Stadt oder einem Land (`Foo SAS, Bogotá, Colombia`, `Foo S.A.C.I. Paraguay`) oder zuerst (`Ets Foo`); Akzente, Punkte und Leerzeichen können sich unterscheiden (`SOCIEDAD ANONIMA`, `S A`); geschrieben wie im Namen mit herkömmlichen Großbuchstaben (`GMBH` gibt `GmbH`); nur gefragt, wenn der Name keine hat, wo Enter oder `-` es leer lässt |
+| Headquarters / Address | vom Benutzer eingegeben; Enter oder `-` lässt es leer |
 | Commercial Registry Number | immer `No commercial registry number was found online consult internal sources for further information`; es kann durch die Nummer mit *edit* ersetzt werden |
 | Authorized Representatives | vom Benutzer als `Full Name (Role 1, Role 2), Full Name (Role)` eingegeben, Rollen in Englisch; Enter schreibt den Text ohne Vertreter unten, `-` lässt ihn leer |
 | Date of the evaluation | heute `date_format` (Standard `DD/MM/YYYY`) |
