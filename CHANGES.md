@@ -8,6 +8,16 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.3.3
+
+* Internal: numb-commit's comparison of a working copy with the real
+  working folder: which files are new, whether the spreadsheet changed,
+  what is never copied (residue, the template, changed existing files)
+  and which forms are exactly as numb-form wrote them: their checksum
+  is in the record (`manifest.json`) of a numb-form run on this
+  computer, in Downloads or in the log folder.
+  Nothing uses it yet. No change in behaviour.
+
 ## v1.3.2
 
 * Security: every file is read with a size limit
