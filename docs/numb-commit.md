@@ -92,18 +92,19 @@ What is never copied:
 ## FORMS MADE BY NUMB-FORM
 
 numb-commit tells which forms numb-form made and nobody changed since.
-numb-form writes no mark into the documents; instead numb-commit reads
-section A of the form, fills the template (of the working copy, or of
-the target) with those values and compares the result with the form,
-part by part.
+numb-form writes no mark into the documents.
+It records the SHA-256 checksum of every form it writes in the
+`manifest.json` of its run: in `Downloads/numb-form-runs` for a review
+run, in the log folder for a direct run.
+numb-commit compares each form's checksum with those records.
 A form is labelled:
 
-* `made by numb-form, unchanged` when they are equal;
-* `a form edited after filling, made by hand or filled on another computer` when section A can be
-  read but something differs;
+* `made by numb-form, unchanged` when a run recorded its checksum;
+* `a form edited after filling, made by hand or filled on another computer`
+  otherwise;
 * nothing, for other files.
 
-This works for `.docx`, `.odt`, `.fodt` and `.rtf` templates.
+This works for every template format.
 
 ## THE REQUEST FILE
 
