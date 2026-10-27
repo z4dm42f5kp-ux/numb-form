@@ -11,7 +11,7 @@ Español: [docs/es/README.md](../es/README.md) · Deutsch: [docs/de/README.md](R
 **Neu hier? Lesen Sie die [Schritt-für-Schritt-Anleitung](guide.md).** Es braucht keine technischen Kenntnisse.
 
 * Installation: [docs/install.md](install.md)
-* Verwendung: [docs/usage.md](usage.md)
+* Verwendung: [numb-form](usage.md), [numb-date](numb-date.md)
 * Konfigurieren: [docs/configuration.md](configuration.md)
 * Finden Sie die Adresse und Vertreter mit einem AI-Assistenten: [docs/ai-prompt.md](ai-prompt.md)
 * Office Suiten und Formate: [docs/formats.md](formats.md)
