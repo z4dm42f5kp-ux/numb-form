@@ -43,7 +43,11 @@ func commitFolders(ctx context.Context, u *ui.UI, opt CommitOptions) error {
 	if err != nil {
 		return err
 	}
-	rc, err := reviewSetup(ctx, from, to, *opt.Config)
+	cfg := *opt.Config
+	if opt.Downloads != "" {
+		cfg.Downloads = opt.Downloads // the run records of -downloads
+	}
+	rc, err := reviewSetup(ctx, from, to, cfg)
 	if err != nil {
 		return err
 	}
