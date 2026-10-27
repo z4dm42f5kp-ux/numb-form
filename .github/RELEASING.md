@@ -9,7 +9,10 @@ Each release is one pull request titled `vX.Y.Z: what it changes`.
 1. The pull request is merged into `main`.
 2. ci runs on `main`. When it passes, the **release approval** workflow
    checks the title, that `vX.Y.Z` is not taken and is newer than the
-   newest release, and then waits.
+   newest release, and then waits. Before it asks you, it also waits for
+   the Spanish and German translations of the merge (at most 40
+   minutes): the commit that adds only them is the one released, so
+   `numb-form man` in Spanish and German matches the release.
 3. GitHub sends you a mail, *Review pending deployments*. Open it (or the
    run under Actions > release approval), tap **Review deployments**, tick
    **release** and tap **Approve and deploy**. **Reject** releases nothing.
