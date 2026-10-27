@@ -120,11 +120,16 @@ func (r *run) dateMain() error {
 		if err != nil {
 			return err
 		}
-		if !ok {
-			counts["skipped"]++
-			continue
+		if ok {
+			plan = append(plan, p)
 		}
-		plan = append(plan, p)
+	}
+	counts["skipped"] = len(r.skipped)
+	if len(r.skipped) > 0 {
+		r.ui.Printf("\nSkipped (%d), fill these by hand if needed:\n", len(r.skipped))
+		for _, s := range r.skipped {
+			r.ui.Printf("  %s\n", ui.Safe(s))
+		}
 	}
 	if len(plan) == 0 {
 		r.ui.Printf("\nNothing to write: %d already had a date, %d skipped.\n", counts["dated"], counts["skipped"])
@@ -185,14 +190,11 @@ func (r *run) openLog(root, suffix, name string) error {
 	return err
 }
 
-// writeDates shows the plan, writes it after the user agrees, reads the
-// spreadsheet back and lets the user accept or undo.
+// writeDates shows the plan, writes it after the user accepts it (or an
+// edited one), reads the spreadsheet back and lets the user accept or
+// undo.
 func (r *run) writeDates(path string, before []byte, have string, t *sheet.Table, plan []planned, counts map[string]int) error {
-	r.ui.Printf("\nDates to write into %s (column %q):\n", filepath.Base(path), t.DateHeader)
-	for _, p := range plan {
-		r.ui.Printf("  %-6s %s  %s\n", p.row.DateRef, p.date, ui.Safe(p.row.Name))
-	}
-	ok, err := r.ui.YesNo(fmt.Sprintf("\nWrite these %d date(s)? Nothing else in the spreadsheet changes.", len(plan)), false)
+	plan, ok, err := r.reviewDates(filepath.Base(path), t.DateHeader, plan)
 	if err != nil {
 		return err
 	}
@@ -210,6 +212,6 @@ func (r *run) writeDates(path string, before []byte, have string, t *sheet.Table
 		return err
 	}
 	r.ui.Printf("\nDone: %d date(s) written, %d already had a date, %d skipped.\nLog: %s\n",
-		len(plan), counts["dated"], counts["skipped"], filepath.Join(r.runDir, DateLogName))
+		len(plan), counts["dated"], len(r.skipped), filepath.Join(r.runDir, DateLogName))
 	return nil
 }
