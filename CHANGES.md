@@ -99,6 +99,13 @@ Press **Ctrl+C** to leave.
 
 ## v1.3.5
 
+* numb-date never asks you to type a date.
+  A company without a folder, without a form or without a date in its
+  form is skipped with the reason (`skipped: no form in the folder Foo
+  GmbH`), and the skipped companies are listed again before the dates.
+* numb-date lists the dates numbered, with the form each came from, and
+  asks `[a]ccept, [e]dit a date, [r]eject` instead of `[y/N]`: `e`
+  changes one date or, with `-`, leaves that company out.
 * Internal: numb-commit's review of a request: every file to copy still
   has its checksum and is not in the real folder yet, the spreadsheet
   only gains report dates in cells without one, every new company
