@@ -102,8 +102,8 @@ La forma legal se toma del nombre de la empresa sin preguntar. numb-form le pide
 | --- | --- | --- |
 | `Full name of the person processing the form:` | Sólo preguntaba si saltaste el paso 2 | Escriba su nombre; Ingrese en la siguiente pregunta lo utiliza para cada forma en esta carrera |
 | `Is the existing folder "Foo Gmbh" this company's folder? (...) [y/N]` | Una carpeta con un nombre muy similar ya existe | `y` si es la misma empresa (nada se crea), de lo contrario Enter. Comience con `numb-form -y` para responder `y` a todos estos: cada uno se muestra como `already has a folder: … (similar name, -y)` |
-| `Legal form (the name has none; Enter = blank):` | Se le preguntó solamente cuando el nombre de la empresa no tiene forma legal como `GmbH` o `S.A.` | Escribelo o entra para dejarlo en blanco |
-| `Headquarters / Address (one line, Enter = blank):` | Dirección de la empresa, de sus propias fuentes | Escribe o pega en una línea y pulsa Enter |
+| `Legal form (the name has none; Enter = "No legal form was found…", '-' = blank):` | Se le preguntó solamente cuando el nombre de la empresa no tiene forma legal como `GmbH` o `S.A.` | Escribelo; Entra solo escribe "No se encontró forma legal en línea ..."; `-` deja en blanco |
+| `Headquarters / Address (one line, Enter = "No address was found…", '-' = blank):` | Dirección de la empresa, de sus propias fuentes | Escribe o pega en una línea; Entra solo escribe "No se encontró ninguna dirección en línea ..."; `-` deja en blanco |
 | `Representatives (Enter = "No representatives were found…", '-' = blank):` | La gente que puede firmar para la empresa, escribió `Full Name (Role 1, Role 2), Full Name (Role)` con los roles en inglés | Escribe o pega; Entra solo escribe "No se encontraron representantes en línea ..."; `-` deja el campo en blanco |
 | `Is this correct? [a]ccept, [e]dit a field, [r]eject:` | El formulario ha sido escrito; numb-form muestra la parte A como el formulario ahora lee | Tipo `a` si es correcto; `e` para cambiar una línea; `r` para tirarlo lejos. No hay defecto aquí: debe escribir una carta |
 
