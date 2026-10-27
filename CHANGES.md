@@ -8,6 +8,16 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.3.2
+
+* Security: every file is read with a size limit
+  ([.github/SECURE-CODING.md](.github/SECURE-CODING.md), rule 3).
+  numb-date reads a form only up to 50 MB, the template is refused
+  before it is read when it is larger than 50 MB, and a `.numbers`
+  spreadsheet when it is larger than 40 MB, the limit of the
+  conversion.
+* Maintenance: removed two functions that nothing called.
+
 ## v1.3.1
 
 * Documentation: numb-date has its own manual page,
