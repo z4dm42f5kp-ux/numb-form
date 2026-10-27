@@ -36,9 +36,15 @@ LibreOffice.
    date written after a date label.
    Dates such as `16/10/2026`, `16.10.2026`, `2026-10-16` and
    `16 October 2026` are understood.
-   When no date is found, you type it or skip the company.
-4. The dates are listed and written as `DD-MM-YYYY` after you agree, then
-   read back from disk and shown; you accept them or undo the write.
+   numb-date never asks for a date.
+   A company without a folder, without a form or without a date in its
+   form is skipped with the reason, for example
+   `skipped: no form in the folder Foo GmbH`, and listed again before the
+   dates, so you can fill it by hand.
+4. The dates are listed, numbered, with the form each came from.
+   You accept them, edit one, or write nothing.
+   They are written as `DD-MM-YYYY`, read back from disk and shown; you
+   accept them or undo the write.
 
 Forms are only read.
 
@@ -59,8 +65,9 @@ back exactly.
 | numb-date asks | What you do |
 | --- | --- |
 | `Is the folder "…" this company's folder? (...) [y/N]` | `y` if it is the same company, otherwise Enter |
-| `Date (DD-MM-YYYY, Enter = skip):` | The form has no readable date: type it, or Enter to skip |
-| `Write these … date(s)? Nothing else in the spreadsheet changes. [y/N]` | `y` to write them; Enter writes nothing |
+| `Write these … date(s)? Nothing else in the spreadsheet changes. [a]ccept, [e]dit a date, [r]eject:` | `a` writes them; `e` changes one date; `r` writes nothing |
+| `Number to change (1-…, Enter to go back):` | The number of the date in the list |
+| `New date for … (DD-MM-YYYY, Enter = keep …, '-' = leave it out):` | Type the date, Enter to keep it, or `-` to leave that company out |
 | `Is this correct? [a]ccept, [u]ndo:` | `a` keeps them, `u` restores the file exactly |
 
 ## OPTIONS
