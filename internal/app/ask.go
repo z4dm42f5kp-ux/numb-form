@@ -17,7 +17,7 @@ func (r *run) askValues(name string) (form.Values, error) {
 	if lf != "" {
 		r.ui.Printf("  Legal form: %s (from the name)\n", ui.Safe(lf))
 	} else {
-		v, err := r.askText("  Legal form (the name has none; Enter or '-' = blank): ", "")
+		v, err := r.askText("  Legal form (the name has none; Enter = \"No legal form was found…\", '-' = blank): ", NoLegalFormText)
 		if err != nil {
 			return nil, err
 		}
@@ -25,7 +25,7 @@ func (r *run) askValues(name string) (form.Values, error) {
 	}
 	vals[form.FieldLegalForm] = lf
 
-	addr, err := r.askText("  Headquarters / Address (one line, Enter or '-' = blank): ", "")
+	addr, err := r.askText("  Headquarters / Address (one line, Enter = \"No address was found…\", '-' = blank): ", NoAddressText)
 	if err != nil {
 		return nil, err
 	}
