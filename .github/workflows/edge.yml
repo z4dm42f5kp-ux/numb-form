@@ -1,7 +1,7 @@
 name: edge
 
 # Development build: after every push to main, rebuild the binaries and
-# replace the files of the "edge" pre-release, so that the reinstall
+# publish them anew as the "edge" pre-release, so that the reinstall
 # command in docs/install.md can fetch the newest code without a stable
 # release being published. "releases/latest" keeps pointing at the newest
 # stable release; edge is never marked latest.
@@ -84,18 +84,23 @@ jobs:
           SHA: ${{ steps.build.outputs.sha }}
         run: |
           notes="Rolling build of commit $SHA, rebuilt after every change to main (numb-form update rolling). Not a stable release. Verify downloads as described in docs/install.md."
-          if gh release view edge --repo "$REPO" > /dev/null 2>&1; then
+          # A release keeps its first publication date when it is edited,
+          # and the releases page sorts by it: publish it anew each time,
+          # so rolling stands next to the newest stable release. The tag
+          # stays and moves to this commit; gh uploads the files to a
+          # draft and publishes it whole, so no download sees half a
+          # release. Between the delete and the publication (about a
+          # minute) there is no rolling release; an update then fails
+          # with "not found" and works when tried again.
+          if gh api "repos/$REPO/git/ref/tags/edge" > /dev/null 2>&1; then
             gh api --method PATCH "repos/$REPO/git/refs/tags/edge" -f sha="$SHA" -F force=true > /dev/null
-            # Archives first, checksums last: a download in between fails
-            # the checksum check instead of installing a mismatched file.
-            gh release upload edge --repo "$REPO" --clobber dist/*.tar.gz dist/*.zip dist/ai-prompt.txt
-            gh release upload edge --repo "$REPO" --clobber dist/SHA256SUMS dist/SHA256 dist/SHA256SUMS.sigstore.json
-            gh release edit edge --repo "$REPO" --prerelease --latest=false --title "rolling (newest build of main)" --notes "$notes"
-          else
-            gh release create edge --repo "$REPO" --target "$SHA" --prerelease --latest=false \
-              --title "rolling (newest build of main)" --notes "$notes" \
-              dist/*.tar.gz dist/*.zip dist/ai-prompt.txt dist/SHA256SUMS dist/SHA256 dist/SHA256SUMS.sigstore.json
           fi
+          if gh release view edge --repo "$REPO" > /dev/null 2>&1; then
+            gh release delete edge --repo "$REPO" --yes
+          fi
+          gh release create edge --repo "$REPO" --target "$SHA" --prerelease --latest=false \
+            --title "rolling (newest build of main)" --notes "$notes" \
+            dist/*.tar.gz dist/*.zip dist/ai-prompt.txt dist/SHA256SUMS dist/SHA256 dist/SHA256SUMS.sigstore.json
       - name: Remove build output
         if: always()
         run: rm -rf dist
