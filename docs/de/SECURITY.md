@@ -109,7 +109,7 @@ Ein Formularlauf macht keine Netzwerkverbindungen. Firmennamen, Adressen und Ver
 
 ## Pipeline für Sicherheitstests
 
-Pull-Anfragen führen ein schnelles Gate aus (Formatierung, Tierarzt, Statikcheck, Tests unter Linux, macOS und Windows, govulncheck, gosec, zizmor, der Verlaufsscan und die Überprüfung der Abhängigkeit). Pushes zu `main` und Agentenzweige, und einen nächtlichen Zeitplan, führen Sie alles aus:
+Pull-Anfragen führen ein schnelles Gate aus (Formatierung, Tierarzt, Statikcheck, Tests unter Linux, macOS und Windows, govulncheck, gosec, zizmor, der Verlaufsscan und die Überprüfung der Abhängigkeit). Pushes zu `main` und Agent Branchs und einen nächtlichen Zeitplan, führen Sie alles aus (die LibreOffice Formattests laufen einmal pro Pull Request Change und nicht für jeden Push):
 
 | Überprüfung | Werkzeug |
 | --- | --- |
