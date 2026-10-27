@@ -5,8 +5,9 @@ name: release approval
 # When a pull request titled "vX.Y.Z: ..." is merged into main and ci
 # passes on that commit, this workflow waits in the "release" environment
 # for approval (GitHub mails a "Review pending deployments" link). After
-# "Approve and deploy" it tags the tested commit vX.Y.Z and starts
-# release.yml on that tag, which builds, signs and publishes exactly as a
+# "Approve and deploy" it tags the tested commit vX.Y.Z (or the commit
+# that adds only its translations, see below) and starts release.yml on
+# that tag, which builds, signs and publishes exactly as a
 # tag pushed by hand would. "Reject" (or no answer for 30 days) releases
 # nothing. A tag created with the workflow token starts no workflow by
 # itself, hence the explicit start. See .github/RELEASING.md.
@@ -38,6 +39,7 @@ jobs:
       (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     permissions:
+      actions: read # the translate run of the merge
       contents: read
       pull-requests: read
     outputs:
@@ -92,6 +94,45 @@ jobs:
             exit 1
             ;;
           esac
+          # The programs embed docs/es and docs/de, which the translate run
+          # of the merge commits a few minutes after it. Wait for that run
+          # (at most 40 minutes) and tag its commit instead, but only when
+          # it follows the tested commit directly and changes nothing but
+          # the translations; otherwise tag the tested commit.
+          if ! printf '%s\n' "$sha" | grep -qE '^[0-9a-f]{40}$'; then
+            echo "::error::$sha is not a commit ID"
+            exit 1
+          fi
+          translations="none for this commit"
+          for _ in $(seq 80); do
+            run=$(gh api "repos/$REPO/actions/workflows/translate.yml/runs?head_sha=$sha&event=push" \
+              --jq '.workflow_runs[0] // {} | "\(.status // "") \(.conclusion // "")"')
+            case $run in
+            "completed "*|" ") break ;;
+            esac
+            sleep 30
+          done
+          case $run in
+          "completed success")
+            translations="no commit that only adds translations follows it; the tested commit is tagged"
+            # The bot's commit whose only parent is the tested one (the
+            # compare lists commits by date, and a branch may start there
+            # too).
+            next_sha=$(gh api "repos/$REPO/compare/$sha...main" \
+              --jq "[.commits[] | select((.parents | length) == 1 and .parents[0].sha == \"$sha\" and .author.login == \"github-actions[bot]\")][0].sha // \"\"")
+            if [ -n "$next_sha" ]; then
+              subject=$(gh api "repos/$REPO/commits/$next_sha" --jq '.commit.message | split("\n")[0]')
+              other=$(gh api "repos/$REPO/commits/$next_sha" --jq '.files[].filename' |
+                grep -cvE '^(docs/es/|docs/de/|\.github/translate/models\.sha256$)' || true)
+              if [ "$subject" = "docs: update Spanish and German translations (Argos Translate)" ] && [ "$other" = 0 ]; then
+                translations="commit $next_sha (the tested commit plus its translations) is tagged"
+                sha=$next_sha
+              fi
+            fi
+            ;;
+          " ") ;;
+          *) translations="the translate run was \"$run\"; the tested commit is tagged" ;;
+          esac
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
           {
@@ -99,6 +140,7 @@ jobs:
             echo
             echo "- commit: \`$sha\`"
             echo "- $from"
+            echo "- translations: $translations"
             echo "- newest release so far: ${newest:-none}"
             echo
             echo "Approve the **release** deployment to tag and publish it, or reject it to release nothing."
