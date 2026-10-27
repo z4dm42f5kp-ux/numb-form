@@ -99,7 +99,7 @@ func TestAutoReviewCorrects(t *testing.T) {
 func TestAutoReviewRounds(t *testing.T) {
 	ctx := context.Background()
 	real, cp := workingCopy(t, dateOf("Foo Ltd"))
-	rc, err := reviewSetup(ctx, cp, real, config.Defaults())
+	rc, err := reviewSetup(ctx, cp, real, testConfig(t, filepath.Dir(cp)))
 	if err != nil {
 		t.Fatal(err)
 	}

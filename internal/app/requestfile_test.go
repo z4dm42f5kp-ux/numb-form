@@ -8,8 +8,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/z4dm42f5kp-ux/numb-form/internal/config"
 )
 
 func TestTree(t *testing.T) {
@@ -46,7 +44,7 @@ func TestTree(t *testing.T) {
 func TestRequestRoundTrip(t *testing.T) {
 	real, cp := scanCopy(t)
 	ctx := context.Background()
-	rc, err := reviewSetup(ctx, cp, real, config.Defaults())
+	rc, err := reviewSetup(ctx, cp, real, testConfig(t, filepath.Dir(cp)))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -64,7 +62,7 @@ func TestRequestRoundTrip(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, want := range []string{"Status: waiting", "New folder  Foo Ltd", "made by numb-form, unchanged",
-		"a form edited after filling, or made by hand", "Replaced  ", "Left alone", "After the commit:", "+ new folder", "~ replaced"} {
+		"a form edited after filling, made by hand or filled on another computer", "Replaced  ", "Left alone", "After the commit:", "+ new folder", "~ replaced"} {
 		if !strings.Contains(string(b), want) {
 			t.Errorf("request lacks %q:\n%s", want, b)
 		}
