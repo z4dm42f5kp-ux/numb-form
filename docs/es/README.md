@@ -11,7 +11,7 @@ Español: [docs/es/README.md](README.md) · Deutsch: [docs/de/README.md](../de/R
 **Nuevo aquí? Lea la guía [step-by-step](guide.md).** No necesita conocimientos técnicos.
 
 * Instala: [docs/install.md](install.md)
-* Uso: [docs/usage.md](usage.md)
+* Use: [numb-form](usage.md), [numb-date](numb-date.md)
 * Configuración: [docs/configuration.md](configuration.md)
 * Encontrar la dirección y los representantes con un asistente de inteligencia artificial: [docs/ai-prompt.md](ai-prompt.md)
 * Suites y formatos de oficina: [docs/formats.md](formats.md)
