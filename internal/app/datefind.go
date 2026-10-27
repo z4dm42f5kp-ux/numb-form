@@ -3,11 +3,11 @@ package app
 import (
 	"fmt"
 	"io/fs"
-	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 
+	"github.com/z4dm42f5kp-ux/numb-form/internal/fsutil"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/reportdate"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/sheet"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/textutil"
@@ -16,6 +16,9 @@ import (
 
 // formExts are the forms numb-date can read.
 var formExts = map[string]bool{".docx": true, ".docm": true, ".odt": true, ".fodt": true, ".rtf": true}
+
+// maxForm bounds the forms numb-form reads.
+const maxForm = 50 << 20
 
 type formFile struct {
 	path, rel string
@@ -91,7 +94,7 @@ func (r *run) dateFor(row sheet.TableRow) (planned, bool, error) {
 		return planned{}, false, nil
 	}
 	for _, f := range files {
-		b, err := os.ReadFile(f.path) // #nosec G304 -- a form in the working folder, read only.
+		b, err := fsutil.ReadFileMax(f.path, maxForm)
 		if err != nil {
 			r.logf("read %s: %v", f.path, err)
 			continue
