@@ -161,6 +161,21 @@ jobs:
               case $status in ahead|identical) printf '%s:%s\n' "$v" "$head" ;; esac
             done | sort -t: -k1,1V -u)
             parts=$(printf '%s\n' "$found" | sed '/^$/d' | tr '\n' ' ' | sed 's/ $//')
+            # Each of them is released from its own commit, so that commit
+            # must have passed ci and security itself, not only the
+            # milestone.
+            untested=""
+            for p in $parts; do
+              for w in ci security; do
+                ok=$(gh api "repos/$REPO/actions/runs?head_sha=${p#*:}&per_page=100" \
+                  --jq "[.workflow_runs[] | select(.name == \"$w\" and .conclusion == \"success\")] | length")
+                [ "$ok" -gt 0 ] || untested="$untested ${p%%:*}($w)"
+              done
+            done
+            if [ -n "$untested" ]; then
+              echo "::error::no green run on the commit of:$untested. Run ci and security on those branches (Actions > Run workflow), then re-run this workflow."
+              exit 1
+            fi
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "sha=$sha" >> "$GITHUB_OUTPUT"

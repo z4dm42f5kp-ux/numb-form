@@ -1,10 +1,10 @@
 name: ci
 
-# Pull requests get a fast gate (lint and tests on Linux, macOS and
-# Windows). The slow jobs (BSD virtual machines, containers, every
-# cross-compile target) run on main and nightly. A "changes" job skips Go
-# work for documentation-only changes; skipped jobs count as passed, so
-# required checks never hang.
+# Every pull request, every push to main or an agent branch, and every
+# night run all of it: lint, tests on Linux, macOS and Windows, the BSD
+# virtual machines, the container image and every cross-compile target.
+# A "changes" job skips Go work for documentation-only changes; skipped
+# jobs count as passed, so required checks never hang.
 
 on:
   push:
@@ -155,7 +155,6 @@ jobs:
         # go install verifies the module against the Go checksum database.
         run: go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./...
       - name: Cross-compile every release target
-        if: github.event_name != 'pull_request'
         run: sh scripts/build-release.sh "ci-${GITHUB_SHA}" > /dev/null && rm -rf dist
 
   test:
@@ -200,7 +199,7 @@ jobs:
 
   bsd:
     needs: changes
-    if: needs.changes.outputs.go == 'true' && github.event_name != 'pull_request'
+    if: needs.changes.outputs.go == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -278,7 +277,7 @@ jobs:
 
   container:
     needs: changes
-    if: needs.changes.outputs.go == 'true' && github.event_name != 'pull_request'
+    if: needs.changes.outputs.go == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read

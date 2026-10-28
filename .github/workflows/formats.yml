@@ -16,16 +16,8 @@ name: formats
 
 on:
   push:
-    branches: [main]
-    paths:
-      - "internal/**"
-      - go.mod
-      - .github/workflows/formats.yml
+    branches: [main, "claude/**"]
   pull_request:
-    paths:
-      - "internal/**"
-      - go.mod
-      - .github/workflows/formats.yml
   schedule:
     - cron: "53 3 * * *"
   workflow_dispatch:

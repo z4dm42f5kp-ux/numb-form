@@ -30,7 +30,8 @@ of the versions before it are closed unmerged with the label
 The one approval of the milestone releases each of them first, oldest
 first, from its own commit and with its own section of `CHANGES.md`,
 and the milestone last. If one of their builds fails, nothing newer is
-released.
+released. Each of them must have passed ci and security on its own
+commit; otherwise the approval stops before asking and names them.
 
 A pull request with another title (no `vX.Y.Z:` at the start) releases
 nothing. To release the newest `main` without a pull request, run

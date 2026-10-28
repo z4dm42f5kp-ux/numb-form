@@ -67,15 +67,16 @@ jobs:
           jq -r '.Issues[]? | "::error file=\(.file | sub("^.*/numb-form/numb-form/"; "")),line=\(.line),title=gosec \(.rule_id)::\(.details) (\(.severity)/\(.confidence))"' gosec.json
           test "$(jq '.Issues | length' gosec.json)" -eq 0
       - name: Upload gosec results
-        # Pull requests (including Dependabot's) have a read-only token.
-        if: always() && github.event_name != 'pull_request'
+        # Pull requests from forks and Dependabot have a read-only token.
+        if: always() && (github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]'))
         uses: github/codeql-action/upload-sarif@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4.39.0
         with:
           sarif_file: gosec.sarif
           category: gosec
 
   codeql:
-    if: github.event_name != 'pull_request'
+    # Uploads results, so not for forks and Dependabot (read-only token).
+    if: github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]')
     strategy:
       fail-fast: false
       matrix:
@@ -109,8 +110,8 @@ jobs:
 
   fuzz:
     # Every parser of untrusted input, including the legacy .xls reader,
-    # is fuzzed on main (2 minutes each) and nightly (10 minutes each).
-    if: github.event_name != 'pull_request'
+    # is fuzzed on every pull request and push (2 minutes each) and
+    # nightly (10 minutes each).
     runs-on: ubuntu-latest
     permissions:
       contents: read
