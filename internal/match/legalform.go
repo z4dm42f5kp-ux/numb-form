@@ -1,5 +1,9 @@
 // Package match extracts legal forms from company names and decides
 // whether a company already has a folder.
+//
+// In plain words: it reads the legal form (GmbH, S.A., Ltda) from a
+// company name, and finds out whether a folder for that company already
+// exists, even when the name is written slightly differently.
 package match
 
 import (

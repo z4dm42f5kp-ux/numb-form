@@ -12,6 +12,9 @@ each confirmation; with `mode = review` it works on a copy in Downloads
 and numb-commit copies the reviewed result back.
 Read [docs/usage.md](docs/usage.md) and
 [docs/configuration.md](docs/configuration.md) first.
+A session that starts without context reads
+[.github/everything-agents-need-to-know.txt](.github/everything-agents-need-to-know.txt)
+before anything else.
 
 ## Running it for a person
 
