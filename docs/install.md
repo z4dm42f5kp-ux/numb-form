@@ -241,6 +241,19 @@ or the Sigstore signature of the checksum file with cosign:
 cosign verify-blob --bundle SHA256SUMS.sigstore.json --certificate-identity-regexp '^https://github.com/z4dm42f5kp-ux/numb-form/\.github/workflows/release\.yml@refs/tags/v' --certificate-oidc-issuer https://token.actions.githubusercontent.com SHA256SUMS
 ```
 
+A release can also have `SHA256SUMS.asc`, a PGP signature of the
+checksum file, for systems that have GnuPG but not cosign.
+It is made only once the owner has set up a release key; its public key
+is `.github/release-key.asc` in the repository.
+Check it with GnuPG, in the folder with the downloads:
+
+```
+curl -fLO https://raw.githubusercontent.com/z4dm42f5kp-ux/numb-form/main/.github/release-key.asc && gpg --import release-key.asc && gpg --verify SHA256SUMS.asc SHA256SUMS
+```
+
+A good signature and a matching checksum together prove the archive
+is the one the release workflow built.
+
 ## Building from source
 
 The project has no third-party modules: `go.mod` has no `require` lines

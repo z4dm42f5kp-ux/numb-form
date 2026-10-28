@@ -149,6 +149,7 @@ func (c Config) Values() [][2]string {
 		{"mode", c.Mode}, {"online", yn(c.Online)}, {"overview_dir", c.OverviewDir}, {"header", c.Header},
 		{"id_header", c.IDHeader}, {"template_name", c.TemplateName}, {"person", c.Person}, {"date_format", c.DateFormat},
 		{"timeout", timeout}, {"max_write_mb", strconv.Itoa(c.MaxWriteMB)}, {"fuzzy_threshold", strconv.FormatFloat(c.Fuzzy, 'g', -1, 64)},
+		{"unicode", c.Unicode},
 		{"downloads", c.Downloads}, {"log_dir", c.LogDir}, {"commit_from", c.CommitFrom}, {"commit_to", c.CommitTo}, {"soffice", c.Soffice}, {"pages_converter", c.PagesConverter},
 		{"pages_write", yn(c.PagesWrite)}, {"numbers_converter", c.NumbersConverter}, {"legacy_formats", yn(c.LegacyFormats)},
 		{"legacy_output", c.LegacyOutput},
@@ -173,6 +174,7 @@ func Template() string {
 	line("stop safely after this long, such as 30m; none means no time limit", "timeout", "none")
 	line("most megabytes of documents one run may write (at most 100)", "max_write_mb", "100")
 	line("how close a folder name must be to be offered as a match (0.5-1)", "fuzzy_threshold", "0.85")
+	line("basic: compare names with Western European accents folded; full: every alphabet's accents and special forms", "unicode", d.Unicode)
 	line("review mode: folder for the copy; empty means your Downloads folder", "downloads", "")
 	line("direct mode: folder for logs; empty means the per-user state folder", "log_dir", "")
 	line("numb-commit: the working copy to commit, for example C:\\Users\\you\\Downloads\\14. GWG; empty means ask", "commit_from", "")

@@ -1,5 +1,9 @@
 // Package formats chooses how a template or spreadsheet is read, filled
 // and written, by file extension and configuration.
+//
+// In plain words: it looks at the end of the file name (.docx, .odt,
+// .xlsx and so on) and picks the part of the program that understands
+// that kind of file.
 package formats
 
 import (
@@ -46,7 +50,7 @@ func IsSheet(ext string) bool { return has(SheetExts, ext) }
 type Template struct {
 	Name   string
 	OutExt string // extension of the filled files
-	Legacy bool   // a legacy format: the run must stay offline
+	Legacy bool   // a legacy format (.doc): noted in the log
 	Notes  []string
 
 	filler  form.Filler
@@ -113,7 +117,7 @@ func loadDoc(ctx context.Context, t *Template, data []byte, cfg config.Config) (
 		return nil, fmt.Errorf("convert .doc template: %w", err)
 	}
 	t.filler, t.data, t.Legacy, t.OutExt = docx.Format{}, d, true, ".docx"
-	t.Notes = append(t.Notes, "legacy .doc template converted with "+filepath.Base(so)+"; online lookups are off for this run")
+	t.Notes = append(t.Notes, "legacy .doc template converted with "+filepath.Base(so))
 	if cfg.LegacyOutput == "same" {
 		t.OutExt = ".doc"
 		t.finish = func(ctx context.Context, b []byte) ([]byte, error) {
@@ -186,7 +190,7 @@ func (t *Template) ReadBack(ctx context.Context, out []byte) (form.Values, error
 }
 
 // LoadSheet reads the companies from the spreadsheet at p. legacy is
-// true for formats that require an offline run.
+// true for legacy formats (.xls), which the log notes.
 func LoadSheet(ctx context.Context, p string, cfg config.Config) (rows []sheet.Row, warns []string, legacy bool, err error) {
 	opt := sheet.Options{Header: cfg.Header, IDHeader: cfg.IDHeader, Legacy: cfg.LegacyFormats}
 	ext := strings.ToLower(filepath.Ext(p))

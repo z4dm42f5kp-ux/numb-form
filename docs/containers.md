@@ -1,7 +1,8 @@
 # Running numb-form in containers
 
-The image holds only the two static binaries, a CA bundle and the time
-zone database.
+The image holds only the three static programs (numb-form, numb-commit
+and numb-date, each with the time zone database built in) and a CA
+bundle.
 No base image is used.
 It runs as an unprivileged user (UID 65532).
 
@@ -76,6 +77,18 @@ mkdir -p "$HOME/Downloads" && printf 'mode = review\n' > "$HOME/Downloads/review
 
 Podman takes the same options plus `--userns=keep-id` and `:Z`.
 
+## numb-date in a container
+
+numb-date writes the spreadsheet, so the working folder is mounted
+read-write.
+**Unix-like** (Linux, macOS, BSD), in Terminal:
+
+```
+docker run --rm -it --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges -e TZ=Europe/Berlin -e XDG_STATE_HOME=/downloads/numb-form-logs -v "$PWD:/data" -v "$HOME/Downloads:/downloads" --entrypoint /numb-date ghcr.io/z4dm42f5kp-ux/numb-form:latest
+```
+
+Podman takes the same options plus `--userns=keep-id` and `:Z`.
+
 ## Kubernetes
 
 [`k8s/`](../k8s) has example volume claims and two interactive pods.
@@ -97,3 +110,48 @@ If the first prompt was printed before you attached, press Enter to see
 it again.
 The pods use a read-only root file system, drop all capabilities, mount
 no service account token and stop after 30 minutes.
+
+## FreeBSD jail
+
+Docker does not run on the BSDs.
+On FreeBSD, the script `numb-form-jail` runs the installed programs in
+a jail, FreeBSD's own container, which is part of the base system; no
+container software is needed.
+The jail is empty and read-only except for two folders: the current
+folder as `/data` and your Downloads folder as `/downloads`.
+It has no network, runs the program as you, not as root, and is removed
+with every mount when the program ends, also after Ctrl+C.
+Creating a jail needs root, so the script is started with `doas` (or
+`sudo`).
+The script comes in the FreeBSD release archive, checked like the
+programs.
+Install the programs first ([install.md](install.md)), then install the
+script once, owned by root (on arm64, write `arm64` for `amd64`).
+
+**Unix-like** (FreeBSD), in Terminal:
+
+```
+cd "$(mktemp -d)" && fetch https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/numb-form_freebsd_amd64.tar.gz && fetch https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/SHA256SUMS && sha256 -c "$(awk '$2=="numb-form_freebsd_amd64.tar.gz"{print $1}' SHA256SUMS)" numb-form_freebsd_amd64.tar.gz && tar -xzf numb-form_freebsd_amd64.tar.gz jail.sh && doas install -o root -g wheel -m 0555 jail.sh /usr/local/sbin/numb-form-jail && cd / && rm -rf "$OLDPWD" && echo OK
+```
+
+Then, inside the working folder (or the folder above it):
+
+```
+doas numb-form-jail numb-form
+```
+
+Write `numb-commit` or `numb-date` instead of `numb-form` to run those;
+options follow the program name.
+The programs are taken from `~/.local/bin`; for another folder, or
+another Downloads folder, start it as
+`doas env NUMBFORM_BIN=folder NUMBFORM_DOWNLOADS=folder numb-form-jail numb-form`.
+
+## OpenBSD and NetBSD
+
+OpenBSD and NetBSD have no container system that runs these programs.
+None is needed: the programs are single static files that use no other
+software, read only the working folder, the spreadsheet and the
+template, and contact the network only for `numb-form update`.
+Install them as described in [install.md](install.md), set `online = no`
+in the system configuration file to turn off `numb-form update`, and
+run them as an ordinary user, never as root.
