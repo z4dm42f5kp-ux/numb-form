@@ -5,6 +5,9 @@
 // spliced into the original bytes. A value joins the label's own text (so
 // it inherits the label's span style); when the label is followed by a
 // tab, the value is wrapped in the label's existing span style.
+//
+// In plain words: as for Word files, values are written after their
+// labels in LibreOffice and OpenOffice files, and nothing else changes.
 package odt
 
 import (

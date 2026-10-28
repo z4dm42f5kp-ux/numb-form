@@ -18,8 +18,8 @@ numb-date is started like numb-form, inside the working folder (or one level abo
 
 1. Die Unternehmensspalte wird von `header`, dann von gemeinsamen Namen (`Customer Name`, `Customer`, `Company Name`, `Kunde`, `Cliente` und andere, ignorieren Fall) gefunden; die Datumsspalte in der gleichen Kopfzeile von `Report created AB`, `Report created`, `Report date`, `Created` und ähnliche Namen, oder jede Überschrift, die einen Bericht und seine Erstellung oder Datum erwähnt.
 2. Zeilen, deren Datumszelle eine Ziffer enthält, werden übersprungen: Sie haben bereits ein Datum.
-3. Für die anderen Zeilen wird der Ordner des Unternehmens als numb-form gefunden (beinahe Übereinstimmungen werden gefragt oder mit `-y` aufgenommen). Die Formulare `.docx`, `.odt`, `.fodt` oder `.rtf` im Ordner (und eine Ebene unten) werden gelesen, das Risikobeurteilungsformular zuerst: das *Date of the evaluation* von Abschnitt A oder, in anders angelegten Formularen, das Datum, das nach einem Datumsetikett geschrieben wurde. Daten wie `16/10/2026`, `16.10.2026`, `2026-10-16` und `16 October 2026` werden verstanden. Wenn kein Datum gefunden wird, geben Sie es ein oder überspringen das Unternehmen.
-4. Die Daten werden aufgelistet und als `DD-MM-YYYY` geschrieben, nachdem Sie zugestimmt haben, dann von der Festplatte zurückgelesen und angezeigt; Sie akzeptieren sie oder machen das Schreiben rückgängig.
+3. Für die anderen Zeilen wird der Ordner des Unternehmens als numb-form gefunden (beinahe Übereinstimmungen werden gefragt oder mit `-y` aufgenommen). Die Formulare `.docx`, `.odt`, `.fodt` oder `.rtf` im Ordner (und eine Ebene unten) werden gelesen, das Risikobeurteilungsformular zuerst: das *Date of the evaluation* von Abschnitt A oder, in anders angelegten Formularen, das Datum, das nach einem Datumsetikett geschrieben wurde. Daten wie `16/10/2026`, `16.10.2026`, `2026-10-16` und `16 October 2026` werden verstanden. numb-date fragt nie nach einem datum. Ein Unternehmen ohne Ordner, ohne Formular oder ohne Datum in seiner Form wird mit dem Grund, z. B. `skipped: no form in the folder Foo GmbH`, übersprungen und vor den Daten erneut aufgelistet, so dass Sie es von Hand ausfüllen können.
+4. Die Daten sind aufgelistet, nummeriert, mit dem Formular, aus dem jeder stammt. Sie akzeptieren sie, bearbeiten eine oder schreiben nichts. Sie werden als `DD-MM-YYYY` geschrieben, von der Festplatte zurückgelesen und angezeigt; Sie akzeptieren sie oder machen das Schreiben rückgängig.
 
 Formulare werden nur gelesen.
 
@@ -30,8 +30,9 @@ Nur die aufgeführten Zellen ändern sich. Sie behalten ihren eigenen Zellstil b
 | numb-date fragt | Was du tust |
 | --- | --- |
 | `Is the folder "…" this company's folder? (...) [y/N]` | `y`, wenn es das gleiche Unternehmen ist, andernfalls Enter |
-| `Date (DD-MM-YYYY, Enter = skip):` | Das Formular hat kein lesbares Datum: Geben Sie es ein oder Enter to skip |
-| `Write these … date(s)? Nothing else in the spreadsheet changes. [y/N]` | `y`, um sie zu schreiben; Enter schreibt nichts |
+| `Write these … date(s)? Nothing else in the spreadsheet changes. [a]ccept, [e]dit a date, [r]eject:` | `a` schreibt sie; `e` ändert ein Datum; `r` schreibt nichts |
+| `Number to change (1-…, Enter to go back):` | Nummer des Datums in der Liste |
+| `New date for … (DD-MM-YYYY, Enter = keep …, '-' = leave it out):` | Geben Sie das Datum ein, geben Sie ein, um es zu behalten, oder `-`, um dieses Unternehmen zu verlassen |
 | `Is this correct? [a]ccept, [u]ndo:` | `a` behält sie, `u` stellt die Datei genau wieder her |
 
 ## OPTIONS
