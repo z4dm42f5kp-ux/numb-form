@@ -165,8 +165,8 @@ It is run only when the user types it, and never during a form run.
   the same trust as the install commands (the Sigstore signature and the
   build provenance are not checked by the program; check them by hand as
   described in [docs/install.md](docs/install.md) if needed).
-* The archive (at most 64 MB) is held in memory; only `numb-form` and
-  `numb-commit` at its top level are taken from it.
+* The archive (at most 64 MB) is held in memory; only `numb-form`,
+  `numb-commit` and `numb-date` at its top level are taken from it.
 * The new `numb-form` must start and report its version before anything
   is replaced; on any failure the installed programs stay as they were and
   the staged files are removed.
@@ -187,8 +187,15 @@ tamper with.
 **PGP and its replacements.**
 Authenticity is checked with the mechanisms each ecosystem actually
 supports.
-PGP is not used because the ecosystems involved no longer rely on it
-(PyPI removed PGP signature support in 2023).
+PGP is not used for dependencies because the ecosystems involved no
+longer rely on it (PyPI removed PGP signature support in 2023).
+For releases, PGP is optional: SHA-256 checksums prove a download is
+intact but not who made it, and the Sigstore signature already proves
+that; a PGP signature helps only where GnuPG is at hand and cosign is
+not.
+So the release workflow signs `SHA256SUMS` with PGP only when the owner
+has set up a release key, and only that one file: it holds the SHA-256
+of every archive, so signing each archive as well would add nothing.
 
 | Component | Verification |
 | --- | --- |
@@ -210,6 +217,8 @@ Each release has:
 * `SHA256SUMS` (GNU format) and `SHA256` (BSD format) checksums;
 * `SHA256SUMS.sigstore.json`, a keyless Sigstore signature of the
   checksums, tied to the release workflow's identity;
+* `SHA256SUMS.asc`, a PGP signature of the checksums, once the owner has
+  set up a release key (`.github/release-key.asc`);
 * SLSA build provenance attestations for every archive and binary
   (`gh attestation verify`);
 * a container image on ghcr.io, signed with cosign and attested.
@@ -257,7 +266,7 @@ needs; checkouts do not keep credentials.
 
 ## Containers and Kubernetes
 
-The image contains only the two binaries, a CA bundle and the time zone
+The image contains only the three programs, a CA bundle and the time zone
 database, and runs as UID 65532.
 The documented commands and manifests use a read-only root file system,
 drop all capabilities, forbid privilege escalation, mount the working

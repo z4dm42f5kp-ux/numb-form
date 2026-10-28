@@ -1,6 +1,10 @@
 // Package runlog writes the human-readable log and the machine-readable
 // manifest of a run. Both live in the run directory in Downloads, outside
 // the copied tree, so they are never committed into the real directory.
+//
+// In plain words: every run writes a diary of what it did (the log) and
+// a list of the files it made with their checksums (the manifest), so
+// that people and the later programs can check them.
 package runlog
 
 import (

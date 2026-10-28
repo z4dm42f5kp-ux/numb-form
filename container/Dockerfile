@@ -1,5 +1,5 @@
 # Minimal image: no base image is pulled, so there is nothing to pin or
-# patch. It contains only the two static binaries and a CA bundle.
+# patch. It contains only the three static programs and a CA bundle.
 # Build it with container/build.sh, which compiles the binaries first.
 FROM scratch
 COPY ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
