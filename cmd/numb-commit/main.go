@@ -5,9 +5,10 @@
 // never overwrites (except the overview spreadsheet) or deletes, and
 // verifies every file with SHA-256.
 //
-// In plain words: after you have checked the copy in Downloads, this
-// program puts the new folders into the real working folder. It cannot
-// change or remove anything that is already there.
+// In plain words: it copies the new forms from your copy into the real
+// working folder, but only after you have seen and accepted the list. It
+// adds files and may write report dates into the overview spreadsheet;
+// it never deletes anything.
 package main
 
 import (
