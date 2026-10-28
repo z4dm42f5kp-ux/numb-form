@@ -1,4 +1,7 @@
 // Package testfix builds synthetic test files. It is used only by tests.
+//
+// In plain words: it makes small made-up forms and spreadsheets, so the
+// tests never need real customer files.
 package testfix
 
 import (

@@ -1,13 +1,23 @@
 # Build output
 /numb-form
 /numb-commit
+/numb-date
 *.exe
 /dist/
 
 # Never commit customer data to this public repository.
 *.docx
+*.doc
+*.odt
+*.fodt
+*.rtf
 *.xlsx
 *.xlsm
+*.xls
+*.ods
+*.fods
+*.csv
+*.tsv
 *.numbers
 *.pages
 numb-form-runs/
