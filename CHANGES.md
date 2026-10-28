@@ -35,6 +35,7 @@ Releases up to v1.2.1 are described on the
   plain words; `.gitignore` covers every document and spreadsheet
   format, so customer files cannot be committed by mistake.
 
+## v1.3.6
 
 * Internal: numb-commit's questions for the two folders, "Which
   directory should be committed (insert absolute path)?" and "Which

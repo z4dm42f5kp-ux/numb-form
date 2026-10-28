@@ -105,6 +105,26 @@ jobs:
           test ! -e dist/SHA256SUMS.asc
           rm -rf dist "$GNUPGHOME"
 
+  release-notes:
+    # The descriptions on the release pages (scripts/release-notes.sh).
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Stable and rolling notes are written
+        run: |
+          tag=$(git tag --list 'v[0-9]*' --sort=-v:refname | head -n 1)
+          sh scripts/release-notes.sh stable "$tag" | tee stable.md
+          sh scripts/release-notes.sh edge HEAD | tee edge.md
+          grep -q 'Verify the downloads' stable.md
+          grep -q '^Rolling build of ' edge.md
+          test "$(wc -l < stable.md)" -gt 2
+          rm stable.md edge.md
+
   lint:
     needs: changes
     if: needs.changes.outputs.go == 'true'

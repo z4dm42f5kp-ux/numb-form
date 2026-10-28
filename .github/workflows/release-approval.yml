@@ -11,6 +11,12 @@ name: release approval
 # tag pushed by hand would. "Reject" (or no answer for 30 days) releases
 # nothing. A tag created with the workflow token starts no workflow by
 # itself, hence the explicit start. See .github/RELEASING.md.
+#
+# A milestone pull request may stand for several versions: the pull
+# requests of the versions before it are closed unmerged with the label
+# "milestone-part". The same approval then releases each of them first,
+# oldest first, from its own commit, each with its own release page,
+# and the milestone last.
 
 on:
   # Only runs of ci on main started by a push (a merge) count, and nothing
@@ -45,6 +51,7 @@ jobs:
     outputs:
       version: ${{ steps.v.outputs.version }}
       sha: ${{ steps.v.outputs.sha }}
+      parts: ${{ steps.v.outputs.parts }}
     steps:
       - id: v
         env:
@@ -133,8 +140,31 @@ jobs:
           " ") ;;
           *) translations="the translate run was \"$run\"; the tested commit is tagged" ;;
           esac
+          # The versions this milestone stands for: closed, unmerged pull
+          # requests labelled milestone-part, newer than the newest release
+          # and older than this version, whose commit is part of the
+          # commit to release. Oldest first, one commit per version.
+          parts=""
+          if [ "$EVENT" != workflow_dispatch ]; then
+            list=$(gh pr list --repo "$REPO" --state closed --label milestone-part --limit 200 \
+              --json title,headRefOid,mergedAt --jq '.[] | select(.mergedAt == null) | "\(.headRefOid) \(.title)"' || true)
+            found=$(printf '%s\n' "$list" | while read -r head title; do
+              v=$(printf '%s\n' "$title" | sed -nE '1s/^(v[0-9]+\.[0-9]+\.[0-9]+):.*/\1/p')
+              [ -n "$v" ] || continue
+              printf '%s\n' "$head" | grep -qE '^[0-9a-f]{40}$' || continue
+              [ "$v" != "$version" ] || continue
+              [ "$(printf '%s\n%s\n' "$v" "$version" | sort -V | tail -n 1)" = "$version" ] || continue
+              if [ -n "$newest" ] && [ "$(printf '%s\n%s\n' "$newest" "$v" | sort -V | tail -n 1)" != "$v" ]; then continue; fi
+              [ "$v" != "$newest" ] || continue
+              gh api "repos/$REPO/git/ref/tags/$v" > /dev/null 2>&1 && continue
+              status=$(gh api "repos/$REPO/compare/$head...$sha" --jq .status 2>/dev/null || true)
+              case $status in ahead|identical) printf '%s:%s\n' "$v" "$head" ;; esac
+            done | sort -t: -k1,1V -u)
+            parts=$(printf '%s\n' "$found" | sed '/^$/d' | tr '\n' ' ' | sed 's/ $//')
+          fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "parts=$parts" >> "$GITHUB_OUTPUT"
           {
             echo "### $version is waiting for your approval"
             echo
@@ -142,6 +172,10 @@ jobs:
             echo "- $from"
             echo "- translations: $translations"
             echo "- newest release so far: ${newest:-none}"
+            if [ -n "$parts" ]; then
+              echo "- released first, oldest first, each from its own commit:"
+              for p in $parts; do echo "  - ${p%%:*} (\`${p#*:}\`)"; done
+            fi
             echo
             echo "Approve the **release** deployment to tag and publish it, or reject it to release nothing."
           } >> "$GITHUB_STEP_SUMMARY"
@@ -153,16 +187,48 @@ jobs:
     # The owner approves here (required reviewer of the environment).
     environment: release
     permissions:
-      contents: write # create the tag
+      contents: write # create the tags, write the release pages
       actions: write  # start release.yml, which a tag made here does not start
     steps:
+      # main, for scripts/release-notes.sh and CHANGES.md; nothing of the
+      # releases themselves is built here.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+          fetch-depth: 0
       - env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           VERSION: ${{ needs.propose.outputs.version }}
           SHA: ${{ needs.propose.outputs.sha }}
+          PARTS: ${{ needs.propose.outputs.parts }}
         run: |
           set -eu
-          gh api "repos/$REPO/git/refs" -f "ref=refs/tags/$VERSION" -f "sha=$SHA" > /dev/null
-          gh workflow run release.yml --repo "$REPO" --ref "$VERSION"
-          echo "Tagged $SHA as $VERSION and started the release build." >> "$GITHUB_STEP_SUMMARY"
+          # One version at a time, oldest first, so that the newest release
+          # and the image's "latest" end at the milestone. A failed build
+          # stops here: nothing newer is released.
+          for item in $PARTS "$VERSION:$SHA"; do
+            v=${item%%:*}
+            c=${item#*:}
+            gh api "repos/$REPO/git/refs" -f "ref=refs/tags/$v" -f "sha=$c" > /dev/null
+            gh workflow run release.yml --repo "$REPO" --ref "$v"
+            id=""
+            for _ in $(seq 60); do
+              id=$(gh run list --repo "$REPO" --workflow release.yml --branch "$v" --json databaseId --jq '.[0].databaseId // ""')
+              [ -n "$id" ] && break
+              sleep 10
+            done
+            if [ -z "$id" ]; then
+              echo "::error::the release build of $v did not start"
+              exit 1
+            fi
+            if ! gh run watch "$id" --repo "$REPO" --exit-status --interval 30 > /dev/null; then
+              echo "::error::the release build of $v failed (run $id); nothing newer was released"
+              exit 1
+            fi
+            git fetch -q --tags origin
+            REPO="$REPO" sh scripts/release-notes.sh stable "$v" > "$RUNNER_TEMP/notes.md"
+            gh release edit "$v" --repo "$REPO" --notes-file "$RUNNER_TEMP/notes.md"
+            echo "Released $v from $c." >> "$GITHUB_STEP_SUMMARY"
+          done
