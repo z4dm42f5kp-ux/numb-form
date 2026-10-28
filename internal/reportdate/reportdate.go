@@ -2,6 +2,9 @@
 // the "Date of the evaluation" in section A, read with the form's own
 // reader, or, for forms laid out differently, the date next to a date
 // label in the document's text.
+//
+// In plain words: numb-date uses it to read the date out of a filled
+// form.
 package reportdate
 
 import (

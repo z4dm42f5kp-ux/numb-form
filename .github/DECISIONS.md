@@ -299,3 +299,22 @@ The rolling distributions (Arch, Gentoo, Void, Tumbleweed, Alpine,
 NixOS) change daily, so their images are pinned by digest and the daily
 updates workflow proposes new digests rather than letting tests run on
 whatever `latest` is.
+
+
+
+## Optional PGP signature, FreeBSD jails, full Unicode (v1.3.7)
+
+The plans for v1.3.7 (#94) asked for PGP signing where SHA-256 does not
+already make it redundant, more container support where Docker does not
+reach, and optional full Unicode without a cost by default.
+SHA-256 proves a download is intact, not who made it; Sigstore proves
+that, but needs cosign. So PGP is optional: the release workflow signs
+`SHA256SUMS`, and only that file, when the owner sets up a key; without
+one nothing changes and no secret exists.
+Docker does not run on the BSDs. FreeBSD has jails in its base system,
+so `numb-form-jail` runs the programs in a read-only jail without
+network, as the user; OpenBSD and NetBSD have nothing comparable, and
+the static programs need nothing.
+`unicode = full` folds the accents and special letters of every
+alphabet when names are compared. Its table is read only when the key
+is set, so the default run does no extra work.
