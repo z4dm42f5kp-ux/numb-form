@@ -107,6 +107,12 @@ numb-form handles customer documents, so the design rules are strict.
   result read back from disk; *undo* restores it, checked with SHA-256.
   It refuses to run while Excel or LibreOffice has the file open.
   Forms are only read.
+* **numb-typo** writes the same way, to cells of the company-name column
+  only: it corrects a misspelt or cut-off city or country after a comma
+  ("…, Ciudad de Me" to "…, Ciudad de México") from a built-in list of
+  places, never the name before the first comma or a legal form, leaves
+  names of companies that already have a folder alone, and writes only
+  the corrections the user takes.
 * Documents are not re-serialised.
   The XML is only scanned for byte offsets and values are spliced into the
   original bytes; all other parts of the `.docx` are copied byte for byte.
@@ -160,7 +166,8 @@ It is run only when the user types it, and never during a form run.
   build provenance are not checked by the program; check them by hand as
   described in [docs/install.md](docs/install.md) if needed).
 * The archive (at most 64 MB) is held in memory; only `numb-form`,
-  `numb-commit` and `numb-date` at its top level are taken from it.
+  `numb-commit`, `numb-date` and `numb-typo` at its top level are taken
+  from it.
 * The new `numb-form` must start and report its version before anything
   is replaced; on any failure the installed programs stay as they were and
   the staged files are removed.
@@ -234,7 +241,7 @@ change rather than for each push):
 | Known vulnerabilities in code and in built binaries, for every target OS | govulncheck |
 | Security linting, reported to code scanning | gosec |
 | Semantic analysis of Go and of the workflows | CodeQL (`security-extended`, `security-and-quality`) |
-| Fuzzing of every template filler and scanner (docx, odt, rtf), every spreadsheet reader (xlsx, ods, csv, legacy xls), the configuration parser, the numb-commit request reader and the name matcher | Go native fuzzing, 2 minutes per target on main, 10 nightly |
+| Fuzzing of every template filler and scanner (docx, odt, rtf), every spreadsheet reader (xlsx, ods, csv, legacy xls), the configuration parser, the numb-commit request reader, the name matcher and the place matcher | Go native fuzzing, 2 minutes per target on main, 10 nightly |
 | Templates and spreadsheets written by real LibreOffice (odt, fodt, rtf, docx, doc, xls, ods, fods) | formats workflow |
 | Workflow security (injection, credentials, permissions, pins) | zizmor, pedantic |
 | Customer files or credentials committed by mistake | history scan |
@@ -252,7 +259,7 @@ needs; checkouts do not keep credentials.
 
 ## Containers and Kubernetes
 
-The image contains only the three programs, a CA bundle and the time zone
+The image contains only the four programs, a CA bundle and the time zone
 database, and runs as UID 65532.
 The documented commands and manifests use a read-only root file system,
 drop all capabilities, forbid privilege escalation, mount the working

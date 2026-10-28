@@ -2,44 +2,92 @@ package match
 
 import "strings"
 
-// countryNames are country names in English, Spanish, Portuguese, French
-// and German, folded (see foldPlace).
-var countryNames = map[string]bool{
-	"colombia": true, "mexico": true, "ecuador": true, "peru": true, "chile": true, "argentina": true, "bolivia": true,
-	"paraguay": true, "uruguay": true, "venezuela": true, "brasil": true, "brazil": true, "panama": true, "costa rica": true,
-	"guatemala": true, "honduras": true, "el salvador": true, "nicaragua": true, "cuba": true, "republica dominicana": true,
-	"dominican republic": true, "rep dominicana": true, "puerto rico": true, "espana": true, "spain": true, "portugal": true,
-	"alemania": true, "germany": true, "deutschland": true, "austria": true, "osterreich": true, "suiza": true, "switzerland": true,
-	"schweiz": true, "suisse": true, "francia": true, "france": true, "italia": true, "italy": true, "netherlands": true,
-	"belgica": true, "belgium": true, "reino unido": true, "united kingdom": true, "uk": true, "england": true,
-	"estados unidos": true, "united states": true, "usa": true, "eeuu": true, "canada": true, "emiratos arabes unidos": true,
-	"united arab emirates": true, "uae": true, "emirates": true, "cameroon": true, "cameroun": true, "camerun": true,
-	"nigeria": true, "ghana": true, "kenya": true, "senegal": true, "cote d ivoire": true, "ivory coast": true,
-	"south africa": true, "egypt": true, "morocco": true, "maroc": true, "china": true, "india": true, "turkey": true,
-	"saudi arabia": true, "qatar": true, "israel": true, "oman": true, "kuwait": true, "bahrain": true, "jordan": true,
-	"lebanon": true, "angola": true, "mozambique": true, "tanzania": true, "uganda": true, "ethiopia": true, "gabon": true,
-	"congo": true, "benin": true, "togo": true, "mali": true, "burkina faso": true, "niger": true, "tunisia": true, "algeria": true,
+// placeNames are countries and cities as they are written after company
+// names, with their accents. Countries appear in Spanish, English,
+// Portuguese, French and German when those differ.
+var placeNames = []string{
+	// Countries.
+	"Colombia", "México", "Mexico", "Ecuador", "Perú", "Peru", "Chile", "Argentina", "Bolivia", "Paraguay", "Uruguay",
+	"Venezuela", "Brasil", "Brazil", "Panamá", "Panama", "Costa Rica", "Guatemala", "Honduras", "El Salvador",
+	"Nicaragua", "Cuba", "República Dominicana", "Dominican Republic", "Puerto Rico", "Haití", "Haiti", "Jamaica",
+	"Trinidad y Tobago", "Trinidad and Tobago", "Belice", "Belize", "Guyana", "Surinam", "Suriname",
+	"España", "Spain", "Portugal", "Alemania", "Germany", "Deutschland", "Austria", "Österreich", "Suiza", "Switzerland",
+	"Schweiz", "Suisse", "Francia", "France", "Italia", "Italy", "Países Bajos", "Netherlands", "Holanda", "Bélgica",
+	"Belgium", "Belgique", "Reino Unido", "United Kingdom", "Inglaterra", "England", "Irlanda", "Ireland", "Polonia",
+	"Poland", "Turquía", "Turkey", "Türkiye", "Grecia", "Greece", "Suecia", "Sweden", "Noruega", "Norway", "Dinamarca",
+	"Denmark", "Estados Unidos", "United States", "Canadá", "Canada", "Emiratos Árabes Unidos", "United Arab Emirates",
+	"Camerún", "Cameroon", "Cameroun", "Nigeria", "Ghana", "Kenia", "Kenya", "Senegal", "Sénégal", "Costa de Marfil",
+	"Côte d'Ivoire", "Ivory Coast", "Sudáfrica", "South Africa", "Egipto", "Egypt", "Marruecos", "Morocco", "Maroc",
+	"Túnez", "Tunisia", "Tunisie", "Argelia", "Algeria", "Algérie", "Angola", "Mozambique", "Tanzania", "Uganda",
+	"Etiopía", "Ethiopia", "Gabón", "Gabon", "Congo", "Benín", "Benin", "Bénin", "Togo", "Malí", "Mali",
+	"Burkina Faso", "Níger", "Niger", "Guinea", "Guinée", "Chad", "Tchad", "Madagascar", "Zambia", "Zimbabue",
+	"Zimbabwe", "Arabia Saudita", "Saudi Arabia", "Catar", "Qatar", "Kuwait", "Baréin", "Bahrain", "Omán", "Oman",
+	"Jordania", "Jordan", "Líbano", "Lebanon", "Israel", "India", "China", "Japón", "Japan", "Corea del Sur",
+	"South Korea", "Singapur", "Singapore", "Malasia", "Malaysia", "Indonesia", "Filipinas", "Philippines",
+	"Australia", "Nueva Zelanda", "New Zealand", "Rusia", "Russia", "Ucrania", "Ukraine",
+	// Short forms written after names.
+	"Rep. Dominicana", "EEUU", "EE.UU.", "USA", "UAE", "UK", "Emirates", "CDMX", "México D.F.", "Mexico DF", "Salvador",
+	// Cities.
+	"Bogotá", "Medellín", "Cali", "Barranquilla", "Cartagena", "Bucaramanga", "Pereira", "Manizales", "Cúcuta",
+	"Ibagué", "Santa Marta", "Villavicencio", "Ciudad de México", "Monterrey", "Guadalajara", "Puebla", "Tijuana",
+	"León", "Querétaro", "Toluca", "Mérida", "Cancún", "San Luis Potosí", "Aguascalientes", "Chihuahua", "Hermosillo",
+	"Saltillo", "Quito", "Guayaquil", "Cuenca", "Ambato", "Manta", "Lima", "Arequipa", "Trujillo", "Chiclayo",
+	"Cusco", "Piura", "Santiago", "Santiago de Chile", "Valparaíso", "Concepción", "Antofagasta", "Viña del Mar",
+	"Buenos Aires", "Córdoba", "Rosario", "Mendoza", "La Plata", "Mar del Plata", "Tucumán", "La Paz", "El Alto",
+	"Santa Cruz", "Santa Cruz de la Sierra", "Cochabamba", "Sucre", "Asunción", "Fernando de la Mora", "Luque",
+	"San Lorenzo", "Ciudad del Este", "Encarnación", "Lambaré", "Montevideo", "Caracas", "Valencia", "Maracaibo",
+	"Barquisimeto", "Maracay", "São Paulo", "Rio de Janeiro", "Belo Horizonte", "Curitiba", "Porto Alegre",
+	"Brasília", "Salvador", "Recife", "Fortaleza", "Manaus", "Campinas", "Ciudad de Panamá", "Panama City",
+	"Colón", "San José", "Heredia", "Alajuela", "Ciudad de Guatemala", "Guatemala City", "Quetzaltenango",
+	"Tegucigalpa", "San Pedro Sula", "San Salvador", "Santa Tecla", "Antiguo Cuscatlán", "Managua", "La Habana",
+	"Havana", "Santo Domingo", "Santiago de los Caballeros", "San Juan", "Puerto Príncipe", "Kingston",
+	"Douala", "Yaoundé", "Lagos", "Abuja", "Kano", "Ibadan", "Port Harcourt", "Accra", "Kumasi", "Nairobi",
+	"Mombasa", "Dakar", "Abiyán", "Abidjan", "Johannesburgo", "Johannesburg", "Ciudad del Cabo", "Cape Town",
+	"Durban", "Pretoria", "El Cairo", "Cairo", "Alejandría", "Alexandria", "Casablanca", "Rabat", "Tánger", "Tangier",
+	"Túnez", "Tunis", "Argel", "Algiers", "Luanda", "Maputo", "Dar es Salaam", "Kampala", "Addis Abeba",
+	"Addis Ababa", "Libreville", "Brazzaville", "Kinshasa", "Cotonú", "Cotonou", "Lomé", "Bamako", "Uagadugú",
+	"Ouagadougou", "Niamey", "Conakry", "Antananarivo", "Lusaka", "Harare",
+	"Dubái", "Dubai", "Abu Dabi", "Abu Dhabi", "Sharjah", "Ajman", "Jebel Ali", "Doha", "Riad", "Riyadh", "Yeda",
+	"Jeddah", "Dammam", "Mascate", "Muscat", "Manama", "Ciudad de Kuwait", "Kuwait City", "Amán", "Amman", "Beirut",
+	"Tel Aviv", "Estambul", "Istanbul", "Ankara",
+	// Mid-size cities, so that real places are never "corrected".
+	"Durán", "Machala", "Loja", "Portoviejo", "Esmeraldas", "Ibarra", "Riobamba", "Latacunga", "Milagro", "Babahoyo",
+	"Cartago", "Puntarenas", "Liberia", "Limón", "Tunja", "Montería", "Pasto", "Neiva", "Popayán", "Valledupar",
+	"Sincelejo", "Armenia", "Palmira", "Tuluá", "Envigado", "Itagüí", "Soacha", "Bello", "Sogamoso", "Riohacha",
+	"Duitama", "Girardot", "Huancayo", "Iquitos", "Tacna", "Ica", "Pucallpa", "Callao", "Cajamarca", "Oruro",
+	"Potosí", "Tarija", "Capiatá", "Limpio", "Itauguá", "Villa Elisa", "Mariano Roque Alonso", "Celaya",
+	"Irapuato", "Morelia", "Oaxaca", "Veracruz", "Xalapa", "Culiacán", "Mexicali", "Ensenada", "Torreón",
+	"Durango", "Zacatecas", "Tampico", "Reynosa", "Matamoros", "Nuevo Laredo", "Pachuca", "Cuernavaca",
+	"Tlaxcala", "Tepic", "Colima", "Villahermosa", "Tuxtla Gutiérrez", "Campeche", "Chetumal", "Acapulco",
+	"Naucalpan", "Tlalnepantla", "Ecatepec", "Zapopan", "Tlaquepaque", "San Pedro Garza García", "Apodaca",
+	"Guadalupe", "Santa Catarina", "Santa Ana", "San Miguel", "La Ceiba", "Choluteca", "Escuintla", "Mixco",
+	"Villa Nueva", "Granada", "Masaya", "David", "Chitré", "La Romana", "San Pedro de Macorís", "Puerto Plata",
+	"La Vega", "Higüey", "Ciudad Guayana", "Puerto La Cruz", "Maturín", "Cumaná", "San Cristóbal", "Salta",
+	"Neuquén", "Bahía Blanca", "Santa Fe", "Paraná", "Resistencia", "Corrientes", "Posadas", "San Luis",
+	"Temuco", "Rancagua", "Talca", "Arica", "Iquique", "Puerto Montt", "La Serena", "Coquimbo", "Bafoussam",
+	"Garoua", "Bamenda", "Limbe", "Kribi", "Maroua", "Port-Gentil", "Pointe-Noire", "Bouaké", "Thiès", "Kaduna",
+	"Benin City", "Enugu", "Onitsha", "Aba", "Warri", "Calabar", "Jos", "Ilorin", "Abeokuta", "Owerri", "Uyo",
+	"Ras Al Khaimah", "Fujairah", "Umm Al Quwain", "Al Ain", "Kingstown", "Georgetown", "Paramaribo", "Nassau",
+	"Miami", "Doral", "Houston", "Nueva York", "New York", "Los Ángeles", "Los Angeles", "Chicago", "Dallas",
+	"Atlanta", "Orlando", "Toronto", "Montreal", "Vancouver",
+	"Madrid", "Barcelona", "Sevilla", "Bilbao", "Málaga", "Zaragoza", "Lisboa", "Lisbon", "Oporto", "Porto",
+	"Berlín", "Berlin", "Hamburgo", "Hamburg", "Múnich", "München", "Munich", "Fráncfort", "Frankfurt",
+	"Colonia", "Köln", "Cologne", "Düsseldorf", "Stuttgart", "Viena", "Wien", "Vienna", "Zúrich", "Zürich",
+	"Zurich", "Ginebra", "Genève", "Geneva", "Basilea", "Basel", "Berna", "Bern", "París", "Paris", "Lyon",
+	"Marsella", "Marseille", "Roma", "Rome", "Milán", "Milano", "Milan", "Londres", "London", "Ámsterdam",
+	"Amsterdam", "Rotterdam", "Bruselas", "Bruxelles", "Brussels", "Amberes", "Antwerpen", "Antwerp",
 }
 
-// cities are cities that appear after company names, folded.
-var cities = map[string]bool{
-	"bogota": true, "medellin": true, "cali": true, "barranquilla": true, "cartagena": true, "bucaramanga": true, "pereira": true,
-	"ciudad de mexico": true, "cdmx": true, "mexico df": true, "monterrey": true, "guadalajara": true, "puebla": true, "tijuana": true,
-	"quito": true, "guayaquil": true, "cuenca": true, "lima": true, "arequipa": true, "santiago": true, "santiago de chile": true,
-	"buenos aires": true, "cordoba": true, "rosario": true, "mendoza": true, "la paz": true, "el alto": true, "santa cruz": true,
-	"santa cruz de la sierra": true, "cochabamba": true, "asuncion": true, "fernando de la mora": true, "luque": true,
-	"san lorenzo": true, "ciudad del este": true, "montevideo": true, "caracas": true, "valencia": true, "maracaibo": true,
-	"barquisimeto": true, "sao paulo": true, "rio de janeiro": true, "panama city": true, "ciudad de panama": true,
-	"san jose": true, "ciudad de guatemala": true, "tegucigalpa": true, "san pedro sula": true, "san salvador": true,
-	"santa tecla": true, "antiguo cuscatlan": true, "managua": true, "santo domingo": true, "santiago de los caballeros": true,
-	"douala": true, "yaounde": true, "lagos": true, "abuja": true, "kano": true, "port harcourt": true, "accra": true,
-	"nairobi": true, "dakar": true, "abidjan": true, "johannesburg": true, "cape town": true, "cairo": true, "casablanca": true,
-	"dubai": true, "abu dhabi": true, "sharjah": true, "ajman": true, "jebel ali": true, "doha": true, "riyadh": true, "jeddah": true,
-	"muscat": true, "manama": true, "kuwait city": true, "amman": true, "beirut": true, "miami": true, "doral": true,
-	"houston": true, "new york": true, "los angeles": true, "madrid": true, "barcelona": true, "lisboa": true, "lisbon": true,
-	"porto": true, "berlin": true, "hamburg": true, "munchen": true, "munich": true, "frankfurt": true, "koln": true,
-	"dusseldorf": true, "stuttgart": true, "wien": true, "vienna": true, "zurich": true, "geneve": true, "geneva": true, "basel": true,
-}
+// places maps the folded spelling (see foldPlace) to the written one.
+var places = func() map[string]string {
+	m := map[string]string{}
+	for _, p := range placeNames {
+		if _, ok := m[foldPlace(p)]; !ok {
+			m[foldPlace(p)] = p
+		}
+	}
+	return m
+}()
 
 // foldPlace lowers case and removes accents and punctuation.
 func foldPlace(s string) string {
@@ -50,8 +98,8 @@ func foldPlace(s string) string {
 
 // knownPlace reports whether s is a known city or country.
 func knownPlace(s string) bool {
-	k := foldPlace(s)
-	return countryNames[k] || cities[k]
+	_, ok := places[foldPlace(s)]
+	return ok
 }
 
 var accents = map[rune]rune{

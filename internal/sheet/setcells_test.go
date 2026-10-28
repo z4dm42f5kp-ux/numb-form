@@ -133,3 +133,25 @@ func TestSetTextChangesOnlyTheCells(t *testing.T) {
 		}
 	}
 }
+
+// ReadNames needs no report-date column and keeps each name cell exactly
+// as stored.
+func TestReadNames(t *testing.T) {
+	b := testfix.XLSX(t, fxIDs, fxNames)
+	b = rezip(t, b, fxNames[0], "  "+fxNames[0]+", Bogta ")
+	b = rezip(t, b, "Report created", "Currency 2")
+	tb, err := ReadNames(b, "Customer Name", "Customer ID")
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := tb.Rows[0]
+	if len(tb.Rows) != len(fxNames) || r.Name != fxNames[0]+", Bogta" || r.Raw != "  "+fxNames[0]+", Bogta " || r.NameRef != "C3" || r.DateRef != "" {
+		t.Fatalf("row %+v", r)
+	}
+	if _, err := ReadTable(b, "Customer Name", "Customer ID"); err == nil {
+		t.Error("ReadTable accepted a sheet without a date column")
+	}
+	if _, err := ReadNames(rezip(t, b, "Customer", "Remarks"), "Customer Name", "Customer ID"); err == nil {
+		t.Error("ReadNames accepted a sheet without a name column")
+	}
+}

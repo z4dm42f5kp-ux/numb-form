@@ -8,6 +8,68 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.7.0
+
+* New program **numb-typo**: it corrects misspelt or cut-off places at
+  the end of company names in the overview spreadsheet, for example
+  "Ciudad de Me" to "Ciudad de México", after you agree to each one.
+  It leaves the names of companies that already have a folder alone,
+  and writes only the name cells, with the same checks and undo as
+  numb-date.
+  See [docs/numb-typo.md](docs/numb-typo.md) or
+  `numb-form man numb-typo`.
+* `numb-form update`, the release archives, the container image and
+  `numb-form-jail` (FreeBSD) include numb-typo.
+
+**Action needed:** none. The next `numb-form update` installs numb-typo.
+
+## v1.6.5
+
+* Internal: the dialogue of a program that corrects misspelt or cut-off
+  places in the company names of the Excel list, after you agree to
+  each one, and writes them as numb-date writes dates.
+  Names of companies that already have a folder are left alone.
+  No program runs it yet. No change in behaviour.
+
+## v1.6.4
+
+* numb-commit's review accepts the correction of a misspelt or cut-off
+  city or country after a company name in the Excel list, for example
+  `Foo SAS, Bogta` to `Foo SAS, Bogotá`.
+  Any other change to a name still fails the review with
+  `… only report dates and place corrections may change`.
+
+## v1.6.3
+
+* Internal: reading the company names of the overview spreadsheet with
+  each cell's position and exact text, without needing a report-date
+  column, for a later program.
+  Nothing uses it yet. No change in behaviour.
+
+## v1.6.2
+
+* numb-form knows nearly 600 spellings of cities and countries that are
+  written after company names, up from about 200, so it finds the legal
+  form in more names such as `Foo S.A. Machala` or `Foo S.A. Cartago`.
+* Internal: finding misspelt or cut-off places after a company name
+  (`Foo SAS, Bogta, Colomiba`, `Foo S.A. de C.V., Ciudad de Me`), for a
+  later program.
+  Names longer than 400 characters or with more than 12 parts are left
+  alone.
+  Nothing uses it yet.
+
+## v1.6.1
+
+* numb-date: the check after writing lists each cell with the company
+  and where its date came from (the form, or `typed` when you edited
+  it), for example
+  `F3  16-10-2026  (Foo Ltd, typed)`.
+  The message for an open spreadsheet now reads `… is open in Excel or
+  LibreOffice; close it and start again`.
+* Internal: the checked spreadsheet writer of numb-date (self-check,
+  SHA-256, original kept until you accept, undo) is shared, so that a
+  later program can write other cells the same way.
+
 ## v1.6.0
 
 * numb-commit does not copy a new folder of a company the real folder

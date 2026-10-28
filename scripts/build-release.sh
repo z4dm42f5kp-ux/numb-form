@@ -25,7 +25,7 @@ for t in $targets; do
 	[ "$os" = windows ] && ext=.exe
 	out="dist/bin/${os}_${arch}"
 	mkdir -p "$out"
-	for c in numb-form numb-commit numb-date; do
+	for c in numb-form numb-commit numb-date numb-typo; do
 		GOOS=$os GOARCH=$goarch GOARM=$goarm go build -trimpath -mod=readonly -tags timetzdata \
 			-ldflags "$ldflags" -o "$out/$c$ext" "./cmd/$c"
 	done
@@ -36,10 +36,10 @@ for t in $targets; do
 	touch -d "@$SOURCE_DATE_EPOCH" "$out"/* 2>/dev/null || true
 	name="numb-form_${os}_${arch}"
 	if [ "$os" = windows ]; then
-		(cd "$out" && zip -X -q "../../$name.zip" numb-form.exe numb-commit.exe numb-date.exe README.md LICENSE)
+		(cd "$out" && zip -X -q "../../$name.zip" numb-form.exe numb-commit.exe numb-date.exe numb-typo.exe README.md LICENSE)
 	else
 		tar --sort=name --mtime="@$SOURCE_DATE_EPOCH" --owner=0 --group=0 --numeric-owner \
-			-C "$out" -cf - numb-form numb-commit numb-date README.md LICENSE $extra | gzip -n -9 > "dist/$name.tar.gz"
+			-C "$out" -cf - numb-form numb-commit numb-date numb-typo README.md LICENSE $extra | gzip -n -9 > "dist/$name.tar.gz"
 	fi
 done
 # The AI prompt is a separate download, checksummed like the archives.
