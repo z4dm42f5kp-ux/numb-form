@@ -93,7 +93,7 @@ jobs:
           git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
             commit -a -m "$title" -m "Pinned from the release's SHA256SUMS after checking its Sigstore signature."
           git push --force "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" "HEAD:refs/heads/$branch"
-          body="The install commands in docs/install.md and docs/guide.md now install $TAG, with its SHA-256 checksums. They were taken from the release's SHA256SUMS after its Sigstore signature was checked against release.yml for $TAG. Merging this releases nothing."
+          body="The install commands in docs/install.md, docs/guide.md and docs/containers.md now install $TAG, with its SHA-256 checksums. They were taken from the release's SHA256SUMS after its Sigstore signature was checked against release.yml for $TAG. Merging this releases nothing."
           if [ -z "$(gh pr list --repo "$REPO" --head "$branch" --state open --json number --jq '.[].number')" ]; then
             if ! gh pr create --repo "$REPO" --head "$branch" --base main --title "$title" --body "$body"; then
               # Settings > Actions > General can forbid pull requests by workflows.

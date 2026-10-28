@@ -1,0 +1,1 @@
+cd "$(mktemp -d)" && fetch https://github.com/z4dm42f5kp-ux/numb-form/releases/download/@VERSION@/numb-form_freebsd_amd64.tar.gz && sha256 -c @SHA:numb-form_freebsd_amd64.tar.gz@ numb-form_freebsd_amd64.tar.gz && tar -xzf numb-form_freebsd_amd64.tar.gz jail.sh && doas install -o root -g wheel -m 0555 jail.sh /usr/local/sbin/numb-form-jail && cd / && rm -rf "$OLDPWD" && echo OK
