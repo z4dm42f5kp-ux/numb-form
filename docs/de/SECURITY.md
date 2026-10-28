@@ -118,7 +118,7 @@ Pull-Anfragen führen ein schnelles Gate aus (Formatierung, Tierarzt, Statikchec
 | Bekannte Sicherheitslücken im Code und in eingebauten Binärdateien für jedes Ziel-Betriebssystem | govulncheck |
 | Security linting, gemeldet zum Code-Scannen | Gosec |
 | Semantische Analyse von Go und der Workflows | CodeQL (`security-extended`, `security-and-quality`) |
-| Fuzzing jedes Template-Füllers und Scanners (docx, odt, rtf), jedes Tabellenkalkulationslesegeräts (xlsx, ods, csv, legacy xls), des Konfigurationsparsers und des Namensmatchers | Go native fuzzing, 2 minuten pro ziel auf haupt, 10 nächtliche. |
+| Fuzzing jedes Template-Füllers und Scanners (docx, odt, rtf), jedes Tabellenkalkulationslesegeräts (xlsx, ods, csv, legacy xls), des Konfigurationsparsers, des numb-commit-Requestreaders und des Namensmatchers | Go native fuzzing, 2 minuten pro ziel auf haupt, 10 nächtliche. |
 | Vorlagen und Tabellenkalkulationen, geschrieben von real LibreOffice (odt, fodt, rtf, docx, doc, xls, ods, fods) | Formate Workflow |
 | Workflow-Sicherheit (Injection, Anmeldeinformationen, Berechtigungen, Pins) | Zizmor, pedantisch |
 | Kundendateien oder Anmeldeinformationen aus Versehen | Historienscan |
