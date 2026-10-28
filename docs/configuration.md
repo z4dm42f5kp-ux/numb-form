@@ -138,13 +138,13 @@ that set it.
   Review-mode logs stay with the copy in Downloads.
 
 `commit_from =` [commit]
-: The working copy that numb-commit compares, for example
+: The working copy that numb-commit commits, for example
   `C:\Users\you\Downloads\14. GWG`; see [numb-commit.md](numb-commit.md).
   Empty: numb-commit asks.
 
 `commit_to =` [commit]
-: The real working folder that numb-commit compares the working copy
-  with, for example `F:\14. GWG`.
+: The real working folder that numb-commit copies the working copy into,
+  for example `F:\14. GWG`.
   Empty: numb-commit asks.
 
 `online = yes` | `no` [update]

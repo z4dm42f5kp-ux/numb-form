@@ -8,6 +8,19 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.5.0
+
+* numb-commit copies a working copy into the real working folder.
+  It stages the files to copy in Downloads, writes
+  `numb-commit-request.txt`, reviews it, and asks
+  `Copy this into F:\14. GWG now? [y/N]`; only `y` copies.
+  New folders appear whole, every file is checked with SHA-256, no
+  existing file is overwritten, and the replaced Excel list is kept in
+  the log folder.
+  The real folder is reviewed again afterwards.
+* numb-commit removes its staged copy at the end, and staged copies
+  that a killed numb-commit left in Downloads more than a day ago.
+
 ## v1.4.5
 
 * numb-commit stops cleanly when its window is closed, as with Ctrl+C,

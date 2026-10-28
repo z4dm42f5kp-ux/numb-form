@@ -1,12 +1,14 @@
-// Command numb-commit copies the folders accepted in a numb-form run from
-// the review copy in Downloads back into the real folder. It only adds
-// new folders, never overwrites or deletes, and verifies every file with
-// SHA-256. For a working copy, it writes and reviews a request that
-// shows what would change in the real folder, and copies nothing.
+// Command numb-commit copies the new forms from a working copy (or a
+// review run) into the real working folder. It stages the files in
+// Downloads, writes a request with the folder tree before and after, has
+// it reviewed, and copies only after the person agrees. It only adds,
+// never overwrites (except the overview spreadsheet) or deletes, and
+// verifies every file with SHA-256.
 //
-// In plain words: after you have checked the copy in Downloads, this
-// program puts the new folders into the real working folder. It cannot
-// change or remove anything that is already there.
+// In plain words: it copies the new forms from your copy into the real
+// working folder, but only after you have seen and accepted the list. It
+// adds files and may write report dates into the overview spreadsheet;
+// it never deletes anything.
 package main
 
 import (
@@ -29,8 +31,8 @@ func realMain() int {
 	conf := fs.String("f", "", "configuration file read after the system and per-user files")
 	run := fs.String("run", "", "run folder to commit (default: the newest uncommitted run)")
 	downloads := fs.String("downloads", "", "Downloads folder (default: the user's Downloads, or $NUMBFORM_DOWNLOADS)")
-	from := fs.String("from", "", "working copy to compare (default: commit_from in the configuration, else asked)")
-	to := fs.String("to", "", "real working folder to compare with (default: commit_to in the configuration, else asked)")
+	from := fs.String("from", "", "working copy to commit (default: commit_from in the configuration, else asked)")
+	to := fs.String("to", "", "real working folder to copy into (default: commit_to in the configuration, else asked)")
 	allowPipe := fs.Bool("allow-non-tty", false, "accept answers from a pipe (testing only)")
 	version := fs.Bool("version", false, "print the version and exit")
 	fs.Usage = func() {
