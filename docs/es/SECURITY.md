@@ -118,7 +118,7 @@ Pull requests run a fast gate (formatting, vet, staticcheck, tests en Linux, mac
 | vulnerabilidades conocidas en código y en binarios construidos, para cada OS objetivo | Govulncheck |
 | Forro de seguridad, reportado a escaneo de código | Gosec |
 | Análisis semántico de Go y de los flujos de trabajo | CodeQL (`security-extended`, `security-and-quality`) |
-| Fuzzing of every template filler and scanner (docx, odt, rtf), cada lector de hojas de cálculo (xlsx, ods, csv, xls legado), el parser de configuración y el matcher de nombre | Ir a fuzzing nativo, 2 minutos por objetivo en principal, 10 noches |
+| Fuzzing de cada llenador de plantillas y escáner (docx, odt, rtf), cada lector de hojas de cálculo (xlsx, ods, csv, xls legado), el analizador de configuración, el lector de petición numb-commit y el matcher de nombre | Ir a fuzzing nativo, 2 minutos por objetivo en principal, 10 noches |
 | Plantillas y hojas de cálculo escritas por LibreOffice real (odt, fodt, rtf, docx, doc, xls, ods, fods) | formatos de trabajo |
 | Seguridad del flujo de trabajo (inyección, credenciales, permisos, pins) | zizmor, pedantic |
 | Archivos de cliente o credenciales cometidas por error | historia escaneada |
