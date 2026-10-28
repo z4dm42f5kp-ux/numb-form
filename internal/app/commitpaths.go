@@ -22,7 +22,7 @@ const (
 	askTo   = "Which directory is the target?: "
 )
 
-// folderMode reports whether numb-commit compares a working copy with the
+// folderMode reports whether numb-commit copies a working copy into the
 // real folder rather than committing a review run. It does unless -run
 // is given, or nothing names a folder and either mode = review or review
 // runs are waiting in Downloads.

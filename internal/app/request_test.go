@@ -122,7 +122,7 @@ func TestScanRequest(t *testing.T) {
 			t.Errorf("%s: got %s/%q/%q, want %s/%q/%q", c.rel, c.kind, c.origin, c.top, w.kind, w.origin, w.top)
 		}
 		if c.kind == kDup {
-			t.Errorf("%s: duplicates are not looked for yet", c.rel)
+			t.Errorf("%s: the real folder has no folder for this company", c.rel)
 		}
 	}
 	for rel := range wants {

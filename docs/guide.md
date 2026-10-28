@@ -248,8 +248,11 @@ numb-commit asks for the two folders (unless `commit_from` and
 files to copy in Downloads and writes **`numb-commit-request.txt`** into
 the copy: the list of exactly what it will add, with the folder tree
 before and after.
-No existing file is overwritten.
-It then checks the list and ends with a verdict:
+New folders of companies that `F:\14. GWG` already has (for example as
+`D10629 Foo S.A.`) are not copied, and no existing file is overwritten.
+Answer `r` to let numb-commit review and correct the list by itself, or
+`m` to look at it yourself.
+The review ends with a verdict:
 
 * `Verdict: OK to commit.` Type `y` to copy.
 * `Verdict: commit after checking the lines marked check.` Read the

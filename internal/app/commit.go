@@ -23,9 +23,8 @@ import (
 type CommitOptions struct {
 	Downloads string
 	RunDir    string
-	// Folder mode: compare a working copy (From, default commit_from,
-	// else asked) with the real folder (To, default commit_to, else
-	// asked).
+	// Folder mode: copy a working copy (From, default commit_from, else
+	// asked) into the real folder (To, default commit_to, else asked).
 	From, To string
 	Review   bool // only review the request
 	Config   *config.Config

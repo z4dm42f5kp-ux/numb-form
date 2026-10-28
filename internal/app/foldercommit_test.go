@@ -105,7 +105,7 @@ func TestFolderCommit(t *testing.T) {
 		t.Fatal(err)
 	}
 	tplBefore, _, _ := fsutil.SHA256File(filepath.Join(real, "Appendix A - Risk Assesment.docx"))
-	code, out := runCommit(t, cp, real, "y\n", false)
+	code, out := runCommit(t, cp, real, "r\ny\n", false)
 	if code != ExitOK || !strings.Contains(out, "Verdict: OK to commit") || !strings.Contains(out, "staged in") {
 		t.Fatalf("exit %d\n%s", code, out)
 	}
@@ -144,15 +144,15 @@ func TestFolderCommit(t *testing.T) {
 	}
 }
 
-// A spreadsheet change outside the report dates fails the review, and
-// nothing is copied.
+// A spreadsheet change outside the report dates fails the review, which
+// numb-commit cannot correct by itself, and nothing is copied.
 func TestFolderCommitRefusesOtherSheetChanges(t *testing.T) {
 	real, cp := workingCopy(t, func(_ []byte, tb *sheet.Table) map[string]string {
 		return map[string]string{tb.Rows[0].NameRef: "Renamed GmbH"}
 	})
 	before := treeHashes(t, real)
-	code, out := runCommit(t, cp, real, "y\n", false)
-	if code != ExitError || !strings.Contains(out, "only report dates may change") || !strings.Contains(out, "Verdict: do not commit.") {
+	code, out := runCommit(t, cp, real, "r\ny\n", false)
+	if code != ExitError || !strings.Contains(out, "only report dates may change") || !strings.Contains(out, "need a person") {
 		t.Fatalf("exit %d\n%s", code, out)
 	}
 	if !reflect.DeepEqual(treeHashes(t, real), before) {
@@ -161,21 +161,32 @@ func TestFolderCommitRefusesOtherSheetChanges(t *testing.T) {
 	noStage(t, filepath.Dir(cp))
 }
 
-// A file that differs from the real folder is never overwritten.
-func TestFolderCommitKeepsDifferingFile(t *testing.T) {
+// The real folder has the company under its customer id: numb-form's
+// folder is not copied. A file that differs from the real folder is
+// never overwritten.
+func TestFolderCommitSkipsKnownCompany(t *testing.T) {
 	real, cp := workingCopy(t, dateOf("Foo Ltd"))
+	if err := os.Mkdir(filepath.Join(real, "D00000 Foo Ltd"), 0o750); err != nil {
+		t.Fatal(err)
+	}
 	if err := os.WriteFile(filepath.Join(cp, "Foo GmbH", "keep.txt"), []byte("edited in the copy"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	code, out := runCommit(t, cp, real, "y\n", false)
-	if code != ExitOK || !strings.Contains(out, "≠ unchanged") {
+	code, out := runCommit(t, cp, real, "m\ny\n", false)
+	if code != ExitOK {
 		t.Fatalf("exit %d\n%s", code, out)
+	}
+	if _, err := os.Stat(filepath.Join(real, "Foo Ltd")); !os.IsNotExist(err) {
+		t.Error("the duplicate folder was copied")
 	}
 	if b, _ := os.ReadFile(filepath.Join(real, "Foo GmbH", "keep.txt")); string(b) != "existing" {
 		t.Error("an existing file was overwritten")
 	}
-	if _, err := os.Stat(filepath.Join(real, "Foo Ltd")); err != nil {
-		t.Error("the new folder was not copied")
+	for _, want := range []string{`already has "D00000 Foo Ltd" for Foo Ltd (it starts with the customer id D00000)`,
+		"= unchanged; \"Foo Ltd\" of the working copy is the same company", "≠ unchanged"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("output lacks %q:\n%s", want, out)
+		}
 	}
 }
 
@@ -190,7 +201,7 @@ func TestFolderCommitAsksForFolders(t *testing.T) {
 		t.Fatal("no review runs waiting, but not in folder mode")
 	}
 	var out bytes.Buffer
-	opt.In, opt.Out = strings.NewReader("14. GWG\n\""+cp+"\"\n"+cp+"\n"+real+"\nn\n"), &out
+	opt.In, opt.Out = strings.NewReader("14. GWG\n\""+cp+"\"\n"+cp+"\n"+real+"\nm\nn\n"), &out
 	if code := Commit(opt); code != ExitOK {
 		t.Fatalf("exit %d\n%s", code, out.String())
 	}
