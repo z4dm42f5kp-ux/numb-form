@@ -137,6 +137,16 @@ that set it.
   `~/.local/state/numb-form/runs`).
   Review-mode logs stay with the copy in Downloads.
 
+`commit_from =` [commit]
+: The working copy that numb-commit compares, for example
+  `C:\Users\you\Downloads\14. GWG`; see [numb-commit.md](numb-commit.md).
+  Empty: numb-commit asks.
+
+`commit_to =` [commit]
+: The real working folder that numb-commit compares the working copy
+  with, for example `F:\14. GWG`.
+  Empty: numb-commit asks.
+
 `online = yes` | `no` [update]
 : Let `numb-form update` contact GitHub.
   Nothing else goes online.

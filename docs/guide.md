@@ -224,6 +224,46 @@ listed with the reason, for example
 numb-date stops if the file is open.
 Only the *Report created* cells change: no other cell, no formatting.
 
+## 8. GWG on a network drive: work on a copy, then check it
+
+When GWG lives on a network drive, for example `F:\14. GWG`, you can
+work on a copy on your computer.
+numb-commit then shows exactly what the copy adds to the real folder.
+
+Once, in PowerShell, tell numb-commit where the real folder is:
+
+```
+numb-form config set commit_to "F:\14. GWG"
+```
+
+Every time:
+
+1. In File Explorer, copy `F:\14. GWG` into your **Downloads** folder.
+2. Open the copy (`Downloads\14. GWG`), type `powershell` in the address
+   bar and press Enter.
+3. Run numb-form and numb-date there as usual.
+4. Type `numb-commit` and press Enter.
+
+numb-commit asks for the two folders (unless `commit_from` and
+`commit_to` are set), compares the copy with `F:\14. GWG` and writes
+**`numb-commit-request.txt`** into the copy: the list of exactly what
+is new, with the folder tree before and after.
+It then checks the list and ends with a verdict:
+
+* `Verdict: OK to commit.` Everything is in order.
+* `Verdict: commit after checking the lines marked check.` Read the
+  lines marked `check`, for example a form with a blank address.
+* `Verdict: do not commit.` The lines marked `FAIL` say what is wrong.
+
+numb-commit does not copy anything yet.
+Copy the new company folders listed under *New folder* into
+`F:\14. GWG` yourself, and the Excel list if it is listed under
+*Replaced*.
+Never copy the template, logs or Office lock files.
+`numb-commit review` repeats the check at any time, for example on a
+copy a colleague prepared.
+The [numb-commit manual](numb-commit.md) explains every message.
+
 ## Prefer to review everything before it lands in GWG?
 
 Switch to review mode once:

@@ -8,6 +8,31 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.4.0
+
+* numb-commit compares a working copy with the real working folder:
+  `numb-commit` asks "Which directory should be committed (insert
+  absolute path)?" and "Which directory is the target?", or reads
+  `-from` and `-to`, or `commit_from` and `commit_to` in the
+  configuration.
+  It writes `numb-commit-request.txt` into the working copy, with every
+  file it would add or replace and the real folder's tree before and
+  after, and reviews it.
+  It copies nothing yet.
+  See [docs/numb-commit.md](docs/numb-commit.md).
+* `numb-commit review` reviews the request again.
+* numb-commit commits a review run as before when `mode = review` is
+  set, review runs are waiting in Downloads, or `-run` is given.
+* New configuration keys `commit_from` and `commit_to`.
+* numb-commit prints the notes about the configuration, as numb-form
+  does.
+* numb-commit has its own manual page: `numb-form man numb-commit`.
+
+**Action needed:** in direct mode with no review runs waiting,
+`numb-commit` now asks for the two folders instead of saying "There is
+nothing to commit."
+Press **Ctrl+C** to leave.
+
 ## v1.3.7
 
 * `unicode = full` in the configuration also folds the accents and

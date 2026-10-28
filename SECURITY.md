@@ -79,6 +79,11 @@ numb-form handles customer documents, so the design rules are strict.
   It never overwrites or deletes, refuses folders that appeared in the
   meantime, copies to a temporary name, verifies every file with SHA-256
   and then renames.
+  For a working copy, numb-commit only reads both folders and writes
+  `numb-commit-request.txt` into the working copy: the full list of
+  changes, reviewed for every file's SHA-256, for changes to the real
+  folder in the meantime, and for spreadsheet changes other than report
+  dates.
 * numb-form and numb-commit open the spreadsheet in `3. Übersichten`
   read-only and never write it.
   Its SHA-256 checksum is compared before the copy, after the copy and

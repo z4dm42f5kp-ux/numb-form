@@ -226,6 +226,22 @@ none, now writes a standard text like the one for representatives:
 and "No legal form was found online due to little to no information
 available". `-` still leaves the field blank.
 
+## numb-commit from a working copy, with a request file
+
+The real GWG folder is on a network drive, and people work on a copy in
+Downloads.
+numb-commit (with `commit_to` or `-to`) compares the copy with the real
+folder and writes every change to `numb-commit-request.txt` in the
+copy: new folders and files, and the spreadsheet when only report dates
+changed.
+The template, logs and lock files are never listed; nothing is deleted.
+The review is a subcommand (`numb-commit review`) rather than a fourth
+program, so installs and updates stay as they are.
+The first release only previews: it writes and reviews the request and
+copies nothing, so the comparison can be checked on real folders before
+numb-commit writes to a network drive.
+Review runs (`mode = review`) work as before.
+
 ## Optional PGP signature, FreeBSD jails, full Unicode (v1.3.7)
 
 The plans for v1.3.7 (#94) asked for PGP signing where SHA-256 does not

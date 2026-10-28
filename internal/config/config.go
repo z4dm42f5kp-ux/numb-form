@@ -35,8 +35,10 @@ type Config struct {
 	Fuzzy        float64
 	Unicode      string // basic | full: how names are compared
 
-	Downloads string // review mode: where the copy goes; empty = Downloads
-	LogDir    string // direct mode: where logs go; empty = per-user state folder
+	Downloads  string // review mode: where the copy goes; empty = Downloads
+	LogDir     string // direct mode: where logs go; empty = per-user state folder
+	CommitFrom string // numb-commit: the working copy to commit; empty = ask
+	CommitTo   string // numb-commit: the real working folder it goes to; empty = ask
 
 	Soffice          string // path to LibreOffice/OpenOffice soffice; empty = search
 	PagesConverter   string // auto | pages-app | libreoffice
