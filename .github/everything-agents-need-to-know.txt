@@ -1,0 +1,160 @@
+EVERYTHING AGENTS NEED TO KNOW
+==============================
+
+For maintainers and the AI agents they start. Read this first in a new
+session that has no earlier context, then AGENTS.md, then
+.github/DECISIONS.md and .github/RELEASING.md.
+
+This file is not part of the programs, the release archives or the
+documentation, and "git archive" and GitHub's source downloads leave it
+out (.gitattributes). The repository is public, so this file holds no
+secret, no customer data and no real company name. Keep it that way.
+
+
+1. WHAT THE PROJECT IS
+----------------------
+
+numb-form fills section A of the "Appendix A - Risk Assesment" form
+for every company in an overview spreadsheet that has no folder yet.
+A person confirms every document. Three programs work in a chain:
+
+  numb-form    makes a folder and a filled form per new company
+               (mode = direct writes into the working folder;
+               mode = review works on a copy in Downloads).
+  numb-commit  review mode only: copies the accepted folders from the
+               copy in Downloads back into the real working folder.
+  numb-date    copies the date of each form into the "Report created"
+               column of the spreadsheet, after the person accepts.
+
+Read docs/usage.md, docs/numb-date.md and docs/configuration.md for
+what a person sees. Go standard library only; no third-party modules.
+
+
+2. RULES THAT ARE NEVER BROKEN
+------------------------------
+
+* Never merge into main. The owner merges every pull request.
+* Never change a pull request's release tag (the "vX.Y.Z:" at the start
+  of its title). The text after it may change.
+* Never force-push, rebase or amend a pushed branch. Use merge commits.
+* Never commit customer files, logs, run folders, private notes or real
+  company names. Examples use made-up names such as "Foo GmbH".
+* Never add online lookups for companies, web search or scraping.
+* Never test locally; tests run on GitHub (AGENTS.md, "Changing the
+  code"). Compile checks are fine.
+* Never edit docs/es or docs/de; the translate workflow writes them.
+* Keys and tokens only from environment variables, never in files.
+* Ask the owner before anything hard to undo or visible outside the
+  repository.
+
+
+3. HOW A CHANGE IS MADE
+-----------------------
+
+* One release is one pull request, titled "vX.Y.Z: what it changes".
+  Patch for fixes, minor for features (.github/RELEASING.md).
+* A change to what a person sees updates its manual page and CHANGES.md
+  in the same pull request. scripts/check-changes.sh fails otherwise.
+* Files stay short, about 300 lines at most.
+* Every template format implements form.Filler, splices bytes instead
+  of re-serialising, passes form.Verify, and has tests and fuzz targets.
+* New GitHub Actions are pinned to a full commit SHA with the version as
+  a comment. Python tools are pinned with hashes.
+* Before pushing, run the compile checks:
+
+    sh scripts/check-deps.sh && test -z "$(gofmt -l .)" && for os in linux windows darwin freebsd openbsd netbsd; do GOOS=$os go vet ./... || exit 1; done
+
+* Branch names: claude/<topic>, for releases claude/vX.Y.Z-<topic>.
+
+
+4. THE RELEASE STACK
+--------------------
+
+Many releases are prepared at once as a stack of pull requests: each
+release branch starts from the previous one, and each pull request's
+base is the previous release's branch. The owner merges them in order,
+oldest first, with "Create a merge commit" (never squash or rebase).
+
+After the owner merges one:
+
+1. GitHub retargets the next pull request to main and tries to rebase
+   it. Because the stack uses merge commits, that rebase often fails and
+   the pull request shows a conflict ("dirty").
+2. Fix: merge origin/main into the next branch with a merge commit. Keep
+   the branch's own files; take main's docs/es and docs/de (main gains a
+   translation commit after every merge). Check that only translations
+   differ from the branch before the merge.
+3. Merge that branch forward into every later branch, one merge commit
+   each, and push without force.
+4. Cancel the CI runs the push started on the later branches (see 5).
+
+A new release in the middle of the stack: branch it from the release
+before it, open its pull request against that branch, merge it into
+the next release's branch, retarget the next pull request's base to the
+new branch, and merge forward to the end of the stack.
+
+"Dormant" code: large features land in parts over several releases.
+Code without a caller ("Nothing uses it yet. No change in behaviour.")
+is expected until the release that switches it on. Dead-code tools list
+it; that is not a bug.
+
+
+5. CI
+-----
+
+Workflows (.github/workflows):
+
+  ci                 lint, tests (Linux, macOS, Windows); on push and
+                     nightly also BSD virtual machines, containers,
+                     every cross-compile target.
+  security           gosec, govulncheck, zizmor, history scan.
+  formats            pull requests: LibreOffice formats, fuzzing.
+  translate          writes docs/es and docs/de; overlapping runs cancel
+                     each other, so re-run one at a time.
+  release-approval   after a merge: waits for the owner's approval.
+  release            on a tag: archives, checksums, signatures, image.
+  edge               the rolling build (release tag "edge").
+  updates            daily checks for newer tools and Go.
+  scorecard          OpenSSF scorecard.
+
+Runners are limited. Let CI run on one pull request at a time: cancel
+the runs a push starts on later branches, and re-run them in order once
+the earlier pull request is green.
+
+Read results without a browser:
+
+    sha=$(git rev-parse HEAD) && curl -s "https://api.github.com/repos/z4dm42f5kp-ux/numb-form/actions/runs?head_sha=$sha" | grep -E '"(name|status|conclusion)"'
+
+A failure is never "a flake" without proof. Never skip, disable or
+quarantine a test to get green.
+
+
+6. THINGS THAT BREAK EASILY
+---------------------------
+
+* Windows drops trailing dots and spaces in folder names, and refuses
+  reserved names (CON, NUL, COM0-COM9, LPT0-LPT9, COM1-3 and LPT1-3
+  with superscript digits). fsutil.SafeName handles them; tests must
+  use the names SafeName gives.
+* macOS may write file names decomposed ("u" + combining mark instead
+  of "ü"). textutil.MatchKeys handles it.
+* Paths with umlauts, long paths and read-only folders must work on
+  every system.
+* The spreadsheet in "3. Übersichten" is never written, except by
+  numb-date (dates only) after the person agrees.
+* Section B and everything outside section A is never touched, and no
+  formatting is ever added.
+* The standard texts for missing values are spelled exactly as in
+  AGENTS.md, including their spelling mistakes.
+
+
+7. FIRST STEPS IN A NEW SESSION
+-------------------------------
+
+1. git fetch, then list the open pull requests and their bases; find the
+   oldest unmerged one in the stack.
+2. Check that pull request: mergeable? CI green on its head? If it
+   conflicts, follow section 4.
+3. Read the open issues; a "vX.Y.Z Plans" issue lists what the owner
+   wants in that release.
+4. Keep the owner's standing rules from section 2. When unsure, ask.
