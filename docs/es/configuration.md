@@ -101,6 +101,12 @@ The programs that use a key are named in brackets: **form** (numb-form), **commi
 `log_dir =` [form, date]
 : Carpeta para troncos; vacía significa la carpeta de estado por usuario (`%LOCALAPPDATA%\numb-form\runs`, `~/Library/Logs/numb-form` o `~/.local/state/numb-form/runs`). Los registros de revisión se quedan con la copia en Downloads.
 
+`commit_from =` [commit]
+: La copia de trabajo que numb-commit compara, por ejemplo `C:\Users\you\Downloads\14. GWG`; véase [numb-commit.md](numb-commit.md). Vacío: pregunta numb-commit.
+
+`commit_to =` [commit]
+: La carpeta de trabajo real que numb-commit compara la copia de trabajo con, por ejemplo `F:\14. GWG`. Vacío: pregunta numb-commit.
+
 `online = yes` Silencio `no` [update]
 : Deje que `numb-form update` contacte a GitHub. Nada más va en línea.
 

@@ -4,7 +4,7 @@
 
 ## NAME
 
-**numb-form**, **numb-commit** — fill risk assessment forms (with **numb-date**)
+**numb-form** — fill risk assessment forms (with **numb-commit** and **numb-date**)
 
 ## SYNOPSIS
 
@@ -14,10 +14,9 @@ numb-form [-f conf] check-template template [sample]
 numb-form [-f conf] config [init | set key value]
 numb-form [-f conf] update [stable | rolling | v1.2.3]
 numb-form rollback
-numb-commit [-f conf] [-run dir] [-downloads dir]
 ```
 
-numb-date tiene su propia página: [numb-date.md](numb-date.md).
+numb-commit y numb-date tienen sus propias páginas: [numb-commit.md](numb-commit.md), [numb-date.md](numb-date.md).
 
 ## DESCRIPTION
 
@@ -65,7 +64,7 @@ Cuando un valor queda vacío (Enter solo), el campo lee:
 | Headquarters / Address | `No address was found online due to little to no information available` |
 | Authorized Representatives | `No representatives were found online, please consult other internal sources for more accurate information` |
 
-**numb-commit** applies to review runs only. It copies the accepted folders of a run back into the real working folder. It only adds new folders, never overwrites or deletes anything, and refuses folders that appeared in the real tree in the meantime. Each folder is copied to a temporary name, verified with SHA-256 and then renamed. Documents edited during review are listed before the user confirms. Afterwards it offers to delete the review copy; the logs are kept.
+**numb-commit** copies the accepted folders of a review run into the real working folder, and shows and checks what a working copy would add to it: see [numb-commit.md](numb-commit.md).
 
 **numb-date** llena la columna *Report created* de la hoja de cálculo de los formularios: ver [numb-date.md](numb-date.md).
 
@@ -87,7 +86,7 @@ Cuando un valor queda vacío (Enter solo), el campo lee:
 : Switch back to the version that the last `update` replaced. The version rolled back from is kept in its place, so a second `rollback` returns to it. Without a kept version, install a release by number instead: `numb-form update v0.1.1`.
 
 `man` [*topic*] [`en` | `es` | `de`]
-: Show this manual in the terminal, like less(1): keys act at once, without Enter. Space or PageDown: next page; b or PageUp: previous page; Enter, j or Down: next line; k or Up: previous line; g or Home: start; G or End: end; /text and Enter: search, n and N: next and previous match; h: help; q: quit. On macOS, Linux and the BSDs the installed `less` is used when there is one. Without a topic the whole manual is shown, starting with the guide. Topics: `guide`, `usage`, `numb-date`, `configuration`, `install`, `formats`, `containers`, `security`; `numb-form man topics` lists them. The language follows `LANG`, or is given. `numb-form man -install` makes `man numb-form` work: on Linux, macOS and the BSDs it writes the manual page to `~/.local/share/man/man1` (refreshed by `numb-form update`); on Windows it writes `man.cmd` next to `numb-form.exe`, for Command Prompt. Windows PowerShell keeps `man` for its own help: there, type `numb-form man`.
+: Mostrar este manual en el terminal, como menos(1): las teclas actúan inmediatamente, sin Enter. Espacio o páginaAbajo: siguiente página; b o PageUp: página anterior; Enter, j o Down: siguiente línea; k o Up: línea anterior; g o Home: start; G o End: end; /text and Enter: search, n y N: siguiente y último partido; h: help; q: quit. En macOS, Linux y los BSD se utiliza el `less` instalado cuando hay uno. Sin un tema se muestra todo el manual, comenzando por el guía. Temas: `guide`, `usage`, `numb-commit`, `numb-date`, `configuration`, `install`, `formats`, `containers`, `security`; `numb-form man topics` los lista. El idioma sigue `LANG`, o se da. `numb-form man -install` hace que `man numb-form` funcione: en Linux, macOS y BSD escribe la página manual a `~/.local/share/man/man1` (refreshed by `numb-form update`); en Windows escribe `man.cmd` junto a `numb-form.exe`, para Command Prompt. Windows PowerShell mantiene `man` por su propia ayuda: allí, escriba `numb-form man`.
 
 `update` [`stable` | `rolling` | *v1.2.3*]
 : Sustitúyase el `numb-form` y `numb-commit`: **stable** con la última versión estable, **rolling** con la construcción de rodadura actual de `main` (reconstruido después de cada cambio; `edge` es aceptado como un nombre antiguo), o *v1.2.3*. La versión reemplazada se mantiene junto a los programas como `numb-form.previous` y `numb-commit.previous` para `rollback`. Funciona como lo hacen los comandos de instalación: el archivo y `SHA256SUMS` se descargan sobre HTTPS de GitHub solamente, la suma de comprobación debe coincidir, y el nuevo `numb-form` debe comenzar antes de que nada sea reemplazado. Sin un argumento se utiliza el canal de la construcción de ejecución. Se mantienen los ajustes. Refusado con `-offline`, con `online = no`, y para construcciones de origen. En Windows el viejo programa es renombrado a `numb-form.old.exe` y eliminado al siguiente inicio.
@@ -111,9 +110,6 @@ Cuando un valor queda vacío (Enter solo), el campo lee:
 
 `-timeout duration`
 : Stop safe after *duration*, for example `30m`; overrides a longer `timeout` in the settings. Sin ella no hay límite de tiempo.
-
-`-run dir`
-: (numb-commit) Envíe esta carpeta de ejecución en lugar de la más reciente sin compromiso.
 
 `-allow-non-tty`
 : Lea las respuestas de una tubería. Sólo para pruebas automatizadas.
@@ -146,7 +142,7 @@ Cuando un valor queda vacío (Enter solo), el campo lee:
 `Downloads/numb-form-runs/<run>/numb-commit.log`
 : Modo de revisión: registro del commit.
 
-Los archivos de numb-date se enumeran en su página.
+Los archivos de numb-commit y numb-date se enumeran en sus páginas.
 
 No hay caché ni archivos temporales detrás. Los documentos se escriben a través de un archivo temporal que se renombra o elimina, y los convertidores trabajan en una carpeta temporal privada que se elimina.
 
@@ -194,4 +190,4 @@ cd "H:\GWG"; numb-form -f review.conf; if ($?) { numb-commit }
 
 ## SEE ALSO
 
-[numb-date.md](numb-date.md), [configuration.md](configuration.md), [formats.md](formats.md), [install.md](install.md), [containers.md](containers.md), [../SECURITY.md](SECURITY.md), [../AGENTS.md](../../AGENTS.md)
+[numb-commit.md](numb-commit.md), [numb-date.md](numb-date.md), [configuration.md](configuration.md), [formats.md](formats.md), [install.md](install.md), [containers.md](containers.md), [../SECURITY.md](SECURITY.md), [../AGENTS.md](../../AGENTS.md)

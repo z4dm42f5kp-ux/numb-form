@@ -94,4 +94,4 @@ numb-form && numb-date
 
 ## SEE ALSO
 
-[numb-form](usage.md), [numb-form.conf](configuration.md), [../SECURITY.md](SECURITY.md)
+[numb-form](usage.md), [numb-commit](numb-commit.md), [numb-form.conf](configuration.md), [../SECURITY.md](SECURITY.md)

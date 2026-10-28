@@ -156,6 +156,31 @@ Nunca te pide una cita. Las empresas sin una carpeta, un formulario o una fecha 
 
 **Cerrar la lista de Excel primero. ** numb-date se detiene si el archivo está abierto. Sólo las células *Report created* cambian: ninguna otra célula, ningún formato.
 
+## 8. GWG en una unidad de red: trabajar en una copia, luego comprobarlo
+
+Cuando GWG vive en una unidad de red, por ejemplo `F:\14. GWG`, puede trabajar en una copia en su computadora. numb-commit entonces muestra exactamente lo que la copia agrega a la carpeta real.
+
+Una vez, en PowerShell, dígale a numb-commit dónde está la carpeta real:
+
+```
+numb-form config set commit_to "F:\14. GWG"
+```
+
+Cada vez:
+
+1. In File Explorer, copy `F:\14. GWG` into your **Downloads** folder.
+2. Abra la copia (`Downloads\14. GWG`), escriba `powershell` en la barra de direcciones y pulse Enter.
+3. Corre numb-form y numb-date allí como siempre.
+4. Escriba `numb-commit` y pulse Enter.
+
+numb-commit pide las dos carpetas (a menos que se establezcan `commit_from` y `commit_to`), compara la copia con `F:\14. GWG` y escribe **`numb-commit-request.txt`QX** en la copia: la lista de exactamente lo nuevo, con el árbol de carpetas antes y después. Luego revisa la lista y termina con un veredicto:
+
+* `Verdict: OK to commit.` Todo está en orden.
+* `Verdict: commit after checking the lines marked check.` Lea las líneas marcadas `check`, por ejemplo un formulario con una dirección en blanco.
+* `Verdict: do not commit.` Las líneas marcadas `FAIL` dicen lo que está mal.
+
+numb-commit no copia nada todavía. Copie las nuevas carpetas de la compañía enumeradas bajo *Nueva carpeta* en `F:\14. GWG` usted mismo, y la lista de Excel si se enumera bajo *Reemplazado*. Nunca copie la plantilla, registros o archivos de bloqueo de Office. `numb-commit review` repite el cheque en cualquier momento, por ejemplo en una copia preparada por un colega. El manual [numb-commitZ](numb-commit.md) explica cada mensaje.
+
 ## ¿Prefieres revisar todo antes de aterrizar en GWG?
 
 Cambiar al modo de revisión una vez:

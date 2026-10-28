@@ -101,6 +101,12 @@ Die Programme, die einen Schlüssel verwenden, sind in Klammern benannt: **form*
 `log_dir =` [form, Datum]
 : Ordner für Protokolle; leer bedeutet den Statusordner pro Benutzer (`%LOCALAPPDATA%\numb-form\runs`, `~/Library/Logs/numb-form` oder `~/.local/state/numb-form/runs`). Review-Modus-Logs bleiben bei der Kopie in Downloads.
 
+`commit_from =` [commit]
+: Die Arbeitskopie, die numb-commit vergleicht, zum Beispiel `C:\Users\you\Downloads\14. GWG`; siehe [numb-commit.md](numb-commit.md). Leer: numb-commit fragt.
+
+`commit_to =` [commit]
+: Der reale Arbeitsordner, mit dem numb-commit die Arbeitskopie vergleicht, zum Beispiel `F:\14. GWG`. Leer: numb-commit fragt.
+
 `online = yes` | `no` [update]
 : Lassen Sie `numb-form update` GitHub kontaktieren. Nichts anderes geht online.
 

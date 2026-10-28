@@ -156,6 +156,31 @@ Es fragt dich nie nach einem date. Unternehmen ohne Ordner, ein Formular oder ei
 
 **Schließen Sie zuerst die Excel-Liste. ** numb-date stoppt, wenn die Datei geöffnet ist. Nur die *Report created* Zellen ändern sich: keine andere Zelle, keine Formatierung.
 
+## 8. GWG auf einem Netzwerklaufwerk: Arbeiten Sie an einer Kopie und überprüfen Sie sie dann
+
+Wenn GWG auf einem Netzwerklaufwerk lebt, z. B. `F:\14. GWG`, können Sie an einer Kopie auf Ihrem Computer arbeiten. numb-commit zeigt dann genau, was die Kopie dem echten Ordner hinzufügt.
+
+Einmal, in PowerShell, sagen Sie numb-commit, wo der eigentliche Ordner ist:
+
+```
+numb-form config set commit_to "F:\14. GWG"
+```
+
+Jedes Mal:
+
+1. Kopieren Sie in File Explorer `F:\14. GWG` in Ihren **Downloads** Ordner.
+2. Öffnen Sie die Kopie (`Downloads\14. GWG`), geben Sie `powershell` in der Adressleiste ein und drücken Sie Enter.
+3. Führen Sie numb-form und numb-date dort wie gewohnt.
+4. Geben Sie `numb-commit` ein und drücken Sie Enter.
+
+numb-commit fragt nach den beiden Ordnern (es sei denn, `commit_from` und `commit_to` sind gesetzt), vergleicht die Kopie mit `F:\14. GWG` und schreibt **`numb-commit-request.txt`** in die Kopie: die Liste genau dessen, was neu ist, mit dem Ordnerbaum davor und danach. Es überprüft dann die Liste und endet mit einem Urteil:
+
+* `Verdict: OK to commit.` Alles ist in Ordnung.
+* `Verdict: commit after checking the lines marked check.` Lesen Sie die Zeilen mit der Markierung `check`, zum Beispiel ein Formular mit einer leeren Adresse.
+* `Verdict: do not commit.` Die Zeilen mit `FAIL` sagen, was falsch ist.
+
+numb-commit kopiert noch nichts. Kopieren Sie die neuen Unternehmensordner, die unter *Neuer Ordner* aufgeführt sind, selbst in `F:\14. GWG` und die Excel-Liste, wenn sie unter *Ersetzt* aufgeführt ist. Kopieren Sie niemals die Vorlage, Protokolle oder Office-Lock-Dateien. `numb-commit review` wiederholt die Prüfung jederzeit, beispielsweise auf einer Kopie, die ein Kollege erstellt hat. Das [numb-commit Manual](numb-commit.md) erklärt jede Nachricht.
+
 ## Möchten Sie lieber alles überprüfen, bevor es in GWG landet?
 
 Wechseln Sie einmal in den Überprüfungsmodus:

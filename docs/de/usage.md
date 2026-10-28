@@ -4,7 +4,7 @@
 
 ## NAME
 
-**numb-form**, **numb-commit** — Formulare zur Risikobewertung ausfüllen (mit **numb-date**)
+**numb-form** — Formulare zur Risikobewertung ausfüllen (mit **numb-commit** und **numb-date**)
 
 ## SYNOPSIS
 
@@ -14,10 +14,9 @@ numb-form [-f conf] check-template template [sample]
 numb-form [-f conf] config [init | set key value]
 numb-form [-f conf] update [stable | rolling | v1.2.3]
 numb-form rollback
-numb-commit [-f conf] [-run dir] [-downloads dir]
 ```
 
-numb-date hat eine eigene Seite: [numb-date.md](numb-date.md).
+numb-commit und numb-date haben ihre eigenen Seiten: [numb-commit.md](numb-commit.md), [numb-date.md](numb-date.md).
 
 ## DESCRIPTION
 
@@ -65,7 +64,7 @@ Wenn ein Wert leer bleibt (Enter alone), lautet das Feld:
 | Headquarters / Address | `No address was found online due to little to no information available` |
 | Authorized Representatives | `No representatives were found online, please consult other internal sources for more accurate information` |
 
-**numb-commit** applies to review runs only. It copies the accepted folders of a run back into the real working folder. It only adds new folders, never overwrites or deletes anything, and refuses folders that appeared in the real tree in the meantime. Each folder is copied to a temporary name, verified with SHA-256 and then renamed. Documents edited during review are listed before the user confirms. Afterwards it offers to delete the review copy; the logs are kept.
+**numb-commit** copies the accepted folders of a review run into the real working folder, and shows and checks what a working copy would add to it: see [numb-commit.md](numb-commit.md).
 
 **numb-date** füllt die *Report created* Spalte der Tabelle aus den Formularen: siehe [numb-date.md](numb-date.md).
 
@@ -87,7 +86,7 @@ Wenn ein Wert leer bleibt (Enter alone), lautet das Feld:
 : Wechseln Sie zurück zu der Version, die das letzte `update` ersetzt hat. Die zurückgerollte Version wird an ihrem Platz gehalten, so dass ein zweiter `rollback` zu ihr zurückkehrt. Ohne eine gespeicherte Version installieren Sie stattdessen ein Release nach Nummer: `numb-form update v0.1.1`.
 
 `man` [*topic*] [`en` | `es` | `de`]
-: Zeigen Sie dieses Handbuch im Terminal, wie less(1): Tasten handeln sofort, ohne Enter. Space oder PageDown: next page; b oder PageUp: previous page; Enter, j oder Down: next line; k oder Up: previous line; g oder Home: start; G oder End: end; /text und Enter: search, n und N: next and previous match; h: help; q: quit. Unter macOS, Linux und den BSDs wird das installierte `less` verwendet, wenn es eines gibt. Ohne ein Thema wird das gesamte Handbuch angezeigt, beginnend mit dem Leitfaden. Themen: `guide`, `usage`, `numb-date`, `configuration`, `install`, `formats`, `containers`, `security`; `numb-form man topics` listet sie auf. Die Sprache folgt `LANG` oder wird angegeben. `numb-form man -install` lässt `man numb-form` funktionieren: unter Linux, macOS und den BSDs schreibt es die Handbuchseite zu `~/.local/share/man/man1` (erneuert von `numb-form update`); unter Windows schreibt es `man.cmd` neben `numb-form.exe` für Command Prompt. Windows PowerShell behält `man` für seine eigene Hilfe: dort, Typ `numb-form man`.
+: Zeigen Sie dieses Handbuch im Terminal, wie less(1): Tasten handeln sofort, ohne Enter. Space oder PageDown: next page; b oder PageUp: previous page; Enter, j oder Down: next line; k oder Up: previous line; g oder Home: start; G oder End: end; /text und Enter: search, n und N: next and previous match; h: help; q: quit. Unter macOS, Linux und den BSDs wird das installierte `less` verwendet, wenn es eines gibt. Ohne ein Thema wird das gesamte Handbuch angezeigt, beginnend mit dem Leitfaden. Themen: `guide`, `usage`, `numb-commit`, `numb-date`, `configuration`, `install`, `formats`, `containers`, `security`; `numb-form man topics` listet sie auf. Die Sprache folgt `LANG` oder wird angegeben. `numb-form man -install` lässt `man numb-form` funktionieren: Unter Linux, macOS und den BSDs schreibt es die Handbuchseite zu `~/.local/share/man/man1` (erneuert von `numb-form update`); Unter Windows schreibt es `man.cmd` neben `numb-form.exe` für Command Prompt. Windows PowerShell behält `man` für seine eigene Hilfe: dort, Typ `numb-form man`.
 
 `update` [`stable` | `rolling` | *v1.2.3*]
 : Ersetzen Sie das installierte `numb-form` und `numb-commit`: **stable** durch das neueste stabile Release, **rolling** durch den aktuellen Rolling Build von `main` (nach jeder Änderung neu erstellt; `edge` wird als älterer Name akzeptiert), oder *v1.2.3* mit genau diesem Release. Die ersetzte Version wird neben den Programmen als `numb-form.previous` und `numb-commit.previous` für `rollback` beibehalten. Es funktioniert wie die Installationsbefehle: Das Archiv und `SHA256SUMS` werden nur von GitHub über HTTPS heruntergeladen, die Prüfsumme muss übereinstimmen und das neue `numb-form` muss starten, bevor etwas ersetzt wird. Ohne Argument wird der Kanal des laufenden Builds verwendet. Einstellungen werden beibehalten. Verweigert mit `-offline`, mit `online = no` und für Builds von der Quelle. Unter Windows wird das alte Programm in `numb-form.old.exe` umbenannt und beim nächsten Start entfernt.
@@ -111,9 +110,6 @@ Wenn ein Wert leer bleibt (Enter alone), lautet das Feld:
 
 `-timeout duration`
 : Stoppen Sie sicher nach *Dauer*, z. B. `30m`; überschreibt ein längeres `timeout` in der Konfiguration. Ohne sie gibt es keine zeitliche Begrenzung.
-
-`-run dir`
-: (numb-commit) Legen Sie diesen Run-Ordner anstelle des neuesten, nicht gebundenen Ordners fest.
 
 `-allow-non-tty`
 : Lesen Sie Antworten aus einer Pipe. Nur für automatisierte Tests.
@@ -146,7 +142,7 @@ Wenn ein Wert leer bleibt (Enter alone), lautet das Feld:
 `Downloads/numb-form-runs/<run>/numb-commit.log`
 : Review-Modus: Protokoll des Commits.
 
-Die Dateien von numb-date sind auf seiner Seite aufgeführt.
+Die Dateien von numb-commit und numb-date sind auf ihren Seiten aufgeführt.
 
 Kein Cache oder temporäre Dateien bleiben zurück. Dokumente werden durch eine temporäre Datei geschrieben, die umbenannt oder entfernt wird, und Konverter arbeiten in einem privaten temporären Ordner, der gelöscht wird.
 
@@ -194,4 +190,4 @@ cd "H:\GWG"; numb-form -f review.conf; if ($?) { numb-commit }
 
 ## SEE ALSO
 
-[numb-date.md](numb-date.md), [configuration.md](configuration.md), [formats.md](formats.md), [install.md](install.md), [containers.md](containers.md), [../SECURITY.md](SECURITY.md), [../AGENTS.md](../../AGENTS.md)
+[numb-commit.md](numb-commit.md), [numb-date.md](numb-date.md), [configuration.md](configuration.md), [formats.md](formats.md), [install.md](install.md), [containers.md](containers.md), [../SECURITY.md](SECURITY.md), [../AGENTS.md](../../AGENTS.md)
