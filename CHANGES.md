@@ -36,6 +36,8 @@ Releases up to v1.2.1 are described on the
   A table lists the checksums of every archive.
   The commands are generated (`scripts/install`) and follow each stable
   release.
+  So does the command that installs `numb-form-jail` on FreeBSD
+  ([docs/containers.md](docs/containers.md)).
 
 **Action needed:** none. Commands copied from an earlier version of
 the documentation still work.
