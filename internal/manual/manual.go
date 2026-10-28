@@ -172,6 +172,8 @@ func Text(md string, width int) string {
 				out = append(out, "        "+strings.TrimSpace(lines[i]))
 			}
 			out = append(out, "")
+		case strings.HasPrefix(t, "<!--") && strings.HasSuffix(t, "-->"):
+			// A comment, such as the markers of generated commands.
 		case strings.HasPrefix(t, "# "):
 			flush()
 			out = append(out, strings.ToUpper(inline(t[2:])), "")

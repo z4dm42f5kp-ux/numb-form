@@ -42,6 +42,12 @@ CI enforces what a program can check:
 | every configuration key has an entry `` `key = ...` `` in `docs/configuration.md` | `TestKeysDocumented` |
 | every relative link in the English documentation resolves | `TestLinksResolve` |
 | a pull request that changes the programs changes `CHANGES.md` | `scripts/check-changes.sh`, ci job *changes listed* |
+| the install commands match `scripts/install` (templates and the pinned release) | `TestInstallCommandsPinned` |
+| the documented Linux commands work on every listed distribution (minor releases) | `.github/workflows/linux.yml` |
+
+Install commands between `<!-- install:NAME -->` markers are generated.
+Edit `scripts/install/templates/NAME.*` and run
+`go run ./scripts/install render`, never the documents.
 
 ## Manual pages
 

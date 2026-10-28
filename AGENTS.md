@@ -142,9 +142,10 @@ cd "/path/to/working-folder" && numb-form
 | `internal/reportdate` | numb-date: finding and parsing the date in a form |
 | `internal/match` | legal-form extraction, folder matching, places and their typos (`places.go`, `typo.go`) |
 | `internal/manual` | `numb-form man` and the Unix manual page |
+| `internal/installdoc`, `scripts/install` | the pinned install commands of the documentation: templates, `pins.txt`, `go run ./scripts/install render` |
 | `internal/fsutil` | Downloads folder, tree copy, safe names |
 | `internal/runlog` | log and manifest |
 | `internal/ui` | terminal prompts with the run deadline |
 | `internal/update` | `numb-form update`: checksummed self-update from GitHub releases |
 | `container/`, `k8s/` | image and Kubernetes manifests |
-| `.github/workflows` | CI, security, release, edge (rolling build), translation, scorecard |
+| `.github/workflows` | CI, security, release, edge (rolling build), translation, scorecard, install-docs (pins), linux (distributions, minor releases) |

@@ -19,6 +19,15 @@ Each release is one pull request titled `vX.Y.Z: what it changes`.
 4. The commit that ci tested is tagged `vX.Y.Z`, and the normal release
    build runs: archives, checksums, Sigstore signature, provenance,
    container image. The rolling build already contains it.
+5. The **install-docs** workflow checks the new release's signature and
+   opens a pull request *docs: install commands for vX.Y.Z*. Merge it so
+   the documented install commands install the new release; merging it
+   releases nothing.
+
+A minor release (`vX.Y.0:`) also runs the **linux** workflow on its pull
+request: the tests and the documented commands on every listed Linux
+distribution. It takes up to an hour and a half; wait for it before
+merging.
 
 A pull request with another title (no `vX.Y.Z:` at the start) releases
 nothing. To release the newest `main` without a pull request, run
@@ -70,9 +79,33 @@ To stop, delete the two secrets.
   the Go tools in the workflows and opens a pull request
   `ci: update Go tools: ...` (if workflows may not open pull requests in
   Settings > Actions > General, it opens an issue instead).
+* It checks the operating systems the tests run on. When a pinned
+  container image (Debian, Fedora, Arch, Gentoo, Void, openSUSE,
+  Alpine, NixOS) has security updates, it opens a pull request
+  `ci: security updates of the test systems`. When a distribution or
+  FreeBSD, OpenBSD or NetBSD has a newer release, it opens or updates
+  the issue *Newer operating system releases to test*.
+* It checks the languages. When a newer stable Go is out, it opens a
+  pull request `docs: goX.Y.Z in the build instructions`. When Go no
+  longer fixes security bugs in the Go that `go.mod` allows or that CI
+  tests, or a pinned Python package has a known vulnerability (OSV
+  database), it opens or updates the issue *Languages and tools to
+  review*, and closes it when nothing is left.
 * It also checks the binaries of the newest release and of the rolling
   build with govulncheck. When a newer stable Go fixes what it finds, it
   rebuilds the rolling build, and proposes the next patch version of the
   newest release, the same code built with that Go, which waits for your
   approval like any release. If you reject it, it asks again the next
   day; publishing any newer release ends it.
+
+Everything that runs every day, in UTC:
+
+| Time | Workflow | What it checks |
+| --- | --- | --- |
+| 02:41 | ci | tests on Linux, macOS, Windows, FreeBSD, OpenBSD and NetBSD, containers, every release target |
+| 03:53 | formats | LibreOffice formats |
+| 04:17 | security | govulncheck, gosec, CodeQL, fuzzing, zizmor, the history scan |
+| 05:23 | updates | Go tools, Go and the published binaries, test systems, languages |
+| 05:29 | scorecard | OpenSSF Scorecard |
+| 06:37 | install-docs | the install commands against the newest stable release |
+| daily | Dependabot | actions, Argos Translate, security updates of every Python package |

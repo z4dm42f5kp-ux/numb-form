@@ -8,6 +8,79 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.7.9
+
+* OpenSSF Scorecard runs every day instead of every week.
+* `.github/RELEASING.md` lists every daily check with its time.
+
+## v1.7.8
+
+* CI checks the languages every day: the newest Go is proposed for the
+  build instructions, and a Go minimum or CI Go that no longer gets
+  security fixes, or a known vulnerability in a pinned Python package
+  (OSV database), is reported in an issue.
+
+## v1.7.7
+
+* CI: every day, the updates workflow proposes new digests of the test
+  systems' container images (the distributions' security updates) and
+  reports newer releases of the distributions and of FreeBSD, OpenBSD
+  and NetBSD (`scripts/check-systems.sh`).
+
+## v1.7.6
+
+* CI: the tests run on OpenBSD 8.0 and NetBSD 11.0, the newest
+  releases, instead of OpenBSD 7.9 and NetBSD 10.1. FreeBSD stays at
+  15.1.
+
+## v1.7.5
+
+* CI: before every minor release, the tests and the documented install
+  commands run on Debian 13, Fedora 44, Arch Linux, Gentoo, Void Linux,
+  openSUSE Tumbleweed and Leap 16, Alpine Linux, NixOS and Guix, each
+  with its own Go (`.github/workflows/linux.yml`).
+
+## v1.7.4
+
+* Install: what each Linux distribution needs for the install command
+  (Debian 13 and systems based on it, Fedora 44, Arch Linux with
+  pacman only, Gentoo, Void Linux, openSUSE, Alpine Linux, NixOS and
+  Guix).
+* Building from source builds the pinned stable release from its tag,
+  never downloads another Go toolchain (`GOTOOLCHAIN=local`), removes
+  its build cache, and has commands for NixOS and Guix.
+  Debian 12 and the Ubuntu-specific lines are gone: Debian 13 covers
+  the systems based on it.
+
+## v1.7.3
+
+* Install: every install command in [docs/install.md](docs/install.md)
+  and the guide names one stable release and checks the download
+  against the SHA-256 checksum written in the command itself, instead
+  of a checksum file from the same server.
+  A table lists the checksums of every archive.
+  The commands are generated (`scripts/install`) and follow each stable
+  release.
+  So does the command that installs `numb-form-jail` on FreeBSD
+  ([docs/containers.md](docs/containers.md)).
+
+**Action needed:** none. Commands copied from an earlier version of
+the documentation still work.
+
+## v1.7.2
+
+* Releases: after each stable release, and daily, the install-docs
+  workflow checks the newest release's Sigstore signature, pins it in
+  `scripts/install/pins.txt` and proposes the change as a pull request.
+
+## v1.7.1
+
+* `numb-form man` no longer shows comment lines of the documentation.
+* Internal: a generator that writes the install commands of the
+  documentation from templates and one pinned release with its SHA-256
+  checksums (`scripts/install`, `internal/installdoc`).
+  No document uses it yet.
+
 ## v1.7.0
 
 * New program **numb-typo**: it corrects misspelt or cut-off places at

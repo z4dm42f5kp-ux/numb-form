@@ -206,6 +206,7 @@ of every archive, so signing each archive as well would add nothing.
 | Python tools in CI (zizmor, Argos Translate) | every package pinned with SHA-256 (`--require-hashes`), wheels only (`--only-binary :all:`), no dependency resolution at install time (`--no-deps`) |
 | Argos Translate models | index read at a pinned commit; each model's SHA-256 is pinned in `.github/translate/models.sha256`, recorded on first use and enforced afterwards |
 | Container base image | none: images are built `FROM scratch` |
+| Test systems (container images of the Linux distributions, the BSD virtual machines) | images pinned by digest; a daily check proposes new digests (the distributions' security updates) and reports newer releases (`scripts/check-systems.sh`) |
 
 **Releases.**
 Release binaries are built by GitHub Actions from a tag, with
@@ -224,6 +225,10 @@ Each release has:
 * a container image on ghcr.io, signed with cosign and attested.
 
 [docs/install.md](docs/install.md) shows how to verify each of them.
+Its install commands name one stable release and carry that release's
+SHA-256 checksums, taken from `SHA256SUMS` after its Sigstore signature
+was checked (`.github/workflows/install-docs.yml`), so a file replaced
+on the download server fails the check.
 
 ## Security testing pipeline
 
@@ -250,7 +255,10 @@ change rather than for each push):
 | Container image builds and refuses to run without a terminal | docker, podman |
 | New dependencies in pull requests | dependency review |
 
-OpenSSF Scorecard checks the repository's practices.
+OpenSSF Scorecard checks the repository's practices every day.
+The daily updates workflow also checks the test systems, Go's support
+window and the pinned Python packages against the OSV database
+([.github/RELEASING.md](.github/RELEASING.md) lists every daily check).
 Pull requests, including Dependabot's, never need write permissions:
 results that require them are uploaded only from `main`.
 

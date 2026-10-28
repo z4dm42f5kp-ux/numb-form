@@ -186,8 +186,8 @@ jobs:
       matrix:
         include:
           - { os: freebsd, version: "15.1" }
-          - { os: openbsd, version: "7.9" }
-          - { os: netbsd, version: "10.1" }
+          - { os: openbsd, version: "8.0" }
+          - { os: netbsd, version: "11.0" }
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -196,7 +196,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Start ${{ matrix.os }} VM
-        uses: cross-platform-actions/action@e0b9770014ba65d5e0815f15b74031c3a635f641 # v1.6.0
+        uses: cross-platform-actions/action@34f739a0cfabfdb4df184dad9f5a2462e604ecaf # v1.6.0 + OpenBSD 8.0 (unreleased, cross-platform-actions/action#171)
         with:
           operating_system: ${{ matrix.os }}
           version: ${{ matrix.version }}
