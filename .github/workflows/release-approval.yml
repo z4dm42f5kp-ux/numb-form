@@ -45,7 +45,7 @@ jobs:
       (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     permissions:
-      actions: read # the translate run of the merge
+      actions: write # the translate run of the merge; ci and security of the milestone's versions
       contents: read
       pull-requests: read
     outputs:
@@ -147,20 +147,62 @@ jobs:
           parts=""
           if [ "$EVENT" != workflow_dispatch ]; then
             list=$(gh pr list --repo "$REPO" --state closed --label milestone-part --limit 200 \
-              --json title,headRefOid,mergedAt --jq '.[] | select(.mergedAt == null) | "\(.headRefOid) \(.title)"' || true)
-            found=$(printf '%s\n' "$list" | while read -r head title; do
+              --json title,headRefOid,headRefName,mergedAt --jq '.[] | select(.mergedAt == null) | "\(.headRefOid) \(.headRefName) \(.title)"' || true)
+            found=$(printf '%s\n' "$list" | while read -r head ref title; do
               v=$(printf '%s\n' "$title" | sed -nE '1s/^(v[0-9]+\.[0-9]+\.[0-9]+):.*/\1/p')
               [ -n "$v" ] || continue
               printf '%s\n' "$head" | grep -qE '^[0-9a-f]{40}$' || continue
+              printf '%s\n' "$ref" | grep -qE '^[A-Za-z0-9._/-]+$' || continue
               [ "$v" != "$version" ] || continue
               [ "$(printf '%s\n%s\n' "$v" "$version" | sort -V | tail -n 1)" = "$version" ] || continue
               if [ -n "$newest" ] && [ "$(printf '%s\n%s\n' "$newest" "$v" | sort -V | tail -n 1)" != "$v" ]; then continue; fi
               [ "$v" != "$newest" ] || continue
               gh api "repos/$REPO/git/ref/tags/$v" > /dev/null 2>&1 && continue
               status=$(gh api "repos/$REPO/compare/$head...$sha" --jq .status 2>/dev/null || true)
-              case $status in ahead|identical) printf '%s:%s\n' "$v" "$head" ;; esac
+              case $status in ahead|identical) printf '%s:%s:%s\n' "$v" "$head" "$ref" ;; esac
             done | sort -t: -k1,1V -u)
             parts=$(printf '%s\n' "$found" | sed '/^$/d' | tr '\n' ' ' | sed 's/ $//')
+            # Each of them is released from its own commit, so that commit
+            # must pass ci and security itself, not only the milestone.
+            # Missing runs are started on the version's branch (if it still
+            # points at that commit) and awaited, at most three hours.
+            since=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+            started=""
+            untested=""
+            for p in $parts; do
+              v=${p%%:*}; rest=${p#*:}; head=${rest%%:*}; ref=${rest#*:}
+              for w in ci security; do
+                ok=$(gh api "repos/$REPO/actions/runs?head_sha=$head&per_page=100" \
+                  --jq "[.workflow_runs[] | select(.name == \"$w\" and .conclusion == \"success\")] | length")
+                [ "$ok" -gt 0 ] && continue
+                cur=$(gh api "repos/$REPO/git/ref/heads/$ref" --jq .object.sha 2>/dev/null || true)
+                if [ "$cur" = "$head" ]; then
+                  gh workflow run "$w.yml" --repo "$REPO" --ref "$ref"
+                  started="$started $v:$head:$w"
+                else
+                  untested="$untested $v($w)"
+                fi
+              done
+            done
+            if [ -n "$untested" ]; then
+              echo "::error::no green run on the commit of:$untested, and its branch has moved on. Run ci and security on that commit, then re-run this workflow."
+              exit 1
+            fi
+            for s in $started; do
+              v=${s%%:*}; rest=${s#*:}; head=${rest%%:*}; w=${rest#*:}
+              state=""
+              for _ in $(seq 360); do
+                state=$(gh api "repos/$REPO/actions/runs?head_sha=$head&per_page=100" \
+                  --jq "[.workflow_runs[] | select(.name == \"$w\" and .created_at >= \"$since\")] | sort_by(.created_at) | last | \"\\(.status // \"\") \\(.conclusion // \"\")\"")
+                case $state in "completed "*) break ;; esac
+                sleep 30
+              done
+              if [ "$state" != "completed success" ]; then
+                echo "::error::$w on $v ($head) ended \"$state\"; nothing is released"
+                exit 1
+              fi
+              echo "$w passed on $v."
+            done
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
@@ -174,7 +216,7 @@ jobs:
             echo "- newest release so far: ${newest:-none}"
             if [ -n "$parts" ]; then
               echo "- released first, oldest first, each from its own commit:"
-              for p in $parts; do echo "  - ${p%%:*} (\`${p#*:}\`)"; done
+              for p in $parts; do rest=${p#*:}; echo "  - ${p%%:*} (\`${rest%%:*}\`)"; done
             fi
             echo
             echo "Approve the **release** deployment to tag and publish it, or reject it to release nothing."
@@ -211,6 +253,7 @@ jobs:
           for item in $PARTS "$VERSION:$SHA"; do
             v=${item%%:*}
             c=${item#*:}
+            c=${c%%:*}
             gh api "repos/$REPO/git/refs" -f "ref=refs/tags/$v" -f "sha=$c" > /dev/null
             gh workflow run release.yml --repo "$REPO" --ref "$v"
             id=""
