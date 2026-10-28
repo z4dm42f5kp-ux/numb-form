@@ -1,4 +1,8 @@
 // Package textutil holds small text helpers shared by the other packages.
+//
+// In plain words: it cleans text before it is shown on screen or written
+// into a document, and it turns company names into simple keys so that
+// differently written names can be compared.
 package textutil
 
 import (
@@ -7,8 +11,8 @@ import (
 )
 
 // SafeTerminal removes control characters, ANSI escape sequences and
-// bidirectional overrides from s so that text fetched from the network
-// cannot manipulate the user's terminal.
+// bidirectional overrides from s so that text read from a spreadsheet,
+// a form or a file name cannot manipulate the user's terminal.
 func SafeTerminal(s string) string {
 	var b strings.Builder
 	b.Grow(len(s))
@@ -68,10 +72,18 @@ var fold = map[rune]string{
 var umlautLong = map[rune]string{'ä': "ae", 'ö': "oe", 'ü': "ue"}
 var umlautShort = map[rune]string{'ä': "a", 'ö': "o", 'ü': "u"}
 
+// diaeresis is the combining mark macOS and some programs write after a
+// plain a, o or u instead of a single ä, ö or ü (decomposed text).
+const diaeresis = '\u0308'
+
 // MatchKeys returns the comparison keys for a company or folder name.
 // The three variations applied are: case is ignored, accents and umlauts
 // are folded (both ü=u and ü=ue spellings are produced), and every
 // character that is not a letter or digit is dropped.
+//
+// In plain words: "Müller GmbH", "MUELLER GMBH" and "Muller-GmbH" all
+// give the key "muellergmbh" or "mullergmbh", so they are treated as the
+// same name.
 func MatchKeys(s string) []string {
 	short := foldWith(s, umlautShort)
 	long := foldWith(s, umlautLong)
@@ -82,8 +94,18 @@ func MatchKeys(s string) []string {
 }
 
 func foldWith(s string, uml map[rune]string) string {
+	full := fullUnicode.Load()
 	var b strings.Builder
+	var last rune
 	for _, r := range strings.ToLower(s) {
+		if r == diaeresis && (last == 'a' || last == 'o' || last == 'u') {
+			// A decomposed umlaut: "u" followed by the mark is "ü". The
+			// plain letter is already written; the long spelling adds "e".
+			b.WriteString(uml['ü'][1:])
+			last = 0
+			continue
+		}
+		last = r
 		if v, ok := uml[r]; ok {
 			b.WriteString(v)
 			continue
@@ -91,6 +113,12 @@ func foldWith(s string, uml map[rune]string) string {
 		if v, ok := fold[r]; ok {
 			b.WriteString(v)
 			continue
+		}
+		if full {
+			if v, ok := fullFold()[r]; ok {
+				b.WriteString(v)
+				continue
+			}
 		}
 		if unicode.IsLetter(r) || unicode.IsDigit(r) {
 			b.WriteRune(r)
