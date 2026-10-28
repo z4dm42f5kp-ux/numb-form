@@ -5,6 +5,9 @@
 // Supported: .xlsx and .xlsm (macros are never run), .ods and .fods,
 // .csv and .tsv, and, only when legacy formats are enabled, .xls.
 // Apple .numbers files are converted by the caller first.
+//
+// In plain words: it reads the list of companies from the overview
+// spreadsheet without changing the file.
 package sheet
 
 import (

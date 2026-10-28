@@ -110,6 +110,17 @@ that set it.
 `fuzzy_threshold = 0.85` [form, date]
 : How similar a folder name must be to be offered as a match (0.5-1).
 
+`unicode = basic` | `full` [form, date]
+: How company and folder names are compared.
+  **basic** (default): case, spacing, punctuation and the accents of
+  Western and Central European languages (`é`, `ç`, `ł`, `ü` as `u` or
+  `ue`) are ignored.
+  **full**: also the accents and special forms of every other alphabet,
+  for example `ș`, `ğ`, `ǎ`, Greek `ά`, ligatures such as `ﬁ` and
+  full-width letters such as `Ａ`.
+  The extra table is read only when **full** is set, so the default adds
+  no work.
+
 `timeout = none` [form, commit, date]
 : Stop safely after this long, for example `30m` or `2h`; **none**
   (default) means no time limit.

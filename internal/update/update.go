@@ -3,6 +3,10 @@
 // edge development build. It does what the install commands in
 // docs/install.md do: download the archive and SHA256SUMS over HTTPS,
 // check the checksum, and only then replace the programs.
+//
+// In plain words: numb-form update downloads the newest version, checks
+// that it is exactly the file that was published, and only then replaces
+// the programs.
 package update
 
 import (

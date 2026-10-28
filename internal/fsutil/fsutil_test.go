@@ -18,6 +18,10 @@ func TestSafeName(t *testing.T) {
 		{"Foo S.A.", true, "Foo S.A."},
 		{"A/B: C*", false, "A_B_ C_"},
 		{"CON", false, "_CON"},
+		{"com0", false, "_com0"},
+		{"LPT\u00b9", false, "_LPT\u00b9"},
+		{"Nul .txt", true, "_Nul .txt"},
+		{"Console GmbH", false, "Console GmbH"},
 		{"Foo GmbH", false, "Foo GmbH"},
 	}
 	for _, c := range cases {
