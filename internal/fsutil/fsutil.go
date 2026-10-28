@@ -1,5 +1,10 @@
 // Package fsutil holds file-system helpers: locating the Downloads
 // folder, copying trees, hashing and safe file names.
+//
+// In plain words: everything that touches files and folders, done the
+// same careful way on Windows, macOS, Linux and the BSDs: finding
+// Downloads, copying, checksums, and turning a company name into a valid
+// folder name.
 package fsutil
 
 import (
@@ -295,8 +300,9 @@ func RandHex(n int) string { return randHex(n) }
 
 var reserved = map[string]bool{
 	"con": true, "prn": true, "aux": true, "nul": true,
-	"com1": true, "com2": true, "com3": true, "com4": true, "com5": true, "com6": true, "com7": true, "com8": true, "com9": true,
-	"lpt1": true, "lpt2": true, "lpt3": true, "lpt4": true, "lpt5": true, "lpt6": true, "lpt7": true, "lpt8": true, "lpt9": true,
+	"com0": true, "com1": true, "com2": true, "com3": true, "com4": true, "com5": true, "com6": true, "com7": true, "com8": true, "com9": true,
+	"lpt0": true, "lpt1": true, "lpt2": true, "lpt3": true, "lpt4": true, "lpt5": true, "lpt6": true, "lpt7": true, "lpt8": true, "lpt9": true,
+	"com\u00b9": true, "com\u00b2": true, "com\u00b3": true, "lpt\u00b9": true, "lpt\u00b2": true, "lpt\u00b3": true,
 }
 
 // SafeName turns a literal company name into a name that is valid on
@@ -320,7 +326,8 @@ func SafeName(name string, file bool) (string, bool) {
 		// Windows silently drops trailing dots and spaces on folders.
 		s = strings.TrimRight(s, ". ")
 	}
-	base := strings.ToLower(strings.SplitN(s, ".", 2)[0])
+	// Windows also ignores spaces before the extension: "nul .txt" is "nul".
+	base := strings.TrimRight(strings.ToLower(strings.SplitN(s, ".", 2)[0]), " ")
 	if reserved[base] {
 		s = "_" + s
 	}

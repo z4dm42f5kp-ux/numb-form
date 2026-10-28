@@ -5,6 +5,9 @@
 // ends. Values are inserted right after the label's last character, inside
 // the same group, so they take the label's formatting; the inserted text
 // is wrapped in a plain group that only sets the Unicode fallback count.
+//
+// In plain words: as for Word files, values are written after their
+// labels in .rtf files, and nothing else changes.
 package rtf
 
 import (
