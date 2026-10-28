@@ -8,7 +8,7 @@ import (
 
 // Docs are the documents with install commands, relative to the
 // repository root.
-var Docs = []string{"docs/install.md", "docs/guide.md"}
+var Docs = []string{"docs/install.md", "docs/guide.md", "docs/containers.md"}
 
 // Dir holds pins.txt and templates/, relative to the repository root.
 const Dir = "scripts/install"
