@@ -4,6 +4,10 @@
 // Numbers on macOS. Nothing is downloaded. Work happens in a private
 // temporary folder, including a throwaway office profile, which is
 // deleted afterwards, so no cache is left behind.
+//
+// In plain words: when a template is in a format numb-form cannot change
+// itself, an office program on the computer converts it, and the filled
+// result is converted back.
 package convert
 
 import (

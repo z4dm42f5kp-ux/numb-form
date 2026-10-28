@@ -8,6 +8,9 @@
 //
 // Some keys, such as legacy_formats, are honoured only in the system
 // file, so enabling them needs administrator rights.
+//
+// In plain words: the settings file lets a person change defaults, such
+// as the name of the spreadsheet column, without changing the program.
 package config
 
 import (
@@ -30,6 +33,7 @@ type Config struct {
 	Timeout      time.Duration // 0: no time limit
 	MaxWriteMB   int
 	Fuzzy        float64
+	Unicode      string // basic | full: how names are compared
 
 	Downloads  string // review mode: where the copy goes; empty = Downloads
 	LogDir     string // direct mode: where logs go; empty = per-user state folder
@@ -60,6 +64,7 @@ func Defaults() Config {
 		DateFormat:       "DD/MM/YYYY",
 		MaxWriteMB:       100,
 		Fuzzy:            0.85,
+		Unicode:          "basic",
 		PagesConverter:   "auto",
 		NumbersConverter: "auto",
 		LegacyOutput:     "docx",
