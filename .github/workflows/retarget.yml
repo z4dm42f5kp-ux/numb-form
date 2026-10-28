@@ -1,0 +1,45 @@
+name: retarget
+
+# After a pull request is merged into main, every open pull request that
+# was stacked on its branch is pointed at main, so it shows only its own
+# changes. GitHub does this by itself only when the merged branch is
+# deleted. Pull requests that GitHub manages as a stack cannot be
+# retargeted; GitHub moves those itself, and this only warns.
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: retarget-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  retarget:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write # change the base of the stacked pull requests
+    steps:
+      - name: Point the stacked pull requests at main
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          MERGED: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -eu
+          prs=$(gh pr list --repo "$REPO" --base "$MERGED" --state open --json number --jq '.[].number')
+          if [ -z "$prs" ]; then
+            echo "No open pull request is based on $MERGED."
+            exit 0
+          fi
+          for n in $prs; do
+            if gh pr edit "$n" --repo "$REPO" --base main; then
+              echo "#$n now targets main."
+            else
+              echo "::warning::#$n still targets $MERGED: GitHub refused to change its base (it may be part of a stack GitHub moves itself)."
+            fi
+          done
