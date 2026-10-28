@@ -39,7 +39,7 @@ for t in $targets; do
 		(cd "$out" && zip -X -q "../../$name.zip" numb-form.exe numb-commit.exe numb-date.exe numb-typo.exe README.md LICENSE)
 	else
 		tar --sort=name --mtime="@$SOURCE_DATE_EPOCH" --owner=0 --group=0 --numeric-owner \
-			-C "$out" -cf - numb-form numb-commit numb-date numb-typo README.md LICENSE | gzip -n -9 > "dist/$name.tar.gz"
+			-C "$out" -cf - numb-form numb-commit numb-date numb-typo README.md LICENSE $extra | gzip -n -9 > "dist/$name.tar.gz"
 	fi
 done
 # The AI prompt is a separate download, checksummed like the archives.
