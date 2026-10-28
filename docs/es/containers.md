@@ -2,7 +2,7 @@
 
 > Traducción automática (Argos Translate) del [original en inglés](../containers.md). La versión en inglés es la que vale.
 
-La imagen contiene sólo los dos binarios estáticos, un paquete de CA y la base de datos de zona horaria. No se utiliza imagen de base. Funciona como un usuario no privilegiado (UID 65532).
+La imagen contiene sólo los tres programas estáticos (numb-form, numb-commit y numb-date, cada uno con la base de datos de zona horaria construida en) y un paquete CA. No se utiliza imagen de base. Funciona como un usuario no privilegiado (UID 65532).
 
 Se necesitan dos volúmenes:
 
@@ -59,6 +59,16 @@ mkdir -p "$HOME/Downloads" && printf 'mode = review\n' > "$HOME/Downloads/review
 
 Podman toma las mismas opciones más `--userns=keep-id` y `:Z`.
 
+## numb-date en un contenedor
+
+numb-date escribe la hoja de cálculo, por lo que la carpeta de trabajo se monta leer-escritura. **Unix-like** (Linux, macOS, BSD), en Terminal:
+
+```
+docker run --rm -it --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges -e TZ=Europe/Berlin -e XDG_STATE_HOME=/downloads/numb-form-logs -v "$PWD:/data" -v "$HOME/Downloads:/downloads" --entrypoint /numb-date ghcr.io/z4dm42f5kp-ux/numb-form:latest
+```
+
+Podman toma las mismas opciones más `--userns=keep-id` y `:Z`.
+
 ## Kubernetes
 
 [`k8s/`](../../k8s) has example volume claims and two interactive pods. Fill `numb-form-data` with the working folder (or the folder above it), then:
@@ -74,3 +84,25 @@ kubectl apply -f k8s/numb-commit-pod.yaml && kubectl wait --for=condition=Ready 
 ```
 
 Si el primer aviso fue impreso antes de adjuntar, presione Enter para verlo de nuevo. Las cápsulas utilizan un sistema de archivos raíz de sólo lectura, bajan todas las capacidades, montan sin cuenta de servicio token y paran después de 30 minutos.
+
+## La cárcel de FreeBSD
+
+Docker no funciona en los BSD. En FreeBSD, el script `numb-form-jail` ejecuta los programas instalados en una cárcel, el propio contenedor de FreeBSD, que es parte del sistema base; no se necesita software de contenedor. La cárcel está vacía y sólo lectura excepto para dos carpetas: la carpeta actual como `/data` y su carpeta Downloads como `/downloads`. No tiene red, ejecuta el programa como usted, no como raíz, y se elimina con cada montaje cuando el programa termina, también después de Ctrl+C. Crear una cárcel necesita raíz, por lo que el script se inicia con `doas` (o `sudo`). El script viene en el archivo de liberación de FreeBSD, comprobado como los programas. Instalar los programas primero ([install.md](install.md)), luego instalar el script una vez, propiedad de root (en el brazo64, escriba `arm64` para `amd64`).
+
+**Unix-like** (FreeBSD), en Terminal:
+
+```
+cd "$(mktemp -d)" && fetch https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/numb-form_freebsd_amd64.tar.gz && fetch https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/SHA256SUMS && sha256 -c "$(awk '$2=="numb-form_freebsd_amd64.tar.gz"{print $1}' SHA256SUMS)" numb-form_freebsd_amd64.tar.gz && tar -xzf numb-form_freebsd_amd64.tar.gz jail.sh && doas install -o root -g wheel -m 0555 jail.sh /usr/local/sbin/numb-form-jail && cd / && rm -rf "$OLDPWD" && echo OK
+```
+
+Luego, dentro de la carpeta de trabajo (o la carpeta encima de ella):
+
+```
+doas numb-form-jail numb-form
+```
+
+Escriba `numb-commit` o `numb-date` en lugar de `numb-form` para ejecutarlos; las opciones siguen el nombre del programa. Los programas se toman desde `~/.local/bin`; para otra carpeta, u otra carpeta Downloads, comience como `doas env NUMBFORM_BIN=folder NUMBFORM_DOWNLOADS=folder numb-form-jail numb-form`.
+
+## OpenBSD y NetBSD
+
+OpenBSD y NetBSD no tienen un sistema de contenedores que ejecute estos programas. Ninguno es necesario: los programas son archivos estáticos únicos que no utilizan ningún otro software, leen solamente la carpeta de trabajo, la hoja de cálculo y la plantilla, y contacten con la red sólo para `numb-form update`. Instalarlos como se describe en [install.md](install.md), establecer `online = no` en el archivo de configuración del sistema para apagar `numb-form update`, y ejecutarlos como un usuario ordinario, nunca como root.

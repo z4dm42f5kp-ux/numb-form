@@ -86,6 +86,9 @@ The programs that use a key are named in brackets: **form** (numb-form), **commi
 `fuzzy_threshold = 0.85` [form, date]
 : Cómo similar debe ser un nombre de carpeta para ser ofrecido como un partido (0.5-1).
 
+`unicode = basic` TENIDO `full` [form, date]
+: Cómo se comparan los nombres de las empresas y carpetas. **basic** (default): caso, espaciamiento, puntuación y los acentos de los idiomas de Europa occidental y central (`é`, `ç`, `ł`, `ü` como `u` o `ue`) son ignorados. **full**: también los acentos y formas especiales de cada otro alfabeto, por ejemplo `ș`, `ğ`, `ǎ` griego `ά`, ligaduras como `ﬁ` y letras de ancho completo como `Ａ`. La tabla extra se lee sólo cuando se establece **full**, por lo que el valor predeterminado no añade trabajo.
+
 `timeout = none` [form, commit, date]
 : Deténgase con seguridad después de este largo, por ejemplo `30m` o `2h`; **none** (por defecto) no significa límite de tiempo.
 

@@ -79,7 +79,7 @@ Ein Formularlauf macht keine Netzwerkverbindungen. Firmennamen, Adressen und Ver
 
 * Downloads kommt nur von `github.com` und `*.githubusercontent.com` über HTTPS, einschließlich jeder Weiterleitung.
 * Das Archiv muss mit seiner Zeile im `SHA256SUMS` des Releases übereinstimmen; dies ist das gleiche Vertrauen wie die Installationsbefehle (die Sigstore-Signatur und die Build-Herkunft werden nicht vom Programm überprüft; überprüfen Sie sie von Hand, wie in [docs/install.md](install.md) beschrieben, falls erforderlich).
-* Das Archiv (höchstens 64 MB) wird im Speicher gespeichert; nur `numb-form` und `numb-commit` auf seiner obersten Ebene werden daraus entnommen.
+* Das Archiv (höchstens 64 MB) wird im Speicher gespeichert; nur `numb-form`, `numb-commit` und `numb-date` auf seiner obersten Ebene werden daraus entnommen.
 * Das neue `numb-form` muss seine Version starten und melden, bevor etwas ersetzt wird; bei einem Fehler bleiben die installierten Programme so, wie sie waren, und die inszenierten Dateien werden entfernt.
 * Es wird mit `-offline`, mit `online = no` (die ein Administrator in der Systemkonfiguration festlegen kann) und für Builds von der Quelle abgelehnt.
 
@@ -87,7 +87,7 @@ Ein Formularlauf macht keine Netzwerkverbindungen. Firmennamen, Adressen und Ver
 
 **Keine Module von Drittanbietern Go.** Die Programme verwenden nur die Go-Standardbibliothek. `go.mod` hat keine `require`-Linien, und `scripts/check-deps.sh` schlägt den Build fehl, wenn eine Abhängigkeit, `go.sum` oder `vendor/` angezeigt wird oder wenn ein Nicht-Standard-Import verwendet wird. Da es nichts zum download gibt, gibt es nichts zu halluzinieren, typosquat oder zu manipulieren.
 
-**PGP und seine Ersatzstoffe.** Authentizität wird mit den Mechanismen überprüft, die jedes Ökosystem tatsächlich unterstützt. PGP wird nicht verwendet, weil die beteiligten Ökosysteme nicht mehr darauf angewiesen sind (PyPI entfernte PGP-Signaturunterstützung im Jahr 2023).
+**PGP und seine Ersatzstoffe.** Authentizität wird mit den Mechanismen überprüft, die jedes Ökosystem tatsächlich unterstützt. PGP wird nicht für Abhängigkeiten verwendet, da die beteiligten Ökosysteme nicht mehr darauf angewiesen sind (PyPI entfernte PGP-Signaturunterstützung im Jahr 2023). Für Releases ist PGP optional: SHA-256 Prüfsummen beweisen, dass ein Download intakt ist, aber nicht, wer es gemacht hat, und die Sigstore-Signatur beweist dies bereits; eine PGP-Signatur hilft nur dort, wo GnuPG zur Hand ist und cosign nicht. Der Release-Workflow signiert `SHA256SUMS` nur dann mit PGP, wenn der Besitzer einen Release-Schlüssel eingerichtet hat, und nur diese eine Datei: Sie enthält die SHA-256 jedes Archivs, so dass auch das Signieren jedes Archivs nichts hinzufügen würde.
 
 | Komponente | Überprüfung |
 | --- | --- |
@@ -102,6 +102,7 @@ Ein Formularlauf macht keine Netzwerkverbindungen. Firmennamen, Adressen und Ver
 
 * Prüfsummen für `SHA256SUMS` (GNU-Format) und `SHA256` (BSD-Format);
 * `SHA256SUMS.sigstore.json`, eine schlüssellose Sigstore-Signatur der Prüfsummen, gebunden an die Identität des Release-Workflows;
+* `SHA256SUMS.asc`, eine PGP-Signatur der Prüfsummen, sobald der Besitzer einen Freigabeschlüssel eingerichtet hat (`.github/release-key.asc`);
 * SLSA Build Provenienzbescheinigungen für jedes Archiv und Binär (`gh attestation verify`);
 * ein Containerbild auf ghcr.io, signiert mit cosign und bescheinigt.
 
@@ -133,7 +134,7 @@ Workflows beginnen ohne Berechtigungen und gewähren jedem Job nur das, was er b
 
 ## Container und Kubernetes
 
-Das Bild enthält nur die beiden Binärdateien, ein CA-Bundle und die Zeitzonendatenbank und läuft als UID 65532. Die dokumentierten Befehle und Manifeste verwenden ein schreibgeschütztes Root-Dateisystem, lassen alle Funktionen fallen, verbieten die Eskalation von Privilegien, montieren den Arbeitsordner schreibgeschützt für numb-form, montieren kein Dienstkonto-Token und legen eine Frist fest.
+Das Bild enthält nur die drei Programme, ein CA-Bundle und die Zeitzonendatenbank und läuft als UID 65532. Die dokumentierten Befehle und Manifeste verwenden ein schreibgeschütztes Root-Dateisystem, lassen alle Funktionen fallen, verbieten die Eskalation von Privilegien, montieren den Arbeitsordner schreibgeschützt für numb-form, montieren kein Dienstkonto-Token und legen eine Frist fest.
 
 ## Dieses Repository ist öffentlich
 

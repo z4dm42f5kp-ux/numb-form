@@ -86,6 +86,9 @@ Die Programme, die einen Schlüssel verwenden, sind in Klammern benannt: **form*
 `fuzzy_threshold = 0.85` [form, Datum]
 : Wie ähnlich ein Ordnername sein muss, muss als Übereinstimmung angeboten werden (0,5-1).
 
+`unicode = basic` | `full` [form, date]
+: Wie Firmen- und Ordnernamen verglichen werden. **basic** (Standard): Fall, Abstand, Interpunktion und die Akzente west- und mitteleuropäischer Sprachen (`é`, `ç`, `ł`, `ü` als `u` oder `ue`) werden ignoriert. **full**: auch die Akzente und Sonderformen jedes anderen Alphabets, zum Beispiel `ș`, `ğ`, `ǎ`, Griechisch `ά`, Ligaturen wie `ﬁ` und Buchstaben voller Breite wie `Ａ`. Die zusätzliche Tabelle wird nur gelesen, wenn **full** gesetzt ist, so dass der Standard keine Arbeit hinzufügt.
+
 `timeout = none` [form, commit, date]
 : Stoppen Sie sicher nach diesem langen, zum Beispiel `30m` oder `2h`; **none** (Standard) bedeutet keine zeitliche Begrenzung.
 

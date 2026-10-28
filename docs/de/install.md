@@ -119,6 +119,14 @@ oder die Sigstore-Signatur der Prüfsummendatei mit cosign:
 cosign verify-blob --bundle SHA256SUMS.sigstore.json --certificate-identity-regexp '^https://github.com/z4dm42f5kp-ux/numb-form/\.github/workflows/release\.yml@refs/tags/v' --certificate-oidc-issuer https://token.actions.githubusercontent.com SHA256SUMS
 ```
 
+Eine Version kann auch `SHA256SUMS.asc`, eine PGP-Signatur der Prüfsummendatei, für Systeme mit GnuPG, aber nicht cosign haben. Es wird nur gemacht, wenn der Besitzer einen Release-Schlüssel eingerichtet hat; sein öffentlicher Schlüssel ist `.github/release-key.asc` im Repository. Überprüfen Sie es mit GnuPG, im Ordner mit den Downloads:
+
+```
+curl -fLO https://raw.githubusercontent.com/z4dm42f5kp-ux/numb-form/main/.github/release-key.asc && gpg --import release-key.asc && gpg --verify SHA256SUMS.asc SHA256SUMS
+```
+
+Eine gute Signatur und eine passende Prüfsumme zusammen beweisen, dass das Archiv das ist, was der Release-Workflow erstellt hat.
+
 ## Bauen aus der Quelle
 
 Das Projekt hat keine Module von Drittanbietern: `go.mod` hat keine `require`-Linien und der Build lädt nichts herunter. Die folgenden Builds verwenden eine temporäre Go Build Cache, der danach gelöscht wird, so dass kein Cache auf der Festplatte verbleibt.

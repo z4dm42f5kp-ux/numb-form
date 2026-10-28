@@ -79,7 +79,7 @@ Una ejecución de formularios no hace conexiones de red. Los nombres de las empr
 
 * Downloads viene sólo de `github.com` y `*.githubusercontent.com`, sobre HTTPS, incluyendo cada redireccion.
 * El archivo debe coincidir con su línea en el `SHA256SUMS` de la versión; esta es la misma confianza que los comandos de instalación (la firma Sigstore y la procedencia de la construcción no son revisados por el programa; compruebe a mano como se describe en [docs/install.md](install.md) si es necesario).
-* El archivo (en la mayoría de 64 MB) se mantiene en memoria; sólo `numb-form` y `numb-commit` en su nivel superior son tomados de él.
+* El archivo (a la mayoría de 64 MB) se mantiene en memoria; sólo `numb-form`, `numb-commit` y `numb-date` a su nivel superior son tomados de él.
 * El nuevo `numb-form` debe comenzar y reportar su versión antes de que se sustituya cualquier cosa; en cualquier fallo los programas instalados permanecen como estaban y los archivos escenificados son eliminados.
 * Se rechaza con `-offline`, con `online = no` (que un administrador puede establecer en la configuración del sistema), y para las construcciones de origen.
 
@@ -87,7 +87,7 @@ Una ejecución de formularios no hace conexiones de red. Los nombres de las empr
 
 **No hay módulos Go de terceros.** Los programas utilizan sólo la biblioteca estándar Go. `go.mod` no tiene líneas `require`, y `scripts/check-deps.sh` falla la construcción si aparece una dependencia, `go.sum` o `vendor/`, o si se utiliza cualquier importación no estándar. Con nada que descargar, no hay nada que alucinar, tiposquat o manipular.
 
-**PGP and its replacements.** Authenticity is checked with the mechanisms each ecosystem actually supports. PGP is not used because the ecosystems involved no longer rely on it (PyPI removed PGP signature support in 2023).
+**PGP and its replacements.** Authenticity is checked with the mechanisms each ecosystem actually supports. PGP is not used for dependencies because the ecosystems involved no longer rely on it (PyPI removed PGP signature support in 2023). For releases, PGP is optional: SHA-256 checksums prove a download is intact but not who made it, and the Sigstore signature already proves that; a PGP signature helps only where GnuPG is at hand and cosign is not. So the release workflow signs `SHA256SUMS` with PGP only when the owner has set up a release key, and only that one file: it holds the SHA-256 of every archive, so signing each archive as well would add nothing.
 
 | Componente | Verificación |
 | --- | --- |
@@ -102,6 +102,7 @@ Una ejecución de formularios no hace conexiones de red. Los nombres de las empr
 
 * `SHA256SUMS` (formato GNU) y `SHA256` (formato BSD) sumas de comprobación;
 * `SHA256SUMS.sigstore.json`, una firma Sigstore sin llave de las sumas de comprobación, vinculada a la identidad del flujo de trabajo de liberación;
+* `SHA256SUMS.asc`, una firma PGP de las sumas de comprobación, una vez que el propietario ha establecido una llave de liberación (`.github/release-key.asc`);
 * SLSA build provenance attestations for every archive and binary (`gh attestation verify`);
 * a imagen de contenedor en ghcr.io, firmado con cosign y certificado.
 
@@ -133,7 +134,7 @@ Los flujos de trabajo comienzan sin permisos y conceden cada trabajo sólo lo qu
 
 ## Contenedores y Kubernetes
 
-La imagen contiene sólo los dos binarios, un paquete CA y la base de datos de zona horaria, y funciona como UID 65532. Los comandos y manifiestos documentados utilizan un sistema de archivos raíz de sólo lectura, bajan todas las capacidades, prohiben la escalada de privilegios, montan la carpeta de trabajo sólo para numb-form, no montan ninguna cuenta de servicio y establecen un plazo.
+La imagen contiene sólo los tres programas, un paquete CA y la base de datos de zona horaria, y funciona como UID 65532. Los comandos y manifiestos documentados utilizan un sistema de archivos raíz de sólo lectura, bajan todas las capacidades, prohiben la escalada de privilegios, montan la carpeta de trabajo sólo para numb-form, no montan ninguna cuenta de servicio y establecen un plazo.
 
 ## Este repositorio es público
 

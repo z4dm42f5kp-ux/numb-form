@@ -2,7 +2,7 @@
 
 > Maschinelle Übersetzung (Argos Translate) des [englischen Originals](../containers.md). Maßgeblich ist die englische Fassung.
 
-Das Bild enthält nur die beiden statischen Binärdateien, ein CA-Bundle und die Zeitzonendatenbank. Es wird kein Basisbild verwendet. Es läuft als unprivilegierter Benutzer (UID 65532).
+Das Bild enthält nur die drei statischen Programme (numb-form, numb-commit und numb-date, jeweils mit eingebauter Zeitzonendatenbank) und ein CA-Bundle. Es wird kein Basisbild verwendet. Es läuft als unprivilegierter Benutzer (UID 65532).
 
 Es werden zwei Bände benötigt:
 
@@ -59,6 +59,16 @@ mkdir -p "$HOME/Downloads" && printf 'mode = review\n' > "$HOME/Downloads/review
 
 Podman nimmt die gleichen Optionen sowie `--userns=keep-id` und `:Z`.
 
+## Betäubungsdatum in einem Container
+
+numb-date schreibt die Tabellenkalkulation, so dass der Arbeitsordner Read-Write montiert ist. **Unix-like** (Linux, macOS, BSD), im Terminal:
+
+```
+docker run --rm -it --user "$(id -u):$(id -g)" --read-only --cap-drop ALL --security-opt no-new-privileges -e TZ=Europe/Berlin -e XDG_STATE_HOME=/downloads/numb-form-logs -v "$PWD:/data" -v "$HOME/Downloads:/downloads" --entrypoint /numb-date ghcr.io/z4dm42f5kp-ux/numb-form:latest
+```
+
+Podman nimmt die gleichen Optionen sowie `--userns=keep-id` und `:Z`.
+
 ## Kubernetes
 
 [`k8s/`](../../k8s) hat Beispielvolumenansprüche und zwei interaktive Pods. Füllen Sie `numb-form-data` mit dem Arbeitsordner (oder dem Ordner darüber), dann:
@@ -74,3 +84,25 @@ kubectl apply -f k8s/numb-commit-pod.yaml && kubectl wait --for=condition=Ready 
 ```
 
 Wenn die erste Aufforderung vor dem Anfügen gedruckt wurde, drücken Sie Enter, um sie erneut zu sehen. Die Pods verwenden ein schreibgeschütztes Root-Dateisystem, lassen alle Funktionen fallen, montieren kein Service-Account-Token und stoppen nach 30 Minuten.
+
+## FreeBSD Gefängnis
+
+Docker läuft nicht auf den BSDs. Auf FreeBSD führt das Skript `numb-form-jail` die installierten Programme in einem Gefängnis aus, dem FreeBSD-eigenen Container, der Teil des Basissystems ist; es wird keine Container-Software benötigt. Das Gefängnis ist leer und schreibgeschützt, mit Ausnahme von zwei Ordnern: dem aktuellen Ordner als `/data` und Ihrem Downloads-Ordner als `/downloads`. Es hat kein Netzwerk, läuft das Programm wie Sie, nicht wie root, und wird mit jedem Mount entfernt, wenn das Programm endet, auch nach Ctrl+C. Das Erstellen eines Gefängnisses benötigt root, so dass das Skript mit `doas` (oder `sudo`) gestartet wird. Das Skript kommt im FreeBSD-Release-Archiv, überprüft wie die Programme. Installieren Sie zuerst die Programme ([install.md](install.md)), dann installieren Sie das Skript einmal, im Besitz von root (auf arm64, schreiben Sie `arm64` für `amd64`).
+
+**Unix-like** (FreeBSD), im Terminal:
+
+```
+cd "$(mktemp -d)" && fetch https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/numb-form_freebsd_amd64.tar.gz && fetch https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/SHA256SUMS && sha256 -c "$(awk '$2=="numb-form_freebsd_amd64.tar.gz"{print $1}' SHA256SUMS)" numb-form_freebsd_amd64.tar.gz && tar -xzf numb-form_freebsd_amd64.tar.gz jail.sh && doas install -o root -g wheel -m 0555 jail.sh /usr/local/sbin/numb-form-jail && cd / && rm -rf "$OLDPWD" && echo OK
+```
+
+Dann im Arbeitsordner (oder dem Ordner darüber):
+
+```
+doas numb-form-jail numb-form
+```
+
+Schreiben Sie `numb-commit` oder `numb-date` anstelle von `numb-form`, um diese auszuführen; Optionen folgen dem Programmnamen. Die Programme werden aus `~/.local/bin` entnommen; für einen anderen Ordner oder einen anderen Downloads-Ordner starten Sie ihn als `doas env NUMBFORM_BIN=folder NUMBFORM_DOWNLOADS=folder numb-form-jail numb-form`.
+
+## OpenBSD und NetBSD
+
+OpenBSD und NetBSD haben kein Containersystem, das diese Programme ausführt. Keine ist erforderlich: Die Programme sind einzelne statische Dateien, die keine andere Software verwenden, lesen nur den Arbeitsordner, die Tabellenkalkulation und die Vorlage und kontaktieren Sie das Netzwerk nur für `numb-form update`. Installieren Sie sie wie in [install.md](install.md) beschrieben, setzen Sie `online = no` in der Systemkonfigurationsdatei, um `numb-form update` auszuschalten, und führen Sie sie als gewöhnlichen Benutzer aus, niemals als root.
