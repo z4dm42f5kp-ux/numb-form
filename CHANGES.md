@@ -77,8 +77,8 @@ the documentation still work.
   numb-date.
   See [docs/numb-typo.md](docs/numb-typo.md) or
   `numb-form man numb-typo`.
-* `numb-form update`, the release archives and the container image
-  include numb-typo.
+* `numb-form update`, the release archives, the container image and
+  `numb-form-jail` (FreeBSD) include numb-typo.
 
 **Action needed:** none. The next `numb-form update` installs numb-typo.
 

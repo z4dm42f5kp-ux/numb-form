@@ -166,7 +166,8 @@ It is run only when the user types it, and never during a form run.
   build provenance are not checked by the program; check them by hand as
   described in [docs/install.md](docs/install.md) if needed).
 * The archive (at most 64 MB) is held in memory; only `numb-form`,
-  `numb-commit` and `numb-date` at its top level are taken from it.
+  `numb-commit`, `numb-date` and `numb-typo` at its top level are taken
+  from it.
 * The new `numb-form` must start and report its version before anything
   is replaced; on any failure the installed programs stay as they were and
   the staged files are removed.
@@ -263,7 +264,7 @@ needs; checkouts do not keep credentials.
 
 ## Containers and Kubernetes
 
-The image contains only the three programs, a CA bundle and the time zone
+The image contains only the four programs, a CA bundle and the time zone
 database, and runs as UID 65532.
 The documented commands and manifests use a read-only root file system,
 drop all capabilities, forbid privilege escalation, mount the working
