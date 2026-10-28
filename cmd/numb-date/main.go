@@ -3,6 +3,10 @@
 // date from the company's form and, after the user agrees, writes it as
 // DD-MM-YYYY. It is the only numb-form program that writes to the
 // spreadsheet, and it changes nothing but those cells.
+//
+// In plain words: it copies the date written in each company's form into
+// the overview spreadsheet, but only after you have seen and accepted
+// every date.
 package main
 
 import (
