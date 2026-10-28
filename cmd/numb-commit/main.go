@@ -3,6 +3,10 @@
 // new folders, never overwrites or deletes, and verifies every file with
 // SHA-256. For a working copy, it writes and reviews a request that
 // shows what would change in the real folder, and copies nothing.
+//
+// In plain words: after you have checked the copy in Downloads, this
+// program puts the new folders into the real working folder. It cannot
+// change or remove anything that is already there.
 package main
 
 import (
