@@ -8,6 +8,15 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.3.6
+
+* Internal: numb-commit's questions for the two folders, "Which
+  directory should be committed (insert absolute path)?" and "Which
+  directory is the target?".
+  They accept paths copied with "Copy as path" and ask again until both
+  are different working folders that are not inside each other.
+  Nothing uses them yet. No change in behaviour.
+
 ## v1.3.5
 
 * numb-date never asks you to type a date.
