@@ -83,22 +83,38 @@ func TestRequestRoundTrip(t *testing.T) {
 	}
 }
 
+// A request whose paths leave the folder, or whose files to copy carry no
+// checksum, is refused.
 func TestReadRequestRefusesUnsafePaths(t *testing.T) {
+	sum := strings.Repeat("ab", 32)
 	head := "text\n" + requestData + "\nfrom\tA\nto\tB\n"
 	for _, line := range []string{
-		"add\t../x.docx\t\t\t1\t\t\t\t",
-		"add\t/x.docx\t\t\t1\t\t\t\t",
-		"add\ta/../../x.docx\t\t\t1\t\t\t\t",
-		"add\tFoo/x.docx\t\t\t1\tBar\t\t\t",
+		"add\t../x.docx\t" + sum + "\t\t1\t\t\t\t",
+		"add\t/x.docx\t" + sum + "\t\t1\t\t\t\t",
+		"add\ta/../../x.docx\t" + sum + "\t\t1\t\t\t\t",
+		"add\ta\\..\\..\\x.docx\t" + sum + "\t\t1\t\t\t\t",
+		"add\ta/./x.docx\t" + sum + "\t\t1\t\t\t\t",
+		"add\ta//x.docx\t" + sum + "\t\t1\t\t\t\t",
+		"add\tFoo/x.docx\t" + sum + "\t\t1\tBar\t\t\t",
+		"add\t./x.docx\t" + sum + "\t\t1\t.\t\t\t",
 		"dup\tFoo/x.docx\t\t\t1\tFoo\t../Bar\t\t",
-		"delete\tFoo/x.docx\t\t\t1\t\t\t\t",
+		"delete\tFoo/x.docx\t" + sum + "\t\t1\t\t\t\t",
+		"add\tFoo/x.docx\t\t\t1\tFoo\t\t\t",
+		"add\tFoo/x.docx\tabcd\t\t1\tFoo\t\t\t",
+		"replace\tFoo/x.xlsx\t" + sum + "\t\t1\t\t\t\t",
 	} {
 		if _, err := parseRequest("r", []byte(head+line+"\n")); err == nil {
 			t.Errorf("accepted %q", line)
 		}
 	}
-	if _, err := parseRequest("r", []byte(head+"add\tFoo/x.docx\t\t\t1\tFoo\t\t\t\n")); err != nil {
-		t.Error(err)
+	for _, line := range []string{
+		"add\tFoo/x.docx\t" + sum + "\t\t1\tFoo\t\t\t",
+		"replace\tFoo/x.xlsx\t" + sum + "\t" + sum + "\t1\t\t\t\t",
+		"keep\tnumb-form.log\t\t\t0\t\t\t\tnot copied",
+	} {
+		if _, err := parseRequest("r", []byte(head+line+"\n")); err != nil {
+			t.Errorf("refused %q: %v", line, err)
+		}
 	}
 	if _, err := parseRequest("r", []byte("text only\n")); err == nil {
 		t.Error("accepted a request without data")
@@ -107,8 +123,8 @@ func TestReadRequestRefusesUnsafePaths(t *testing.T) {
 
 func FuzzReadRequest(f *testing.F) {
 	q := &request{From: "A", To: "B", Status: "waiting", Sheet: "3. Übersichten/Liste.xlsx", Changes: []change{
-		{kind: kAdd, rel: "Foo Ltd/Appendix A - Foo Ltd.docx", sha: "ab", size: 10, top: "Foo Ltd", origin: byNumbForm},
-		{kind: kReplace, rel: "3. Übersichten/Liste.xlsx", sha: "cd", old: "ef", size: 20},
+		{kind: kAdd, rel: "Foo Ltd/Appendix A - Foo Ltd.docx", sha: strings.Repeat("ab", 32), size: 10, top: "Foo Ltd", origin: byNumbForm},
+		{kind: kReplace, rel: "3. Übersichten/Liste.xlsx", sha: strings.Repeat("cd", 32), old: strings.Repeat("ef", 32), size: 20},
 		{kind: kKeep, rel: "numb-form.log", reason: "not copied: a log or system file"},
 	}}
 	p := filepath.Join(f.TempDir(), RequestName)
@@ -132,6 +148,9 @@ func FuzzReadRequest(f *testing.F) {
 		for _, c := range q.Changes {
 			if !safeRel(c.rel) || (c.dup != "" && !safeRel(c.dup)) || (c.top != "" && !strings.HasPrefix(c.rel, c.top+"/")) {
 				t.Fatalf("unsafe change accepted: %+v", c)
+			}
+			if (c.kind == kAdd || c.kind == kReplace) && len(c.sha) != 64 {
+				t.Fatalf("change without checksum accepted: %+v", c)
 			}
 		}
 	})

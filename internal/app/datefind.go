@@ -84,14 +84,15 @@ func mustRel(base, p string) string {
 // false when the company is skipped.
 func (r *run) dateFor(row sheet.TableRow) (planned, bool, error) {
 	folder, err := r.companyFolder(row.Name)
-	if err != nil || folder == "" {
+	if err != nil {
 		return planned{}, false, err
+	}
+	if folder == "" {
+		return r.skipDate(row, "no folder for this company")
 	}
 	files := formFiles(folder, r.cfg.TemplateName)
 	if len(files) == 0 {
-		r.ui.Printf("  no form found in %s — skipped\n", ui.Safe(filepath.Base(folder)))
-		r.logf("skip %q: no readable form in %s", row.Name, folder)
-		return planned{}, false, nil
+		return r.skipDate(row, fmt.Sprintf("no form in the folder %s", filepath.Base(folder)))
 	}
 	for _, f := range files {
 		b, err := fsutil.ReadFileMax(f.path, maxForm)
@@ -105,22 +106,16 @@ func (r *run) dateFor(row sheet.TableRow) (planned, bool, error) {
 			return planned{row: row, date: d, from: f.rel}, true, nil
 		}
 	}
-	r.ui.Printf("  no date found in %s\n", ui.Safe(files[0].rel))
-	for {
-		a, err := r.ui.Ask("  Date (" + reportdate.Layout + ", Enter = skip): ")
-		if err != nil {
-			return planned{}, false, err
-		}
-		if a = strings.TrimSpace(a); a == "" {
-			r.logf("skip %q: no date in its form, none typed", row.Name)
-			return planned{}, false, nil
-		}
-		if d, ok := reportdate.Parse(a); ok {
-			r.logf("date %q: %s typed by the user", row.Name, d)
-			return planned{row: row, date: d, from: "typed"}, true, nil
-		}
-		r.ui.Println("  Please type a date such as 16-10-2026.")
-	}
+	return r.skipDate(row, "no date in "+files[0].rel)
+}
+
+// skipDate leaves a company out, says why and remembers it for the list
+// of skipped companies.
+func (r *run) skipDate(row sheet.TableRow, why string) (planned, bool, error) {
+	r.ui.Printf("  skipped: %s\n", ui.Safe(why))
+	r.logf("skip %q: %s", row.Name, why)
+	r.skipped = append(r.skipped, row.Name+" — "+why)
+	return planned{}, false, nil
 }
 
 // companyFolder returns the company's folder: an exact match, or a near
@@ -146,7 +141,5 @@ func (r *run) companyFolder(name string) (string, error) {
 			return c.Folder.Path, nil
 		}
 	}
-	r.ui.Println("  no folder for this company — skipped")
-	r.logf("skip %q: no folder", name)
 	return "", nil
 }

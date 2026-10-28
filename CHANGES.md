@@ -8,6 +8,25 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.3.5
+
+* numb-date never asks you to type a date.
+  A company without a folder, without a form or without a date in its
+  form is skipped with the reason (`skipped: no form in the folder Foo
+  GmbH`), and the skipped companies are listed again before the dates.
+* numb-date lists the dates numbered, with the form each came from, and
+  asks `[a]ccept, [e]dit a date, [r]eject` instead of `[y/N]`: `e`
+  changes one date or, with `-`, leaves that company out.
+* Internal: numb-commit's review of a request: every file to copy still
+  has its checksum and is not in the real folder yet, the spreadsheet
+  only gains report dates in cells without one, every new company
+  folder holds a filled form, and residue and the template stay behind.
+  Nothing uses it yet. No change in behaviour.
+* Internal: the request reader refuses files to copy without a SHA-256
+  checksum and paths with empty, `.` or `..` parts or a backslash; the
+  comparison refuses file names with a backslash; forms and the
+  spreadsheet are read with a size limit (50 MB and 256 MB).
+
 ## v1.3.4
 
 * Internal: the numb-commit request file, `numb-commit-request.txt`:
