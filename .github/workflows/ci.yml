@@ -239,11 +239,11 @@ jobs:
           export PATH GOFLAGS=-mod=readonly CGO_ENABLED=0
           repo=$(pwd)
           bin=$(mktemp -d)
-          for c in numb-form numb-commit numb-date; do go build -o "$bin/$c" "./cmd/$c"; done
+          for c in numb-form numb-commit numb-date numb-typo; do go build -o "$bin/$c" "./cmd/$c"; done
           work=$(mktemp -d)
           cd "$work"
           touch keep-me
-          for c in numb-form numb-commit numb-date; do
+          for c in numb-form numb-commit numb-date numb-typo; do
             sudo NUMBFORM_BIN="$bin" NUMBFORM_DOWNLOADS="$work/downloads" sh "$repo/container/jail.sh" "$c" -version
           done
           # Must refuse to run without a terminal, as in the image.
