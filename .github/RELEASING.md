@@ -44,6 +44,28 @@ desktop site if Settings is hidden):
    tags and add the branch `main`.
 4. Save protection rules.
 
+## Optional PGP signature
+
+Releases are signed with Sigstore without any key to look after.
+A PGP signature of `SHA256SUMS` is added only when you set up a key.
+The key is a long-lived secret: keep it offline, give it a passphrase,
+and set an expiry date.
+To set it up:
+
+1. Make a signing key on your own computer, for example
+   `gpg --quick-generate-key 'numb-form releases' ed25519 sign 2y`.
+2. Commit its public key as `.github/release-key.asc`
+   (`gpg --armor --export 'numb-form releases'`).
+3. Settings > Secrets and variables > Actions > New repository secret:
+   `PGP_SIGNING_KEY` with the output of
+   `gpg --armor --export-secret-keys 'numb-form releases'`, and
+   `PGP_PASSPHRASE` with its passphrase.
+
+From the next release on, `SHA256SUMS.asc` is published with it, and the
+release fails if the signature does not verify with
+`.github/release-key.asc`.
+To stop, delete the two secrets.
+
 ## Daily update checks
 
 * Dependabot checks the actions and the translation tools every day
