@@ -75,13 +75,16 @@ jobs:
           # tag) already exists: add the files to it instead.
           files="dist/*.tar.gz dist/*.zip dist/ai-prompt.txt dist/SHA256SUMS dist/SHA256 dist/SHA256SUMS.sigstore.json"
           if [ -f dist/SHA256SUMS.asc ]; then files="$files dist/SHA256SUMS.asc"; fi
+          # The release page shows what changed (CHANGES.md).
+          REPO="$GITHUB_REPOSITORY" sh scripts/release-notes.sh stable "$VERSION" > "$RUNNER_TEMP/notes.md"
           if gh release view "$VERSION" > /dev/null 2>&1; then
             # shellcheck disable=SC2086
             gh release upload "$VERSION" --clobber $files
+            gh release edit "$VERSION" --notes-file "$RUNNER_TEMP/notes.md"
           else
             # shellcheck disable=SC2086
             gh release create "$VERSION" --verify-tag --title "$VERSION" \
-              --notes "Verify downloads as described in docs/install.md (SHA256SUMS, Sigstore bundle, build provenance)." $files
+              --notes-file "$RUNNER_TEMP/notes.md" $files
           fi
       - name: Build and push image (FROM scratch, amd64 + arm64)
         id: image

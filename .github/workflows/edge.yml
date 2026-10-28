@@ -88,7 +88,8 @@ jobs:
           REPO: ${{ github.repository }}
           SHA: ${{ steps.build.outputs.sha }}
         run: |
-          notes="Rolling build of commit $SHA, rebuilt after every change to main (numb-form update rolling). Not a stable release. Verify downloads as described in docs/install.md."
+          # The pull requests merged since the newest stable release.
+          sh scripts/release-notes.sh edge "$SHA" > "$RUNNER_TEMP/notes.md"
           # A release keeps its first publication date when it is edited,
           # and the releases page sorts by it: publish it anew each time,
           # so rolling stands next to the newest stable release. The tag
@@ -107,7 +108,7 @@ jobs:
           if [ -f dist/SHA256SUMS.asc ]; then files="$files dist/SHA256SUMS.asc"; fi
           # shellcheck disable=SC2086
           gh release create edge --repo "$REPO" --target "$SHA" --prerelease --latest=false \
-            --title "rolling (newest build of main)" --notes "$notes" $files
+            --title "rolling (newest build of main)" --notes-file "$RUNNER_TEMP/notes.md" $files
       - name: Remove build output
         if: always()
         run: rm -rf dist

@@ -19,6 +19,9 @@ Each release is one pull request titled `vX.Y.Z: what it changes`.
 4. The commit that ci tested is tagged `vX.Y.Z`, and the normal release
    build runs: archives, checksums, Sigstore signature, provenance,
    container image. The rolling build already contains it.
+   The release page shows the version's section of `CHANGES.md`; the
+   rolling build lists the pull requests merged since the newest stable
+   release (`scripts/release-notes.sh`).
 
 A pull request with another title (no `vX.Y.Z:` at the start) releases
 nothing. To release the newest `main` without a pull request, run
