@@ -72,6 +72,39 @@ jobs:
           HEAD: ${{ github.event.pull_request.head.sha }}
         run: sh scripts/check-changes.sh "$BASE" "$HEAD"
 
+  pgp-sign:
+    # The optional PGP signature of releases (scripts/pgp-sign.sh), tried
+    # with a throwaway key made for this run.
+    needs: changes
+    if: needs.changes.outputs.go == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Without a key nothing is signed
+        run: |
+          mkdir -p dist
+          echo "0000  numb-form_test.tar.gz" > dist/SHA256SUMS
+          PGP_SIGNING_KEY="" sh scripts/pgp-sign.sh dist
+          test ! -e dist/SHA256SUMS.asc
+      - name: With a key SHA256SUMS is signed and verified
+        run: |
+          GNUPGHOME=$(mktemp -d)
+          export GNUPGHOME
+          gpg --batch --pinentry-mode loopback --passphrase '' --quick-generate-key 'numb-form CI test <ci@example.invalid>' ed25519 sign never
+          gpg --batch --armor --export > .github/release-key.asc
+          key=$(gpg --batch --pinentry-mode loopback --passphrase '' --armor --export-secret-keys)
+          PGP_SIGNING_KEY="$key" sh scripts/pgp-sign.sh dist
+          gpg --batch --verify dist/SHA256SUMS.asc dist/SHA256SUMS
+          rm dist/SHA256SUMS.asc .github/release-key.asc
+          # A key without its published public key is refused.
+          if PGP_SIGNING_KEY="$key" sh scripts/pgp-sign.sh dist; then echo "signed without .github/release-key.asc" >&2; exit 1; fi
+          test ! -e dist/SHA256SUMS.asc
+          rm -rf dist "$GNUPGHOME"
+
   lint:
     needs: changes
     if: needs.changes.outputs.go == 'true'
@@ -197,6 +230,31 @@ jobs:
             exit 1
           fi
           cat test.log
+      - name: FreeBSD jail (container/jail.sh)
+        if: matrix.os == 'freebsd'
+        shell: cpa.sh {0}
+        run: |
+          set -e
+          PATH=/usr/local/bin:$PATH
+          export PATH GOFLAGS=-mod=readonly CGO_ENABLED=0
+          repo=$(pwd)
+          bin=$(mktemp -d)
+          for c in numb-form numb-commit numb-date; do go build -o "$bin/$c" "./cmd/$c"; done
+          work=$(mktemp -d)
+          cd "$work"
+          touch keep-me
+          for c in numb-form numb-commit numb-date; do
+            sudo NUMBFORM_BIN="$bin" NUMBFORM_DOWNLOADS="$work/downloads" sh "$repo/container/jail.sh" "$c" -version
+          done
+          # Must refuse to run without a terminal, as in the image.
+          if sudo NUMBFORM_BIN="$bin" NUMBFORM_DOWNLOADS="$work/downloads" sh "$repo/container/jail.sh" numb-form < /dev/null; then
+            echo "ran without a TTY" >&2; exit 1
+          fi
+          # The working folder is untouched, and nothing is left behind.
+          test -f "$work/keep-me"
+          if mount | grep numb-form-jail; then echo "mounts left behind" >&2; exit 1; fi
+          if ls -d /tmp/numb-form-jail.* 2>/dev/null; then echo "jail folders left behind" >&2; exit 1; fi
+          if jls | grep numbform; then echo "jail left running" >&2; exit 1; fi
 
   container:
     needs: changes

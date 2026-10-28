@@ -18,8 +18,8 @@ numb-date se inicia como numb-form, dentro de la carpeta de trabajo (o un nivel 
 
 1. The company column is found by `header`, then by common names (`Customer Name`, `Customer`, `Company Name`, `Kunde`, `Cliente` and others, ignoring case); the date column in the same header row by `Report created AB`, `Report created`, `Report date`, `Created` and similar names, or any heading that mentions a report and its creation or date.
 2. Las filas cuya celda contiene un dígito se saltan: ya tienen una fecha.
-3. Para las otras filas, la carpeta de la compañía se encuentra como numb-form la encuentra (cerca de los partidos se preguntan, o se toman con `-y`). Los formularios `.docx`, `.odt`, `.fodt` o `.rtf` en la carpeta (y un nivel debajo) se leen, el formulario de evaluación del riesgo primero: el *Date of the evaluation* de la sección A, o, en los formularios establecidos de manera diferente, la fecha escrita después de una etiqueta de fecha. Se entienden fechas como `16/10/2026`, `16.10.2026`, `2026-10-16` y `16 October 2026`. Cuando no se encuentra ninguna fecha, se escribe o se salta la empresa.
-4. Las fechas se enumeran y se escriben como `DD-MM-YYYY` después de estar de acuerdo, luego se lee de nuevo del disco y se muestra; se aceptan o deshacer la escritura.
+3. Para las otras filas, la carpeta de la compañía se encuentra como numb-form la encuentra (cerca de los partidos se preguntan, o se toman con `-y`). Los formularios `.docx`, `.odt`, `.fodt` o `.rtf` en la carpeta (y un nivel debajo) se leen, el formulario de evaluación del riesgo primero: el *Date of the evaluation* de la sección A, o, en los formularios establecidos de manera diferente, la fecha escrita después de una etiqueta de fecha. Se entienden fechas como `16/10/2026`, `16.10.2026`, `2026-10-16` y `16 October 2026`. numb-date nunca pide una cita. Una empresa sin una carpeta, sin un formulario o sin una fecha en su forma se salta con la razón, por ejemplo `skipped: no form in the folder Foo GmbH`, y aparece nuevamente antes de las fechas, para que pueda llenarla a mano.
+4. Las fechas se enumeran, numeradas, con el formulario de cada uno vino de. Los aceptas, editas uno o no escribes nada. Se escriben como `DD-MM-YYYY`, se lee de nuevo del disco y se muestra; se aceptan o deshacer la escritura.
 
 Las formas sólo se leen.
 
@@ -30,8 +30,9 @@ Sólo las células listadas cambian. Mantienen su propio estilo celular y no tie
 | numb-date pide | ¿Qué haces? |
 | --- | --- |
 | `Is the folder "…" this company's folder? (...) [y/N]` | `y` si es la misma empresa, de lo contrario Enter |
-| `Date (DD-MM-YYYY, Enter = skip):` | El formulario no tiene fecha legible: escríbalo o entra para saltar |
-| `Write these … date(s)? Nothing else in the spreadsheet changes. [y/N]` | `y` para escribirlos; Entrar no escribe nada |
+| `Write these … date(s)? Nothing else in the spreadsheet changes. [a]ccept, [e]dit a date, [r]eject:` | `a` los escribe; `e` cambia una fecha; `r` no escribe nada |
+| `Number to change (1-…, Enter to go back):` | El número de la fecha en la lista |
+| `New date for … (DD-MM-YYYY, Enter = keep …, '-' = leave it out):` | Escriba la fecha, Ingrese para mantenerla, o `-` para salir de esa empresa |
 | `Is this correct? [a]ccept, [u]ndo:` | `a` los mantiene, `u` restaura el archivo exactamente |
 
 ## OPTIONS
