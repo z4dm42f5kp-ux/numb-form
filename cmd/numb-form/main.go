@@ -1,5 +1,8 @@
 // Command numb-form fills the risk assessment form for every company in
 // the overview spreadsheet that does not have a folder yet.
+//
+// In plain words: this is where the program starts. It reads the options
+// typed after numb-form and hands the work to package app.
 package main
 
 import (

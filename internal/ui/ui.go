@@ -1,5 +1,8 @@
 // Package ui implements the line-based terminal dialogue. Every read is
 // bounded by the run's deadline.
+//
+// In plain words: it prints the questions, reads your answers, and stops
+// waiting when the time limit is reached.
 package ui
 
 import (
