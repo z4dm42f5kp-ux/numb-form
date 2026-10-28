@@ -30,6 +30,9 @@ for t in $targets; do
 			-ldflags "$ldflags" -o "$out/$c$ext" "./cmd/$c"
 	done
 	cp README.md LICENSE "$out/"
+	extra=
+	# FreeBSD's own container, for machines without Docker (docs/containers.md).
+	if [ "$os" = freebsd ]; then cp container/jail.sh "$out/"; extra=jail.sh; fi
 	touch -d "@$SOURCE_DATE_EPOCH" "$out"/* 2>/dev/null || true
 	name="numb-form_${os}_${arch}"
 	if [ "$os" = windows ]; then

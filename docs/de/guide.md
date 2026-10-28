@@ -143,14 +143,15 @@ Es geht durch die Liste. Unternehmen, deren *Report created* Zelle bereits ein D
 
 ```
 Dates to write into Kundenliste.xlsx (column "Report created AB"):
-  F13    16-10-2026  Foo Ltda
+  1  F13    16-10-2026  Foo Ltda  (Foo Ltda\Appendix A - Risk Assesment - Foo Ltda.docx)
 ```
+
+Es fragt dich nie nach einem date. Unternehmen ohne Ordner, ein Formular oder ein Datum im Formular werden übersprungen und mit dem Grund aufgeführt, z. B. `Foo GmbH — no form in the folder Foo GmbH`, damit Sie sie von Hand ausfüllen können.
 
 | numb-date fragt | Was du tust |
 | --- | --- |
-| `Is the folder "Fooo Inc" this company's folder? (...) [y/N]` | `y`, wenn es das gleiche Unternehmen ist, andernfalls Enter |
-| `Date (DD-MM-YYYY, Enter = skip):` | Das Formular hat kein lesbares Datum: Geben Sie es ein oder geben Sie ein, um das Unternehmen zu überspringen |
-| `Write these 1 date(s)? Nothing else in the spreadsheet changes. [y/N]` | `y`, um sie zu schreiben; Enter schreibt nichts |
+| `Is the folder "Fooo Inc" this company's folder? (...) [y/N]` | `y`, wenn es sich um dieselbe Firma handelt, andernfalls Enter. Beginnen Sie mit `numb-date -y`, um `y` auf alle diese zu beantworten |
+| `Write these 1 date(s)? Nothing else in the spreadsheet changes. [a]ccept, [e]dit a date, [r]eject:` | `a` writes them; `e` changes one date (or leaves a company out with `-`); `r` writes nothing |
 | `Is this correct? [a]ccept, [u]ndo:` | numb-date zeigt die Zellen, während die Datei jetzt gelesen wird; `a`, um sie zu behalten, `u`, um die Datei genau so zurückzusetzen, wie sie war |
 
 **Schließen Sie zuerst die Excel-Liste. ** numb-date stoppt, wenn die Datei geöffnet ist. Nur die *Report created* Zellen ändern sich: keine andere Zelle, keine Formatierung.
