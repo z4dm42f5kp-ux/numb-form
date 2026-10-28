@@ -1,4 +1,9 @@
 // Package app implements the numb-form, numb-commit and numb-date programs.
+//
+// In plain words: this is where the steps of a run are put in order:
+// find the working folder, read the spreadsheet, ask the questions, fill
+// and save each form, and write the log. The other packages each do one
+// of those steps.
 package app
 
 import (
@@ -18,6 +23,7 @@ import (
 	"github.com/z4dm42f5kp-ux/numb-form/internal/match"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/runlog"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/sheet"
+	"github.com/z4dm42f5kp-ux/numb-form/internal/textutil"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/ui"
 )
 
@@ -95,6 +101,7 @@ func (o *Options) defaults() config.Config {
 	if o.Timeout > 0 && (c.Timeout == 0 || o.Timeout < c.Timeout) {
 		c.Timeout = o.Timeout
 	}
+	textutil.SetFullUnicode(c.Unicode == "full")
 	return c
 }
 

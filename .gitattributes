@@ -1,0 +1,3 @@
+# Maintainer notes are not part of source downloads (git archive,
+# GitHub's "Source code" zip and tarball).
+/.github/everything-agents-need-to-know.txt export-ignore
