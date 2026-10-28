@@ -1,6 +1,10 @@
 // Package form holds what every template format shares: the fields of
 // section A, how section A and its labels are found in a list of
 // paragraphs, and the self-check run after every fill.
+//
+// In plain words: whatever the file format, a form has the same fields.
+// This package knows those fields, finds them in the document, and
+// checks after filling that only those fields changed.
 package form
 
 // Field identifies one line of section A.
