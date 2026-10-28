@@ -6,6 +6,10 @@
 // are appended to the label's own text run (or a copy of its run
 // properties when the label is followed by a tab), so no new formatting
 // is introduced. Section B and everything after it is never touched.
+//
+// In plain words: each value is written right after its label in the
+// Word file, and every other byte of the file stays exactly as it was,
+// so the layout cannot change.
 package docx
 
 import (
