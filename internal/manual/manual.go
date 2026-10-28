@@ -1,5 +1,8 @@
 // Package manual shows the built-in documentation: as text in a simple
 // pager (numb-form man), or as a Unix manual page (man numb-form).
+//
+// In plain words: it shows the manual on screen when you type numb-form
+// man, and installs it so that man numb-form works on Unix-like systems.
 package manual
 
 import (

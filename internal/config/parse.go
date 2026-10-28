@@ -59,6 +59,7 @@ func keyTable(c *Config) map[string]setter {
 		"numbers_converter": oneOf(&c.NumbersConverter, "auto", "numbers-app", "libreoffice"),
 		"legacy_formats":    boolean(&c.LegacyFormats),
 		"legacy_output":     oneOf(&c.LegacyOutput, "docx", "same"),
+		"unicode":           oneOf(&c.Unicode, "basic", "full"),
 		"timeout": func(_ *Config, v string) error {
 			switch strings.ToLower(v) {
 			case "none", "off", "no", "0":
