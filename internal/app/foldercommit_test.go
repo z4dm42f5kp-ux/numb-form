@@ -98,6 +98,9 @@ func TestFolderCommitPreview(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if !strings.HasPrefix(string(req), "\ufeff") {
+		t.Error("the request has no byte order mark")
+	}
 	for _, want := range []string{"Status: waiting", "New folder  Foo Ltd", "made by numb-form, unchanged", "After the commit:",
 		"+ new folder", "~ replaced", "not copied: the template", "not copied: an Office lock file", "not copied: a log or system file"} {
 		if !strings.Contains(string(req), want) {

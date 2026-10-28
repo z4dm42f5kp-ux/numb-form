@@ -8,6 +8,48 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.4.5
+
+* numb-commit stops cleanly when its window is closed, as with Ctrl+C,
+  instead of being killed in the middle of a step.
+* Internal: removing staged copies that a killed numb-commit left in
+  Downloads more than a day ago.
+  Nothing uses it yet.
+
+## v1.4.4
+
+* Internal: numb-commit's replacement of the overview spreadsheet in the
+  real folder: only when the real spreadsheet still has the checksum it
+  had when the request was made, after keeping the old version in the
+  log folder, through a checked temporary copy.
+  Both versions of the spreadsheet are read with the 256 MB limit.
+  Nothing uses it yet. No change in behaviour.
+* numb-date's temporary copy beside the spreadsheet is now named
+  `.numb-replace-…` instead of `.numb-date-tmp-…`, as numb-commit will
+  use the same code.
+
+## v1.4.3
+
+* Internal: numb-commit's copy of new folders and files from the staged
+  copy into the real folder.
+  A new folder is built under a temporary name and renamed when
+  complete, every file is checked with SHA-256, and nothing is
+  overwritten.
+  Nothing uses it yet. No change in behaviour.
+
+## v1.4.2
+
+* Internal: numb-commit's staged copy, a folder in Downloads that holds
+  exactly the files to copy, each checked with SHA-256 and read-only,
+  and that numb-commit removes again.
+  Nothing uses it yet. No change in behaviour.
+
+## v1.4.1
+
+* numb-commit: `numb-commit-request.txt` starts with a UTF-8 byte order
+  mark, so Windows PowerShell 5.1 (`Get-Content`) and Notepad show the
+  folder tree's lines and umlauts correctly instead of `â”œâ”€â”€`.
+
 ## v1.4.0
 
 * numb-commit compares a working copy with the real working folder:

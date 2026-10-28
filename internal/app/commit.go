@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/z4dm42f5kp-ux/numb-form/internal/config"
@@ -50,7 +51,9 @@ func Commit(opt CommitOptions) int {
 	}
 	ctx, cancel := runContext(opt.Timeout)
 	defer cancel()
-	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
+	// SIGTERM is also what Windows sends when the window is closed: stop
+	// cleanly.
+	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	u := ui.New(ctx, opt.In, opt.Out)
 	if opt.Config == nil {
