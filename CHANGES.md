@@ -96,6 +96,33 @@ Releases up to v1.2.1 are described on the
 nothing to commit."
 Press **Ctrl+C** to leave.
 
+## v1.3.7
+
+* `unicode = full` in the configuration also folds the accents and
+  special letters of every alphabet when company and folder names are
+  compared, for example `ș`, `ğ`, `ǎ`, `ﬁ` and full-width letters.
+  The default, `unicode = basic`, compares as before and does no extra
+  work.
+* Fix: a folder name written with a decomposed umlaut, as macOS may
+  save it (`u` followed by a combining mark instead of `ü`), now also
+  matches the `ue` spelling of the company name.
+* Fix: a new folder for a company named like a Windows device (`COM0`,
+  `LPT0`, and `COM¹` to `LPT³`) gets a leading `_`, as `CON` and `NUL`
+  already did.
+* FreeBSD: `numb-form-jail` runs the programs in a read-only jail
+  without network, for machines without Docker; the FreeBSD archives
+  contain it as `jail.sh` ([docs/containers.md](docs/containers.md)).
+* Releases can carry `SHA256SUMS.asc`, a PGP signature of the checksum
+  file, once the owner has set up a release key
+  ([docs/install.md](docs/install.md)).
+* The note for a converted `.doc` template no longer says that online
+  lookups are off; numb-form makes none.
+* Documentation: running numb-date in a container; the image holds
+  three programs, not two.
+* Maintenance: every part of the code starts with a description in
+  plain words; `.gitignore` covers every document and spreadsheet
+  format, so customer files cannot be committed by mistake.
+
 ## v1.3.6
 
 * Internal: numb-commit's questions for the two folders, "Which

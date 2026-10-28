@@ -4,6 +4,10 @@
 // it reviewed, and copies only after the person agrees. It only adds,
 // never overwrites (except the overview spreadsheet) or deletes, and
 // verifies every file with SHA-256.
+//
+// In plain words: after you have checked the copy in Downloads, this
+// program puts the new folders into the real working folder. It cannot
+// change or remove anything that is already there.
 package main
 
 import (
