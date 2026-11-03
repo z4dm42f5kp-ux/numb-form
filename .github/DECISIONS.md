@@ -258,3 +258,13 @@ the static programs need nothing.
 `unicode = full` folds the accents and special letters of every
 alphabet when names are compared. Its table is read only when the key
 is set, so the default run does no extra work.
+
+## Every test on every pull request
+
+The fast pull request gate of #8 let pull requests be merged before the
+BSD machines, the container image, fuzzing, CodeQL and the format tests
+had run, and documentation-only changes skipped the tests although the
+manual is built into the programs. Every pull request, push and night
+now runs everything. A version released as part of a milestone must
+have passed ci and security on its own commit; release approval starts
+and awaits missing runs itself.

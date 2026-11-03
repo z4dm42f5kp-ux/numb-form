@@ -1,10 +1,10 @@
 name: ci
 
-# Pull requests get a fast gate (lint and tests on Linux, macOS and
-# Windows). The slow jobs (BSD virtual machines, containers, every
-# cross-compile target) run on main and nightly. A "changes" job skips Go
-# work for documentation-only changes; skipped jobs count as passed, so
-# required checks never hang.
+# Every pull request, every push to main or an agent branch, and every
+# night run all of it: lint, tests on Linux, macOS and Windows, the BSD
+# virtual machines, the container image and every cross-compile target.
+# Documentation changes run everything too: the manual pages are built
+# into the programs and have their own tests.
 
 on:
   push:
@@ -22,38 +22,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  changes:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    outputs:
-      go: ${{ steps.c.outputs.go }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-      - id: c
-        env:
-          EVENT: ${{ github.event_name }}
-          PR_BASE: ${{ github.event.pull_request.base.sha }}
-          PUSH_BEFORE: ${{ github.event.before }}
-        run: |
-          base=""
-          case "$EVENT" in
-          pull_request) base=$PR_BASE ;;
-          push) base=$PUSH_BEFORE ;;
-          esac
-          if [ -z "$base" ] || ! git cat-file -e "$base^{commit}" 2>/dev/null; then
-            echo "go=true" >> "$GITHUB_OUTPUT"; exit 0
-          fi
-          if git diff --name-only "$base" "$GITHUB_SHA" | grep -qvE '(\.md$|^docs/|^LICENSE$)'; then
-            echo "go=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "Documentation-only change: Go jobs skipped."
-            echo "go=false" >> "$GITHUB_OUTPUT"
-          fi
-
   changes-listed:
     # A pull request that changes the programs lists the change in
     # CHANGES.md (.github/DOCUMENTATION.md).
@@ -75,8 +43,6 @@ jobs:
   pgp-sign:
     # The optional PGP signature of releases (scripts/pgp-sign.sh), tried
     # with a throwaway key made for this run.
-    needs: changes
-    if: needs.changes.outputs.go == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -126,8 +92,6 @@ jobs:
           rm stable.md edge.md
 
   lint:
-    needs: changes
-    if: needs.changes.outputs.go == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -155,12 +119,9 @@ jobs:
         # go install verifies the module against the Go checksum database.
         run: go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./...
       - name: Cross-compile every release target
-        if: github.event_name != 'pull_request'
         run: sh scripts/build-release.sh "ci-${GITHUB_SHA}" > /dev/null && rm -rf dist
 
   test:
-    needs: changes
-    if: needs.changes.outputs.go == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -199,8 +160,6 @@ jobs:
           exit $status
 
   bsd:
-    needs: changes
-    if: needs.changes.outputs.go == 'true' && github.event_name != 'pull_request'
     strategy:
       fail-fast: false
       matrix:
@@ -277,8 +236,6 @@ jobs:
           if jls | grep numbform; then echo "jail left running" >&2; exit 1; fi
 
   container:
-    needs: changes
-    if: needs.changes.outputs.go == 'true' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
