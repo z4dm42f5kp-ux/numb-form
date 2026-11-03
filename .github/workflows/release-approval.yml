@@ -270,7 +270,8 @@ jobs:
               echo "::error::the release build of $v failed (run $id); nothing newer was released"
               exit 1
             fi
-            git fetch -q --tags origin
+            # --force: the rolling tag "edge" moves while this job runs.
+            git fetch -q --tags --force origin
             REPO="$REPO" sh scripts/release-notes.sh stable "$v" > "$RUNNER_TEMP/notes.md"
             gh release edit "$v" --repo "$REPO" --notes-file "$RUNNER_TEMP/notes.md"
             echo "Released $v from $c." >> "$GITHUB_STEP_SUMMARY"

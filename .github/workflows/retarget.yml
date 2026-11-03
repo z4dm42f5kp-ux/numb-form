@@ -5,6 +5,8 @@ name: retarget
 # changes. GitHub does this by itself only when the merged branch is
 # deleted. Pull requests that GitHub manages as a stack cannot be
 # retargeted; GitHub moves those itself, and this only warns.
+# Changing a base starts no checks, so every check (ci, security,
+# formats) is then started on the moved pull request's branch.
 
 on:
   pull_request:
@@ -23,6 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write # change the base of the stacked pull requests
+      actions: write       # start their checks
     steps:
       - name: Point the stacked pull requests at main
         env:
@@ -39,6 +42,14 @@ jobs:
           for n in $prs; do
             if gh pr edit "$n" --repo "$REPO" --base main; then
               echo "#$n now targets main."
+              ref=$(gh pr view "$n" --repo "$REPO" --json headRefName,isCrossRepository \
+                --jq 'select(.isCrossRepository == false) | .headRefName')
+              if printf '%s\n' "$ref" | grep -qE '^[A-Za-z0-9._/-]+$'; then
+                for w in ci security formats; do
+                  gh workflow run "$w.yml" --repo "$REPO" --ref "$ref"
+                done
+                echo "Started ci, security and formats on $ref."
+              fi
             else
               echo "::warning::#$n still targets $MERGED: GitHub refused to change its base (it may be part of a stack GitHub moves itself)."
             fi
