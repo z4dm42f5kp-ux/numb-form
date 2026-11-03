@@ -110,7 +110,7 @@ Una ejecución de formularios no hace conexiones de red. Los nombres de las empr
 
 ## Gasoducto de pruebas de seguridad
 
-Pull requests run a fast gate (formatting, vet, staticcheck, tests en Linux, macOS y Windows, govulncheck, gosec, zizmor, the history scan and dependncy review). Empuja a `main` y las ramas de agente, y un horario nocturno, ejecutar todo (las pruebas de formato LibreOffice funcionan una vez por petición de tirada cambiar en lugar de por cada empuje):
+Cada solicitud de tirada, cada empuje a `main` o una sucursal de agente, y un horario nocturno funciona todo abajo; las solicitudes de tirado también ejecutan la revisión de la dependencia. Una versión publicada como parte de un hito debe haber pasado ci y seguridad en su propio compromiso:
 
 | Check | Herramienta |
 | --- | --- |
@@ -119,7 +119,7 @@ Pull requests run a fast gate (formatting, vet, staticcheck, tests en Linux, mac
 | vulnerabilidades conocidas en código y en binarios construidos, para cada OS objetivo | Govulncheck |
 | Forro de seguridad, reportado a escaneo de código | Gosec |
 | Análisis semántico de Go y de los flujos de trabajo | CodeQL (`security-extended`, `security-and-quality`) |
-| Fuzzing de cada llenador de plantillas y escáner (docx, odt, rtf), cada lector de hojas de cálculo (xlsx, ods, csv, xls legado), el analizador de configuración, el lector de petición numb-commit y el matcher de nombre | Ir a fuzzing nativo, 2 minutos por objetivo en principal, 10 noches |
+| Fuzzing de cada llenador de plantillas y escáner (docx, odt, rtf), cada lector de hojas de cálculo (xlsx, ods, csv, xls legado), el analizador de configuración, el lector de petición numb-commit y el matcher de nombre | Ir fuzzing nativo, 2 minutos por objetivo en cada petición de tirada y empujar, 10 noches |
 | Plantillas y hojas de cálculo escritas por LibreOffice real (odt, fodt, rtf, docx, doc, xls, ods, fods) | formatos de trabajo |
 | Seguridad del flujo de trabajo (inyección, credenciales, permisos, pins) | zizmor, pedantic |
 | Archivos de cliente o credenciales cometidas por error | historia escaneada |

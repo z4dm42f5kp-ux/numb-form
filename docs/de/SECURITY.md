@@ -110,7 +110,7 @@ Ein Formularlauf macht keine Netzwerkverbindungen. Firmennamen, Adressen und Ver
 
 ## Pipeline für Sicherheitstests
 
-Pull-Anfragen führen ein schnelles Gate aus (Formatierung, Tierarzt, Statikcheck, Tests unter Linux, macOS und Windows, govulncheck, gosec, zizmor, der Verlaufsscan und die Überprüfung der Abhängigkeit). Pushes zu `main` und Agent Branchs und einen nächtlichen Zeitplan, führen Sie alles aus (die LibreOffice Formattests laufen einmal pro Pull Request Change und nicht für jeden Push):
+Jede Pull-Anfrage, jeder Push zu `main` oder einem Agentenzweig und ein nächtlicher Zeitplan führen alles unten aus; Pull-Anfragen führen auch die Abhängigkeitsprüfung aus. Eine Version, die als Teil eines Meilensteins veröffentlicht wurde, muss ci und Sicherheit auf eigene Faust bestanden haben:
 
 | Überprüfung | Werkzeug |
 | --- | --- |
@@ -119,7 +119,7 @@ Pull-Anfragen führen ein schnelles Gate aus (Formatierung, Tierarzt, Statikchec
 | Bekannte Sicherheitslücken im Code und in eingebauten Binärdateien für jedes Ziel-Betriebssystem | govulncheck |
 | Security linting, gemeldet zum Code-Scannen | Gosec |
 | Semantische Analyse von Go und der Workflows | CodeQL (`security-extended`, `security-and-quality`) |
-| Fuzzing jedes Template-Füllers und Scanners (docx, odt, rtf), jedes Tabellenkalkulationslesegeräts (xlsx, ods, csv, legacy xls), des Konfigurationsparsers, des numb-commit-Requestreaders und des Namensmatchers | Go native fuzzing, 2 minuten pro ziel auf haupt, 10 nächtliche. |
+| Fuzzing jedes Template-Füllers und Scanners (docx, odt, rtf), jedes Tabellenkalkulationslesegeräts (xlsx, ods, csv, legacy xls), des Konfigurationsparsers, des numb-commit-Requestreaders und des Namensmatchers | Gehen Sie natives Fuzzing, 2 Minuten pro Ziel bei jedem Pull Request und Push, 10 nächtlich |
 | Vorlagen und Tabellenkalkulationen, geschrieben von real LibreOffice (odt, fodt, rtf, docx, doc, xls, ods, fods) | Formate Workflow |
 | Workflow-Sicherheit (Injection, Anmeldeinformationen, Berechtigungen, Pins) | Zizmor, pedantisch |
 | Kundendateien oder Anmeldeinformationen aus Versehen | Historienscan |
