@@ -7,7 +7,8 @@ Each release is one pull request titled `vX.Y.Z: what it changes`.
 ## What happens
 
 1. The pull request is merged into `main`. The **retarget** workflow
-   points every pull request that was based on its branch at `main`.
+   points every pull request that was based on its branch at `main`
+   and starts all of its checks again.
 2. ci runs on `main`. When it passes, the **release approval** workflow
    checks the title, that `vX.Y.Z` is not taken and is newer than the
    newest release, and then waits. Before it asks you, it also waits for
