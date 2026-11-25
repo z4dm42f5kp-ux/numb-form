@@ -1,0 +1,172 @@
+name: dependabot
+
+# The owner merges every pull request except Dependabot's, which this
+# workflow handles:
+#
+# merge    When every check on a Dependabot pull request's newest commit
+#          has passed (ci, security, formats, and translate for the
+#          translation tools), the pull request is merged into main with
+#          a merge commit. A merge with the workflow token starts no
+#          workflow, so ci, security, formats and edge (and translate for
+#          the translation tools) are started on main. Then every open
+#          pull request takes the update: main is merged into the ones
+#          based on main and, in stack order, each base into the ones
+#          stacked on it, and the checks start again on the ones based
+#          on main (one pull request at a time, as in the release stack).
+#          A pull request that conflicts is left alone and listed.
+# refresh  After ci passes on main, every open Dependabot pull request
+#          that main has moved past gets main merged in and its checks
+#          started again; a conflicting one is recreated by Dependabot
+#          ("@dependabot recreate").
+#
+# Nothing of a pull request is checked out or executed here; only its
+# number, branch name and commit ID are used, after checking them.
+
+on:
+  workflow_run: # zizmor: ignore[dangerous-triggers]
+    workflows: [ci, security, formats, translate]
+    types: [completed]
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: dependabot
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    if: >-
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      startsWith(github.event.workflow_run.head_branch, 'dependabot/') &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write      # merge, and update the open pull requests
+      pull-requests: write # merge
+      actions: write       # start the checks on main and the pull requests
+    steps:
+      - name: Merge a Dependabot pull request whose checks all passed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+          REF: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          set -eu
+          printf '%s\n' "$SHA" | grep -qE '^[0-9a-f]{40}$' || { echo "::error::bad commit ID"; exit 1; }
+          printf '%s\n' "$REF" | grep -qE '^dependabot/[A-Za-z0-9._/-]+$' || { echo "::error::bad branch name"; exit 1; }
+          pr=$(gh pr list --repo "$REPO" --state open --base main --head "$REF" --author 'app/dependabot' \
+            --json number,headRefOid --jq ".[] | select(.headRefOid == \"$SHA\") | .number")
+          if [ -z "$pr" ]; then
+            echo "No open Dependabot pull request has $SHA as its newest commit."
+            exit 0
+          fi
+          # Every workflow run on this commit must be finished and green.
+          runs=$(gh api "repos/$REPO/actions/runs?head_sha=$SHA&per_page=100" \
+            --jq '[.workflow_runs[] | select(.name != "dependabot")] | group_by(.name) | map(max_by(.created_at)) | .[] | "\(.name)|\(.status)|\(.conclusion)"')
+          for w in ci security formats; do
+            printf '%s\n' "$runs" | grep -qx "$w|completed|success" || { echo "#$pr: $w has not passed yet."; exit 0; }
+          done
+          if printf '%s\n' "$runs" | grep -v '|completed|success$' | grep -v '|completed|skipped$' | grep -q .; then
+            echo "#$pr: not every check has passed:"
+            printf '%s\n' "$runs"
+            exit 0
+          fi
+          translate=$(gh pr view "$pr" --repo "$REPO" --json files --jq '[.files[].path | select(startswith(".github/translate/"))] | length')
+          gh pr merge "$pr" --repo "$REPO" --merge --match-head-commit "$SHA"
+          echo "Merged #$pr ($SHA)." >> "$GITHUB_STEP_SUMMARY"
+          for w in ci security formats edge; do gh workflow run "$w.yml" --repo "$REPO" --ref main; done
+          if [ "$translate" != 0 ]; then gh workflow run translate.yml --repo "$REPO" --ref main; fi
+
+          # Every open pull request takes the update. Bases first: a pass
+          # updates the pull requests whose base is up to date, so a
+          # stack of n pull requests needs n passes.
+          others=$(gh pr list --repo "$REPO" --state open --limit 200 \
+            --json number,headRefName,baseRefName,isCrossRepository,author \
+            --jq '.[] | select(.isCrossRepository == false and .author.login != "app/dependabot" and .author.login != "dependabot") | "\(.number) \(.baseRefName) \(.headRefName)"')
+          printf '%s\n' "$others" > "$RUNNER_TEMP/prs"
+          done_list=" "
+          conflicts=""
+          for _ in 1 2 3 4 5 6 7 8 9 10; do
+            changed=0
+            while read -r n base head; do
+              [ -n "$n" ] || continue
+              case $done_list in *" $n "*) continue ;; esac
+              printf '%s\n' "$base $head" | grep -qE '^[A-Za-z0-9._/-]+ [A-Za-z0-9._/-]+$' || continue
+              # A base that is itself an open pull request waits for it.
+              if [ "$base" != main ] && printf '%s\n' "$others" | awk '{print $3}' | grep -qx "$base"; then
+                bn=$(printf '%s\n' "$others" | awk -v b="$base" '$3 == b {print $1}')
+                case $done_list in *" $bn "*) ;; *) continue ;; esac
+              fi
+              behind=$(gh api "repos/$REPO/compare/$head...$base" --jq .ahead_by)
+              if [ "$behind" != 0 ]; then
+                if gh api -X PUT "repos/$REPO/pulls/$n/update-branch" > /dev/null 2>&1; then
+                  echo "#$n: $base merged in." >> "$GITHUB_STEP_SUMMARY"
+                  if [ "$base" = main ]; then
+                    sleep 15
+                    for w in ci security formats; do gh workflow run "$w.yml" --repo "$REPO" --ref "$head"; done
+                  fi
+                else
+                  conflicts="$conflicts #$n"
+                fi
+              fi
+              done_list="$done_list$n "
+              changed=1
+            done < "$RUNNER_TEMP/prs"
+            [ "$changed" = 1 ] || break
+          done
+          if [ -n "$conflicts" ]; then
+            echo "::warning::these pull requests conflict with the update and were left alone:$conflicts"
+            echo "Conflicts, left alone:$conflicts" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  refresh:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.name == 'ci' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write      # merge main into the Dependabot branches
+      pull-requests: write # ask Dependabot to recreate a conflicting one
+      actions: write       # start their checks
+    steps:
+      - name: Bring the Dependabot pull requests up to date
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -eu
+          prs=$(gh pr list --repo "$REPO" --base main --state open --author 'app/dependabot' \
+            --json number,headRefName,isCrossRepository \
+            --jq '.[] | select(.isCrossRepository == false) | "\(.number) \(.headRefName)"')
+          if [ -z "$prs" ]; then
+            echo "No open Dependabot pull request."
+            exit 0
+          fi
+          printf '%s\n' "$prs" | while read -r n ref; do
+            if ! printf '%s\n' "$ref" | grep -qE '^dependabot/[A-Za-z0-9._/-]+$'; then
+              echo "::warning::#$n: unexpected branch name, left alone."
+              continue
+            fi
+            behind=$(gh api "repos/$REPO/compare/$ref...main" --jq .ahead_by)
+            if [ "$behind" = 0 ]; then
+              echo "#$n is up to date."
+              continue
+            fi
+            if gh api -X PUT "repos/$REPO/pulls/$n/update-branch" > /dev/null 2>&1; then
+              # The merge commit appears a moment after the request.
+              sleep 15
+              for w in ci security formats; do
+                gh workflow run "$w.yml" --repo "$REPO" --ref "$ref"
+              done
+              echo "#$n: main merged in, ci, security and formats started."
+            else
+              gh pr comment "$n" --repo "$REPO" --body "@dependabot recreate"
+              echo "#$n conflicts with main: asked Dependabot to recreate it."
+            fi
+          done

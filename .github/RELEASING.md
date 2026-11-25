@@ -92,10 +92,14 @@ To stop, delete the two secrets.
 * Dependabot opens pull requests only for security updates of the
   actions and the translation tools (`.github/dependabot.yml`), so
   routine version bumps never cut across planned release pull requests.
-* Right after ci passes on `main` for a merge, the **dependabot refresh**
-  workflow merges `main` into every open Dependabot pull request that is
-  behind and starts its checks again; one that conflicts is recreated
-  from `main` by Dependabot. It merges nothing into `main`.
+* You merge every pull request except Dependabot's. The **dependabot**
+  workflow merges a Dependabot pull request into `main` once every check
+  on its newest commit has passed, starts `main`'s checks, and merges the
+  update into every open pull request (stacks in order; a conflicting
+  one is left alone and listed in the run). A failed check leaves the
+  pull request open for you. After ci passes on `main`, open Dependabot
+  pull requests are brought up to date, or recreated by Dependabot when
+  they conflict.
 * The **updates** workflow checks every day for newer stable versions of
   the Go tools in the workflows and opens a pull request
   `ci: update Go tools: ...` (if workflows may not open pull requests in

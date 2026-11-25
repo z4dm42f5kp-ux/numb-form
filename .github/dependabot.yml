@@ -2,9 +2,9 @@
 # tool has a published vulnerability, at once. Routine version bumps open
 # none (open-pull-requests-limit: 0), so they never cut across planned
 # release pull requests; raise the limit to get them back. Every update
-# runs the full security pipeline before it can be merged, and the
-# dependabot refresh workflow brings open ones up to date after every
-# merge. Go itself and the Go tools pinned in the workflows are checked
+# runs the full security pipeline; the dependabot workflow merges it once
+# every check has passed and passes the update on to every open pull
+# request. Go itself and the Go tools pinned in the workflows are checked
 # by .github/workflows/updates.yml.
 version: 2
 updates:
