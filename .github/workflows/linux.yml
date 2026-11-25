@@ -90,8 +90,8 @@ jobs:
     # Guix runs in the Debian 13 image pinned by digest, as the format
     # tests do. Debian ships no guix package any more, so it installs
     # Guix's own binary release, checked against the signing keys of
-    # Guix's maintainers, then pulls the current Guix. Its build daemon
-    # runs in the container without a chroot.
+    # Guix's maintainers, then pulls the current Guix. The container is
+    # privileged so the build daemon can isolate builds as Guix expects.
     if: >-
       github.event_name != 'pull_request' ||
       (startsWith(github.event.pull_request.title, 'v') && contains(github.event.pull_request.title, '.0:'))
@@ -99,6 +99,7 @@ jobs:
     timeout-minutes: 180
     container:
       image: debian:13@sha256:4c25275446ca371766b8b093c696782eabce06263fccacb8d5d813b3dc44b308
+      options: --privileged
     permissions:
       contents: read
     env:
@@ -138,7 +139,7 @@ jobs:
           for i in 1 2 3 4; do
             id "guixbuilder$i" > /dev/null 2>&1 || useradd -g guixbuild -G guixbuild -d /var/empty -s /usr/sbin/nologin -M --system "guixbuilder$i"
           done
-          guix-daemon --build-users-group=guixbuild --disable-chroot > /tmp/guix-daemon.log 2>&1 &
+          guix-daemon --build-users-group=guixbuild > /tmp/guix-daemon.log 2>&1 &
           for _ in $(seq 60); do [ -S /var/guix/daemon-socket/socket ] && break; sleep 1; done
           for k in /var/guix/profiles/per-user/root/current-guix/share/guix/*.pub; do guix archive --authorize < "$k"; done
           rm -rf "$t"
@@ -156,6 +157,11 @@ jobs:
           SCM
           guix pull
           echo "$HOME/.config/guix/current/bin" >> "$GITHUB_PATH"
+      - name: Guix build logs
+        if: failure()
+        run: |
+          cat /tmp/guix-daemon.log || true
+          find /var/log/guix/drvs -name '*.gz' -mmin -60 -exec sh -c 'echo "== $1"; zcat "$1" | tail -n 40' _ {} \; 2> /dev/null || true
       - name: Tests with Guix's Go
         run: sh scripts/linux-check.sh test guix
       - name: Documented install commands
