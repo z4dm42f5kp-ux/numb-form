@@ -167,14 +167,14 @@ Jede Zeile ist mit `ok`, `check` (siehe es) oder `FAIL`, gefolgt von dem Urteil:
 ## FILES
 
 `<working copy>/numb-commit-request.txt`
-: Die Anfrage: was würde kopiert werden. UTF-8.
+: Die Anfrage: was würde kopiert werden. UTF-8 mit einer Byte-Ordermarkierung, also zeigen Notepad und Windows PowerShell 5.1 (`Get-Content`) den Baum korrekt an.
 
 `Downloads/numb-form-runs/<run>/numb-commit.log`
 : Review Runs: Log des Commits.
 
 ## EXIT STATUS
 
-0 wenn die Überprüfung bestanden hat oder nichts zu tun ist; 1 bei einem Fehler oder einer fehlgeschlagenen Überprüfung; 2 bei einem Verwendungsfehler; 3 bei Beendigung mit Ctrl+C.
+0 wenn die Überprüfung bestanden hat oder nichts zu tun ist; 1 bei einem Fehler oder einer fehlgeschlagenen Überprüfung; 2 bei einem Verwendungsfehler; 3 bei Beendigung mit Ctrl+C oder beim Schließen des Fensters.
 
 ## EXAMPLES
 

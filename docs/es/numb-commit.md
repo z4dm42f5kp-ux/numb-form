@@ -167,14 +167,14 @@ Cada línea está marcada `ok`, `check` (mira) o `FAIL`, seguido del veredicto:
 ## FILES
 
 `<working copy>/numb-commit-request.txt`
-: La solicitud: qué sería copiado. UTF-8.
+: La solicitud: qué sería copiado. UTF-8 con una marca de orden byte, por lo que Notepad y Windows PowerShell 5.1 (`Get-Content`) muestran el árbol correctamente.
 
 `Downloads/numb-form-runs/<run>/numb-commit.log`
 : Corres de revisión: registro del commit.
 
 ## EXIT STATUS
 
-0 cuando la revisión pasa o no hay nada que hacer; 1 en un error o una revisión fallida; 2 en un error de uso; 3 cuando se detiene con Ctrl+C.
+0 cuando la revisión pasa o no hay nada que hacer; 1 en un error o una revisión fallida; 2 en un error de uso; 3 cuando se detuvo con Ctrl+C o cerrando la ventana.
 
 ## EXAMPLES
 
