@@ -339,3 +339,13 @@ manual is built into the programs. Every pull request, push and night
 now runs everything. A version released as part of a milestone must
 have passed ci and security on its own commit; release approval starts
 and awaits missing runs itself.
+
+## Dependabot pull requests after merges
+
+Several action updates arrived as separate pull requests on the same
+lines (three for the parts of codeql-action), and a release stack moved
+`main` past them, so they waited with conflicts and with checks from an
+old `main`. Action updates now come grouped in one pull request, and
+after every merge that passes ci the dependabot refresh workflow merges
+`main` into each open Dependabot pull request and starts its checks; a
+conflicting one is recreated by Dependabot. The owner still merges.

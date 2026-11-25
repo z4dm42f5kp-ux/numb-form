@@ -90,7 +90,12 @@ To stop, delete the two secrets.
 ## Daily update checks
 
 * Dependabot checks the actions and the translation tools every day
-  (`.github/dependabot.yml`).
+  (`.github/dependabot.yml`). All action updates of a day come as one
+  pull request.
+* Right after ci passes on `main` for a merge, the **dependabot refresh**
+  workflow merges `main` into every open Dependabot pull request that is
+  behind and starts its checks again; one that conflicts is recreated
+  from `main` by Dependabot. It merges nothing into `main`.
 * The **updates** workflow checks every day for newer stable versions of
   the Go tools in the workflows and opens a pull request
   `ci: update Go tools: ...` (if workflows may not open pull requests in

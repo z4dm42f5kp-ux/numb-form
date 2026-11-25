@@ -4,6 +4,9 @@
 # stable versions are proposed, and only after 14 days (the cooldown);
 # security updates come at once. Go itself and the Go tools pinned in the
 # workflows are checked by .github/workflows/updates.yml.
+# All action updates of a day come as one pull request, so they never
+# conflict with each other; the dependabot refresh workflow brings open
+# ones up to date after every merge.
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -12,6 +15,9 @@ updates:
       interval: daily
     cooldown:
       default-days: 14
+    groups:
+      actions:
+        patterns: ["*"]
   # Only Argos Translate itself: its dependencies must fit together, so
   # the lock is regenerated as a whole with the uv command at the top of
   # requirements.txt. Single-package bumps (torch, stanza, thinc) broke

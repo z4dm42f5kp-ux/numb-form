@@ -1,0 +1,75 @@
+name: dependabot refresh
+
+# Right after ci passes on main for a merge, every open Dependabot pull
+# request that main has moved past is brought up to date, so it never
+# waits with a conflict or with checks from an old main:
+#
+# * main merges cleanly into it: main is merged into its branch (a merge
+#   commit, no rebase) and ci, security and formats start on it again.
+#   A push with the workflow token starts no checks, hence the start.
+# * main conflicts with it: Dependabot is asked to recreate it from main
+#   (a comment "@dependabot recreate").
+#
+# Nothing is merged into main here; the owner still merges.
+
+on:
+  # Only runs of ci on main started by a push (a merge) count, and nothing
+  # of the triggering run is checked out or executed.
+  workflow_run: # zizmor: ignore[dangerous-triggers]
+    workflows: [ci]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: dependabot-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write      # merge main into the Dependabot branches
+      pull-requests: write # ask Dependabot to recreate a conflicting one
+      actions: write       # start their checks
+    steps:
+      - name: Bring the Dependabot pull requests up to date
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -eu
+          prs=$(gh pr list --repo "$REPO" --base main --state open --author 'app/dependabot' \
+            --json number,headRefName,isCrossRepository \
+            --jq '.[] | select(.isCrossRepository == false) | "\(.number) \(.headRefName)"')
+          if [ -z "$prs" ]; then
+            echo "No open Dependabot pull request."
+            exit 0
+          fi
+          printf '%s\n' "$prs" | while read -r n ref; do
+            if ! printf '%s\n' "$ref" | grep -qE '^dependabot/[A-Za-z0-9._/-]+$'; then
+              echo "::warning::#$n: unexpected branch name, left alone."
+              continue
+            fi
+            behind=$(gh api "repos/$REPO/compare/$ref...main" --jq .ahead_by)
+            if [ "$behind" = 0 ]; then
+              echo "#$n is up to date."
+              continue
+            fi
+            if gh api -X PUT "repos/$REPO/pulls/$n/update-branch" > /dev/null 2>&1; then
+              # The merge commit appears a moment after the request.
+              sleep 15
+              for w in ci security formats; do
+                gh workflow run "$w.yml" --repo "$REPO" --ref "$ref"
+              done
+              echo "#$n: main merged in, ci, security and formats started."
+            else
+              gh pr comment "$n" --repo "$REPO" --body "@dependabot recreate"
+              echo "#$n conflicts with main: asked Dependabot to recreate it."
+            fi
+          done

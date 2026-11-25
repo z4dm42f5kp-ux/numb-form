@@ -117,6 +117,9 @@ Workflows (.github/workflows):
   release            on a tag: archives, checksums, signatures, image.
   edge               the rolling build (release tag "edge").
   updates            daily checks for newer tools and Go.
+  dependabot refresh after ci passes on a merge: merges main into the
+                     open Dependabot pull requests and restarts their
+                     checks; asks Dependabot to recreate a conflicting one.
   scorecard          OpenSSF scorecard.
 
 Runners are limited. Let CI run on one pull request at a time: cancel
