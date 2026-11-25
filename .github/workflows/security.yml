@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   govulncheck:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
@@ -45,7 +45,7 @@ jobs:
           done
 
   gosec:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       security-events: write
@@ -83,7 +83,7 @@ jobs:
         include:
           - { language: go, build-mode: manual }
           - { language: actions, build-mode: none }
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       security-events: write
@@ -112,7 +112,7 @@ jobs:
     # Every parser of untrusted input, including the legacy .xls reader,
     # is fuzzed on every pull request and push (2 minutes each) and
     # nightly (10 minutes each).
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     strategy:
@@ -151,7 +151,7 @@ jobs:
   workflows:
     # zizmor audits the workflows themselves (template injection,
     # credential persistence, unpinned actions, excessive permissions).
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
@@ -168,7 +168,7 @@ jobs:
         run: zizmor --offline --persona=pedantic --min-severity=medium .github/workflows
 
   secrets:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
@@ -186,7 +186,7 @@ jobs:
 
   dependency-review:
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:

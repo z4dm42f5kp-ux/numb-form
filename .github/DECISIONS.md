@@ -340,16 +340,19 @@ now runs everything. A version released as part of a milestone must
 have passed ci and security on its own commit; release approval starts
 and awaits missing runs itself.
 
-## Pinned runners and the image step (after v1.4.1)
+## The release image step and Guix after Ubuntu 26.04 (after v1.4.1)
 
-`ubuntu-latest` moved to Ubuntu 26.04: it has no guix package, and its
-Docker pushes an image index even for one platform, which
-`docker manifest create` refuses. The release build of v1.4.1 stopped
-after publishing its archives, so v1.4.1 has no container image and
-v1.4.2 to v1.4.5 were not released. Every workflow now runs on
-`ubuntu-24.04`, so a new runner image changes nothing until the
-workflows are moved on purpose, and the release joins the images with
-`docker buildx imagetools create`, which takes images and indexes alike.
+`ubuntu-latest` moved to Ubuntu 26.04. Its Docker pushes an image index
+even for one platform, which `docker manifest create` refuses, and it
+has no guix package. The release build of v1.4.1 stopped after
+publishing its archives, so v1.4.1 has no container image and v1.4.2 to
+v1.4.5 were not released.
+The runners are not pinned to an older Ubuntu: as since v1.2.6 (format
+tests) and v1.7.4 (install commands), what depends on a distribution
+runs in the Debian 13 image pinned by digest, which the daily systems
+check keeps current. The Guix check now runs in it too. The release
+joins its images with `docker buildx imagetools create`, which takes
+images and indexes alike on any Docker.
 A release is built with the workflow of its own tag, so the versions
 merged with the old image step (v1.4.2 to v1.7.9) cannot be built from
 their own commits. Their code is released as v1.7.9 from `main`, which

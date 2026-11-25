@@ -22,7 +22,7 @@ concurrency:
 jobs:
   retarget:
     if: github.event.pull_request.merged == true
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     permissions:
       pull-requests: write # change the base of the stacked pull requests
       actions: write       # start their checks

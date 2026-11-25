@@ -50,10 +50,6 @@ nothing. To release the newest `main` without a pull request, run
 Actions > release approval > Run workflow with the version; it waits for
 your approval the same way.
 
-Every workflow runs on a pinned runner (`ubuntu-24.04`), not on
-`ubuntu-latest`, so a new runner image cannot break a release. Move to a
-newer one in a pull request of its own.
-
 ## One-time setup
 
 The approval comes from the `release` environment. Until it has you as

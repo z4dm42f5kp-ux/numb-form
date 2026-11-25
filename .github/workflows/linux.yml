@@ -52,7 +52,7 @@ jobs:
           - { distro: opensuse-leap, image: "opensuse/leap:16.0@sha256:40b8e1fc290b203380b9adc7cd147ef2141f5a613c7cf7117f678f626855654e" }
           - { distro: alpine, image: "alpine:latest@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a" }
           - { distro: nixos, image: "nixos/nix:latest@sha256:f159a58f390677f41e8e900a74b6e2f9c7f27b364122ae6acf7a652ce6c551c0" }
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:
       contents: read
@@ -87,12 +87,16 @@ jobs:
           docker run --rm $user -v "$PWD:/src:ro" numb-check sh /src/scripts/linux-check.sh install "$DISTRO"
 
   guix:
-    # Guix runs on the runner itself: it needs its build daemon.
+    # Guix runs in the pinned Debian 13 image, as the format tests do, so
+    # a new runner image cannot take its package away; its build daemon
+    # runs in the container without a chroot.
     if: >-
       github.event_name != 'pull_request' ||
       (startsWith(github.event.pull_request.title, 'v') && contains(github.event.pull_request.title, '.0:'))
-    runs-on: ubuntu-24.04 # ubuntu-24.04 (26.04) has no guix package
+    runs-on: ubuntu-latest
     timeout-minutes: 180
+    container:
+      image: debian:13@sha256:4c25275446ca371766b8b093c696782eabce06263fccacb8d5d813b3dc44b308
     permissions:
       contents: read
     steps:
@@ -101,9 +105,16 @@ jobs:
           persist-credentials: false
       - name: Install Guix and pull its current packages
         run: |
-          sudo apt-get update -q
-          sudo apt-get install -y -q guix
-          for k in /usr/share/guix/*.pub; do sudo guix archive --authorize < "$k"; done
+          apt="apt-get -q -o Acquire::Retries=5 -o Acquire::http::Timeout=30"
+          $apt update
+          DEBIAN_FRONTEND=noninteractive $apt install -y --no-install-recommends ca-certificates guix
+          getent group guixbuild > /dev/null || groupadd --system guixbuild
+          for i in 1 2 3 4; do
+            id "guixbuilder$i" > /dev/null 2>&1 || useradd -g guixbuild -G guixbuild -d /var/empty -s /usr/sbin/nologin -M --system "guixbuilder$i"
+          done
+          guix-daemon --build-users-group=guixbuild --disable-chroot > /tmp/guix-daemon.log 2>&1 &
+          for _ in $(seq 60); do [ -S /var/guix/daemon-socket/socket ] && break; sleep 1; done
+          for k in /usr/share/guix/*.pub; do guix archive --authorize < "$k"; done
           guix pull
           echo "$HOME/.config/guix/current/bin" >> "$GITHUB_PATH"
       - name: Tests with Guix's Go

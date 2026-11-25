@@ -35,7 +35,7 @@ concurrency:
 
 jobs:
   go-tools:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     permissions:
       contents: write      # push the update branch
       pull-requests: write # open the pull request
@@ -106,7 +106,7 @@ jobs:
     # Operating systems: refresh the digests of the pinned container
     # images (security updates of the distributions) and report newer
     # releases to test (scripts/check-systems.sh).
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     permissions:
       contents: write      # push the update branch
       pull-requests: write # open the pull request
@@ -168,7 +168,7 @@ jobs:
     # Go's support window and the version in the build instructions, and
     # known vulnerabilities in the pinned Python packages
     # (scripts/check-languages.sh).
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     permissions:
       contents: write      # push the update branch
       pull-requests: write # open the pull request
@@ -233,7 +233,7 @@ jobs:
           fi
 
   go-release:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       actions: write # rebuild the rolling pre-release
@@ -315,7 +315,7 @@ jobs:
   rebuild:
     needs: go-release
     if: needs.go-release.outputs.version != ''
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     environment: release # approved by the owner, like every release
     permissions:
       contents: write # create the tag
