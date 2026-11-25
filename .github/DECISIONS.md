@@ -276,6 +276,41 @@ Names of companies that already have a folder are left alone, since
 renaming them would part them from their forms.
 It writes through the same checked path as numb-date.
 
+## Install commands are pinned
+
+An install command that downloads `releases/latest` and checks it
+against a `SHA256SUMS` from the same place proves only that the download
+is intact: whoever can replace the files can replace the checksums.
+The commands now name one release and carry its checksums, so a
+replaced file fails the check.
+They are written by `scripts/install` from templates and
+`scripts/install/pins.txt`; a test fails when the documentation differs.
+After each stable release, `install-docs.yml` checks the release's
+Sigstore signature, pins it and opens a pull request; it also runs
+daily.
+
+## Linux is tested before minor releases
+
+The Linux distributions the team uses are tested in containers with
+their own Go and the documented commands, only for minor releases
+(pull requests titled `vX.Y.0:`), because the check takes long.
+Patch releases, `main` and the rolling build are not held up by it.
+The rolling distributions (Arch, Gentoo, Void, Tumbleweed, Alpine,
+NixOS) change daily, so their images are pinned by digest and the daily
+updates workflow proposes new digests rather than letting tests run on
+whatever `latest` is.
+
+## Every day, the languages are checked too
+
+The daily checks covered the actions, the Go tools, Go for the
+published binaries and, since v1.7.7, the test systems.
+They now also cover Go's support window and the pinned Python packages.
+`go.mod` still allows Go 1.21 although Go fixes security bugs only in
+its two newest releases: the release binaries are always built with the
+newest Go, and source builds use the Go of the distributions, which
+backport security fixes (Debian 13 ships Go 1.24).
+The daily issue keeps the question open until the minimum is raised.
+
 
 
 ## Optional PGP signature, FreeBSD jails, full Unicode (v1.3.7)

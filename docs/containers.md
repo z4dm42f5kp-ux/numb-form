@@ -130,9 +130,11 @@ script once, owned by root (on arm64, write `arm64` for `amd64`).
 
 **Unix-like** (FreeBSD), in Terminal:
 
+<!-- install:freebsd-jail -->
 ```
-cd "$(mktemp -d)" && fetch https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/numb-form_freebsd_amd64.tar.gz && fetch https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/SHA256SUMS && sha256 -c "$(awk '$2=="numb-form_freebsd_amd64.tar.gz"{print $1}' SHA256SUMS)" numb-form_freebsd_amd64.tar.gz && tar -xzf numb-form_freebsd_amd64.tar.gz jail.sh && doas install -o root -g wheel -m 0555 jail.sh /usr/local/sbin/numb-form-jail && cd / && rm -rf "$OLDPWD" && echo OK
+cd "$(mktemp -d)" && fetch https://github.com/z4dm42f5kp-ux/numb-form/releases/download/v1.2.1/numb-form_freebsd_amd64.tar.gz && sha256 -c a535bdcbf5f93320ad0bfae865dd9100dc5f9c95b58591aaa565c5c34458c932 numb-form_freebsd_amd64.tar.gz && tar -xzf numb-form_freebsd_amd64.tar.gz jail.sh && doas install -o root -g wheel -m 0555 jail.sh /usr/local/sbin/numb-form-jail && cd / && rm -rf "$OLDPWD" && echo OK
 ```
+<!-- /install:freebsd-jail -->
 
 Then, inside the working folder (or the folder above it):
 
