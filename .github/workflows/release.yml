@@ -94,13 +94,24 @@ jobs:
           cp /etc/ssl/certs/ca-certificates.crt dist/
           cp container/Dockerfile.release dist/Dockerfile
           for arch in amd64 arm64; do
-            docker build --platform "linux/$arch" --build-arg "TARGETARCH=$arch" -t "$IMAGE:$VERSION-$arch" dist
+            docker build --provenance=false --sbom=false --platform "linux/$arch" \
+              --build-arg "TARGETARCH=$arch" -t "$IMAGE:$VERSION-$arch" dist
             docker push "$IMAGE:$VERSION-$arch"
           done
-          docker manifest create "$IMAGE:$VERSION" "$IMAGE:$VERSION-amd64" "$IMAGE:$VERSION-arm64"
-          digest=$(docker manifest push --purge "$IMAGE:$VERSION")
-          docker manifest create "$IMAGE:latest" "$IMAGE:$VERSION-amd64" "$IMAGE:$VERSION-arm64"
-          docker manifest push --purge "$IMAGE:latest"
+          # imagetools joins images and image indexes alike; newer Docker
+          # pushes an index even for one platform, which "docker manifest
+          # create" refuses ("is a manifest list").
+          tags="-t $IMAGE:$VERSION"
+          git fetch -q --tags --force origin
+          newest=$(git tag --list 'v[0-9]*' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1)
+          if [ "$newest" = "$VERSION" ]; then tags="$tags -t $IMAGE:latest"; fi
+          # shellcheck disable=SC2086 # two or four words
+          docker buildx imagetools create $tags "$IMAGE:$VERSION-amd64" "$IMAGE:$VERSION-arm64"
+          digest=$(docker buildx imagetools inspect "$IMAGE:$VERSION" --format '{{json .Manifest}}' | jq -r .digest)
+          if ! printf '%s\n' "$digest" | grep -qE '^sha256:[0-9a-f]{64}$'; then
+            echo "::error::no digest for $IMAGE:$VERSION ($digest)"
+            exit 1
+          fi
           echo "digest=$digest" >> "$GITHUB_OUTPUT"
           docker logout ghcr.io
       - name: Sign image
