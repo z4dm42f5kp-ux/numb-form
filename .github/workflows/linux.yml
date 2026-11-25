@@ -87,16 +87,17 @@ jobs:
           docker run --rm $user -v "$PWD:/src:ro" numb-check sh /src/scripts/linux-check.sh install "$DISTRO"
 
   guix:
-    # Guix runs in the pinned Debian 13 image, as the format tests do, so
-    # a new runner image cannot take its package away; its build daemon
-    # runs in the container without a chroot.
+    # Guix runs in a Debian image pinned by digest, as the format tests
+    # do, so a new runner image cannot take its package away. Debian 12
+    # is the newest Debian that ships Guix (Debian 13 has no guix
+    # package). Its build daemon runs in the container without a chroot.
     if: >-
       github.event_name != 'pull_request' ||
       (startsWith(github.event.pull_request.title, 'v') && contains(github.event.pull_request.title, '.0:'))
     runs-on: ubuntu-latest
     timeout-minutes: 180
     container:
-      image: debian:13@sha256:4c25275446ca371766b8b093c696782eabce06263fccacb8d5d813b3dc44b308
+      image: debian:12@sha256:1d04200c2ece1d4d75a2a6f8e11ebce7d86a2ae28b34bb2c9cbb3ee9f4953e75
     permissions:
       contents: read
     steps:
