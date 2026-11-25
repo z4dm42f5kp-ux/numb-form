@@ -98,6 +98,7 @@ Ein Formularlauf macht keine Netzwerkverbindungen. Firmennamen, Adressen und Ver
 | Python-Tools in CI (zizmor, Argos Translate) | jedes Paket mit SHA-256 (`--require-hashes`), nur Rädern (`--only-binary :all:`), keine Abhängigkeitsauflösung zum Zeitpunkt der Installation (`--no-deps`) |
 | Argos Translate Modelle | Index gelesen bei einem gepinnten Commit; SHA-256 jedes Modells wird in `.github/translate/models.sha256` gepinnt, bei der ersten Verwendung aufgezeichnet und danach durchgesetzt |
 | Containerbasisbild | keine: Bilder sind gebaut `FROM scratch` |
+| Testsysteme (Behälterabbilder der Linux-Distributionen, die virtuellen BSD-Maschinen) | images pinned by digest; a daily check proposes new digests (the distributions' security updates) and reports newer releases (`scripts/check-systems.sh`) |
 
 **Releases.** Release-Binärdateien werden von GitHub Actions aus einem Tag mit `-trimpath` und einem festen Zeitstempel erstellt, so dass sie reproduzierbar sind. Ein Release wird erst veröffentlicht, nachdem der Besitzer es in der `release`-Umgebung genehmigt hat (siehe [.github/RELEASING.md](../../.github/RELEASING.md)). Jedes Release hat:
 
@@ -107,7 +108,7 @@ Ein Formularlauf macht keine Netzwerkverbindungen. Firmennamen, Adressen und Ver
 * SLSA Build Provenienzbescheinigungen für jedes Archiv und Binär (`gh attestation verify`);
 * ein Containerbild auf ghcr.io, signiert mit cosign und bescheinigt.
 
-[docs/install.md](install.md) zeigt, wie man jeden von ihnen überprüft.
+[docs/install.md](install.md) zeigt, wie man jeden von ihnen überprüft. Seine Installationsbefehle nennen eine stabile Version und tragen die SHA-256-Prüfsummen dieser Version, die aus `SHA256SUMS` entnommen wurden, nachdem seine Sigstore-Signatur geprüft wurde (`.github/workflows/install-docs.yml`), so dass eine auf dem Download-Server ersetzte Datei die Prüfung nicht besteht.
 
 ## Pipeline für Sicherheitstests
 
@@ -129,7 +130,7 @@ Jede Pull-Anfrage, jeder Push zu `main` oder einem Agentenzweig und ein nächtli
 | Container-Image baut und weigert sich, ohne Terminal zu laufen | Docker, Podman |
 | Neue Abhängigkeiten in Pull Requests | Überprüfung der Abhängigkeit |
 
-OpenSSF Scorecard überprüft die Praktiken des Repository. Pull-Anfragen, einschließlich Dependabots, benötigen niemals Schreibberechtigungen: Ergebnisse, die sie erfordern, werden nur von `main` hochgeladen.
+OpenSSF Scorecard überprüft täglich die Praktiken des Repository. Der tägliche Update-Workflow überprüft auch die Testsysteme, das Support-Fenster von Go und die angehefteten Python-Pakete gegen die OSV-Datenbank ([.github/RELEASING.md](../../.github/RELEASING.md) listet jeden täglichen Check auf). Pull-Anfragen, einschließlich Dependabots, benötigen niemals Schreibberechtigungen: Ergebnisse, die sie erfordern, werden nur von `main` hochgeladen.
 
 Workflows beginnen ohne Berechtigungen und gewähren jedem Job nur das, was er braucht; Checkouts behalten keine Anmeldeinformationen.
 
