@@ -156,6 +156,31 @@ Es fragt dich nie nach einem date. Unternehmen ohne Ordner, ein Formular oder ei
 
 **Schließen Sie zuerst die Excel-Liste. ** numb-date stoppt, wenn die Datei geöffnet ist. Nur die *Report created* Zellen ändern sich: keine andere Zelle, keine Formatierung.
 
+## 8. GWG auf einem Netzwerklaufwerk: Arbeiten an einer Kopie, dann Commit
+
+Wenn GWG auf einem Netzwerklaufwerk lebt, z. B. `F:\14. GWG`, arbeiten Sie an einer Kopie auf Ihrem Computer und lassen Sie numb-commit das Ergebnis zurückbringen.
+
+Einmal, in PowerShell, sagen Sie numb-commit, wo der eigentliche Ordner ist:
+
+```
+numb-form config set commit_to "F:\14. GWG"
+```
+
+Jedes Mal:
+
+1. Kopieren Sie in File Explorer `F:\14. GWG` in Ihren **Downloads** Ordner.
+2. Öffnen Sie die Kopie (`Downloads\14. GWG`), geben Sie `powershell` in der Adressleiste ein und drücken Sie Enter.
+3. Führen Sie numb-form und numb-date dort wie gewohnt.
+4. Geben Sie `numb-commit` ein und drücken Sie Enter.
+
+numb-commit fragt nach den beiden Ordnern (es sei denn, `commit_from` und `commit_to` sind gesetzt), vergleicht die Kopie mit `F:\14. GWG`, instruiert die Dateien in Downloads zu kopieren und schreibt **`numb-commit-request.txt`** in die Kopie: die Liste dessen, was genau hinzugefügt wird, mit dem Ordnerbaum davor und danach. Keine bestehende Datei wird überschrieben. Es überprüft dann die Liste und endet mit einem Urteil:
+
+* `Verdict: OK to commit.` Typ `y` zum Kopieren.
+* `Verdict: commit after checking the lines marked check.` Lesen Sie die Zeilen `check` (zum Beispiel ein Formular mit einer leeren Adresse), dann `y` oder Enter.
+* `Verdict: do not commit.` Nichts kann kopiert werden; die Zeilen mit der Markierung `FAIL` sagen, warum.
+
+Nur die neuen Unternehmensordner und die Berichtsdaten in der Excel-Liste werden kopiert. Die Vorlage, Protokolle und Office-Sperrdateien bleiben zurück, nichts auf dem Netzwerklaufwerk wird gelöscht und die alte Excel-Liste wird in Ihrem Protokollordner aufbewahrt. `numb-commit review` wiederholt die Prüfung jederzeit ohne Kopieren, beispielsweise auf einer Kopie, die ein Kollege erstellt hat. Das [numb-commit Manual](numb-commit.md) erklärt jede Nachricht.
+
 ## Möchten Sie lieber alles überprüfen, bevor es in GWG landet?
 
 Wechseln Sie einmal in den Überprüfungsmodus:

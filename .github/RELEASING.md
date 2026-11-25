@@ -6,7 +6,9 @@ Each release is one pull request titled `vX.Y.Z: what it changes`.
 
 ## What happens
 
-1. The pull request is merged into `main`.
+1. The pull request is merged into `main`. The **retarget** workflow
+   points every pull request that was based on its branch at `main`
+   and starts all of its checks again.
 2. ci runs on `main`. When it passes, the **release approval** workflow
    checks the title, that `vX.Y.Z` is not taken and is newer than the
    newest release, and then waits. Before it asks you, it also waits for
@@ -19,6 +21,20 @@ Each release is one pull request titled `vX.Y.Z: what it changes`.
 4. The commit that ci tested is tagged `vX.Y.Z`, and the normal release
    build runs: archives, checksums, Sigstore signature, provenance,
    container image. The rolling build already contains it.
+   The release page shows the version's section of `CHANGES.md`; the
+   rolling build lists the pull requests merged since the newest stable
+   release (`scripts/release-notes.sh`).
+
+A milestone pull request stands for several versions: the pull requests
+of the versions before it are closed unmerged with the label
+`milestone-part`, and their commits reach `main` with the milestone.
+The one approval of the milestone releases each of them first, oldest
+first, from its own commit and with its own section of `CHANGES.md`,
+and the milestone last. If one of their builds fails, nothing newer is
+released. Each of them must pass ci and security on its own commit:
+release approval starts any missing run on that version's branch and
+waits for it (at most three hours) before it asks you; a red run stops
+it, and nothing is released.
 
 A pull request with another title (no `vX.Y.Z:` at the start) releases
 nothing. To release the newest `main` without a pull request, run

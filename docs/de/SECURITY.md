@@ -55,7 +55,7 @@ numb-form verarbeitet Kundendokumente, daher sind die Designregeln streng.
 
 * **numb-form** only ever adds: a new folder per new company, with one filled form in it. It never changes or deletes an existing file or folder, and it removes only folders it created itself in the same run (on rejection or error).
 * Bei `mode = review` wird der eigentliche Arbeitsordner überhaupt nicht geschrieben: Der gesamte Baum wird zuerst in Downloads kopiert und jede Änderung wird in der Kopie vorgenommen.
-* **numb-commit** (review mode) only adds new folders. It never overwrites or deletes, refuses folders that appeared in the meantime, copies to a temporary name, verifies every file with SHA-256 and then renames.
+* **numb-commit** only adds new folders and files, and from a working copy also replaces the overview spreadsheet when numb-date added report dates; it never deletes, never overwrites anything else, and never copies the template, logs or lock files. It first writes the full list of changes (`numb-commit-request.txt`) into the working copy and reviews it: every file's SHA-256, that the real folder did not change in the meantime, and that the spreadsheet only gains report dates. New folders are copied under a temporary name, verified with SHA-256 and renamed; the replaced spreadsheet is kept in the log folder.
 * numb-form und numb-commit öffnen die Tabelle in `3. Übersichten` schreibgeschützt und schreiben sie niemals. Seine SHA-256 Prüfsumme wird vor der Kopie, nach der Kopie und am Ende des Laufs verglichen; eine Differenz stoppt den Lauf.
 * **numb-date** ist das einzige Programm, das die Tabellenkalkulation schreibt, und nur `.xlsx` und `.xlsm`. Es schreibt nur leere oder ziffernfreie Zellen der Spalte *Report created*, nachdem der Benutzer der Liste der Daten zugestimmt hat. Die Zellen werden in das XML des Blattes gespleißt, behalten ihren eigenen Stil bei und erhalten keine neue Formatierung; jeder andere Teil der Arbeitsmappe wird Byte für Byte kopiert, und Zellen mit Formeln werden in Ruhe gelassen. Vor dem Schreiben vergleicht es jede Zelle jedes Blatts der neuen Arbeitsmappe mit dem Original: Alles andere, was sich unterscheidet, stoppt es. SHA-256 schützt jeden Schritt: Die Datei muss immer noch die Prüfsumme haben, die sie beim Lesen hatte, die temporäre Kopie daneben muss mit der neuen Arbeitsmappe übereinstimmen, bevor sie in die Datei umbenannt wird, und die Datei muss danach übereinstimmen. Das Original wird im Protokollordner aufbewahrt, bis der Benutzer das von der Festplatte zurückgelesene Ergebnis akzeptiert; *undo* stellt es wieder her, überprüft mit SHA-256. Es weigert sich zu laufen, während Excel oder LibreOffice die Datei geöffnet hat. Formulare werden nur gelesen.
 * Dokumente werden nicht re-serialisiert. Das XML wird nur nach Byte-Offsets gescannt und Werte werden in die ursprünglichen Bytes gespleißt; alle anderen Teile des `.docx` werden Byte für Byte kopiert. Nach jedem Ausfüllen wird das Ergebnis erneut analysiert und Absatz für Absatz mit der Vorlage verglichen. Werte werden XML-escaped und von Zeichen entfernt, die in XML nicht erlaubt sind. Vorlagen mit Makros werden abgelehnt.
@@ -79,7 +79,7 @@ Ein Formularlauf macht keine Netzwerkverbindungen. Firmennamen, Adressen und Ver
 
 * Downloads kommt nur von `github.com` und `*.githubusercontent.com` über HTTPS, einschließlich jeder Weiterleitung.
 * Das Archiv muss mit seiner Zeile im `SHA256SUMS` des Releases übereinstimmen; dies ist das gleiche Vertrauen wie die Installationsbefehle (die Sigstore-Signatur und die Build-Herkunft werden nicht vom Programm überprüft; überprüfen Sie sie von Hand, wie in [docs/install.md](install.md) beschrieben, falls erforderlich).
-* Das Archiv (höchstens 64 MB) wird im Speicher gespeichert; nur `numb-form` und `numb-commit` auf seiner obersten Ebene werden daraus entnommen.
+* Das Archiv (höchstens 64 MB) wird im Speicher gespeichert; nur `numb-form`, `numb-commit` und `numb-date` auf seiner obersten Ebene werden daraus entnommen.
 * Das neue `numb-form` muss seine Version starten und melden, bevor etwas ersetzt wird; bei einem Fehler bleiben die installierten Programme so, wie sie waren, und die inszenierten Dateien werden entfernt.
 * Es wird mit `-offline`, mit `online = no` (die ein Administrator in der Systemkonfiguration festlegen kann) und für Builds von der Quelle abgelehnt.
 
@@ -87,7 +87,7 @@ Ein Formularlauf macht keine Netzwerkverbindungen. Firmennamen, Adressen und Ver
 
 **Keine Module von Drittanbietern Go.** Die Programme verwenden nur die Go-Standardbibliothek. `go.mod` hat keine `require`-Linien, und `scripts/check-deps.sh` schlägt den Build fehl, wenn eine Abhängigkeit, `go.sum` oder `vendor/` angezeigt wird oder wenn ein Nicht-Standard-Import verwendet wird. Da es nichts zum download gibt, gibt es nichts zu halluzinieren, typosquat oder zu manipulieren.
 
-**PGP und seine Ersatzstoffe.** Authentizität wird mit den Mechanismen überprüft, die jedes Ökosystem tatsächlich unterstützt. PGP wird nicht verwendet, weil die beteiligten Ökosysteme nicht mehr darauf angewiesen sind (PyPI entfernte PGP-Signaturunterstützung im Jahr 2023).
+**PGP und seine Ersatzstoffe.** Authentizität wird mit den Mechanismen überprüft, die jedes Ökosystem tatsächlich unterstützt. PGP wird nicht für Abhängigkeiten verwendet, da die beteiligten Ökosysteme nicht mehr darauf angewiesen sind (PyPI entfernte PGP-Signaturunterstützung im Jahr 2023). Für Releases ist PGP optional: SHA-256 Prüfsummen beweisen, dass ein Download intakt ist, aber nicht, wer es gemacht hat, und die Sigstore-Signatur beweist dies bereits; eine PGP-Signatur hilft nur dort, wo GnuPG zur Hand ist und cosign nicht. Der Release-Workflow signiert `SHA256SUMS` nur dann mit PGP, wenn der Besitzer einen Release-Schlüssel eingerichtet hat, und nur diese eine Datei: Sie enthält die SHA-256 jedes Archivs, so dass auch das Signieren jedes Archivs nichts hinzufügen würde.
 
 | Komponente | Überprüfung |
 | --- | --- |
@@ -102,6 +102,7 @@ Ein Formularlauf macht keine Netzwerkverbindungen. Firmennamen, Adressen und Ver
 
 * Prüfsummen für `SHA256SUMS` (GNU-Format) und `SHA256` (BSD-Format);
 * `SHA256SUMS.sigstore.json`, eine schlüssellose Sigstore-Signatur der Prüfsummen, gebunden an die Identität des Release-Workflows;
+* `SHA256SUMS.asc`, eine PGP-Signatur der Prüfsummen, sobald der Besitzer einen Freigabeschlüssel eingerichtet hat (`.github/release-key.asc`);
 * SLSA Build Provenienzbescheinigungen für jedes Archiv und Binär (`gh attestation verify`);
 * ein Containerbild auf ghcr.io, signiert mit cosign und bescheinigt.
 
@@ -109,7 +110,7 @@ Ein Formularlauf macht keine Netzwerkverbindungen. Firmennamen, Adressen und Ver
 
 ## Pipeline für Sicherheitstests
 
-Pull-Anfragen führen ein schnelles Gate aus (Formatierung, Tierarzt, Statikcheck, Tests unter Linux, macOS und Windows, govulncheck, gosec, zizmor, der Verlaufsscan und die Überprüfung der Abhängigkeit). Pushes zu `main` und Agent Branchs und einen nächtlichen Zeitplan, führen Sie alles aus (die LibreOffice Formattests laufen einmal pro Pull Request Change und nicht für jeden Push):
+Jede Pull-Anfrage, jeder Push zu `main` oder einem Agentenzweig und ein nächtlicher Zeitplan führen alles unten aus; Pull-Anfragen führen auch die Abhängigkeitsprüfung aus. Eine Version, die als Teil eines Meilensteins veröffentlicht wurde, muss ci und Sicherheit auf eigene Faust bestanden haben:
 
 | Überprüfung | Werkzeug |
 | --- | --- |
@@ -118,7 +119,7 @@ Pull-Anfragen führen ein schnelles Gate aus (Formatierung, Tierarzt, Statikchec
 | Bekannte Sicherheitslücken im Code und in eingebauten Binärdateien für jedes Ziel-Betriebssystem | govulncheck |
 | Security linting, gemeldet zum Code-Scannen | Gosec |
 | Semantische Analyse von Go und der Workflows | CodeQL (`security-extended`, `security-and-quality`) |
-| Fuzzing jedes Template-Füllers und Scanners (docx, odt, rtf), jedes Tabellenkalkulationslesegeräts (xlsx, ods, csv, legacy xls), des Konfigurationsparsers, des numb-commit-Requestreaders und des Namensmatchers | Go native fuzzing, 2 minuten pro ziel auf haupt, 10 nächtliche. |
+| Fuzzing jedes Template-Füllers und Scanners (docx, odt, rtf), jedes Tabellenkalkulationslesegeräts (xlsx, ods, csv, legacy xls), des Konfigurationsparsers, des numb-commit-Requestreaders und des Namensmatchers | Gehen Sie natives Fuzzing, 2 Minuten pro Ziel bei jedem Pull Request und Push, 10 nächtlich |
 | Vorlagen und Tabellenkalkulationen, geschrieben von real LibreOffice (odt, fodt, rtf, docx, doc, xls, ods, fods) | Formate Workflow |
 | Workflow-Sicherheit (Injection, Anmeldeinformationen, Berechtigungen, Pins) | Zizmor, pedantisch |
 | Kundendateien oder Anmeldeinformationen aus Versehen | Historienscan |
@@ -133,7 +134,7 @@ Workflows beginnen ohne Berechtigungen und gewähren jedem Job nur das, was er b
 
 ## Container und Kubernetes
 
-Das Bild enthält nur die beiden Binärdateien, ein CA-Bundle und die Zeitzonendatenbank und läuft als UID 65532. Die dokumentierten Befehle und Manifeste verwenden ein schreibgeschütztes Root-Dateisystem, lassen alle Funktionen fallen, verbieten die Eskalation von Privilegien, montieren den Arbeitsordner schreibgeschützt für numb-form, montieren kein Dienstkonto-Token und legen eine Frist fest.
+Das Bild enthält nur die drei Programme, ein CA-Bundle und die Zeitzonendatenbank und läuft als UID 65532. Die dokumentierten Befehle und Manifeste verwenden ein schreibgeschütztes Root-Dateisystem, lassen alle Funktionen fallen, verbieten die Eskalation von Privilegien, montieren den Arbeitsordner schreibgeschützt für numb-form, montieren kein Dienstkonto-Token und legen eine Frist fest.
 
 ## Dieses Repository ist öffentlich
 
