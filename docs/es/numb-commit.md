@@ -43,7 +43,16 @@ numb-form config set commit_to "F:\14. GWG"
 1. Se compara la copia de trabajo con el objetivo, archivo por archivo. Los archivos con el mismo tamaño y tiempo son los mismos; para los demás, el checksum SHA-256 decide.
 2. Copia exactamente los archivos que se comprometerán en una copia **staged** en su carpeta Downloads (`numb-commit staged copy <date> <time> <id>`), establecida como en el objetivo, verifica cada suma de comprobación, y los hace sólo lectura. Nada toca el objetivo todavía.
 3. It writes **`numb-commit-request.txt`** into the working copy and shows it: the list of changes and the target's folder tree before and after (see THE REQUEST FILE).
-4. Revisa la solicitud (ver REVIEW) y se niega a continuar cuando un cheque falla. Vea la copia escenificada y la solicitud usted mismo, también.
+4. Pregunta cómo revisar:
+
+   ```
+   Review [m]anually, or let numb-commit [r]eview and correct it until it is right?
+   ```
+
+   `m`: numb-commit ejecuta sus propios cheques (ver REVIEW) y se niega a continuar cuando uno falla; usted mira la copia escenificada y la solicitud usted mismo.
+
+   `r`: numb-commit revisa la solicitud, corrige lo que puede por sí mismo y vuelve a revisar, redondeada tras ronda, hasta que la revisión pase, algo necesita una persona, o cinco rondas han pasado.
+
 5. Pregunta `Copy this into F:\14. GWG now? [y/N]`. Sólo copias `y`.
 6. Copia los archivos escenificados en el objetivo, revisa cada suma de comprobación de nuevo, y marca la solicitud como se aplica.
 7. Revisa el objetivo una vez más: cada archivo debe estar allí con su chequesum.
@@ -57,6 +66,7 @@ Lo que se copia:
 
 Lo que nunca se copia:
 
+* **A nueva carpeta de una empresa que el objetivo ya tiene.** En el objetivo, las carpetas de la empresa a menudo comienzan con el ID del cliente, por ejemplo `D10629 Foo S.A.`. Cuando la copia de trabajo carece de esa carpeta, numb-form hace una nueva `Foo S.A.` con sólo la evaluación de riesgo. numb-commit no lo copia cuando el objetivo tiene una carpeta que comienza con el ID de cliente de la compañía (de la lista Excel), o cuyo nombre después de un ID de cliente es el de la empresa, o que tiene el nombre de la empresa en otra ortografía (caso, acentos, puntuación). Si tal carpeta tiene más que el formulario de numb-form, la revisión le pide que copie esos archivos a mano.
 * **A archivo que existe en el objetivo con otro contenido**: numb-commit nunca sobrescribe un archivo excepto la hoja de cálculo. Los enumera como diferentes, así que vea lo que cambió en la copia de trabajo.
 * la plantilla (`Appendix A - Risk Assesment.docx`), incluso si cambió;
 * registros, carpetas `manifest.json`, `numb-form-runs` y el archivo de solicitud;
@@ -97,12 +107,14 @@ Replaced  3. Übersichten\Kundenliste.xlsx
 
 Left alone
   - Appendix A - Risk Assesment.docx  (not copied: the template)
+  - Foo S.A\Appendix A - Risk Assesment - Foo S.A.docx  (not copied: the real folder already has "D10629 Foo S.A." for Foo S.A. (it starts with the customer id D10629); made by numb-form, unchanged)
 
 Nothing in the real folder is deleted, and no file there is overwritten except the ones under Replaced.
 
 Before: F:\14. GWG
 ├── 3. Übersichten
 │   └── Kundenliste.xlsx
+├── D10629 Foo S.A.
 └── … 1204 more, unchanged
 
 After the commit:
@@ -110,6 +122,7 @@ After the commit:
 │   └── Kundenliste.xlsx                                ~ replaced
 ├── Bar Ltda                                            + new folder
 │   └── Appendix A - Risk Assesment - Bar Ltda.docx     + new, made by numb-form, unchanged
+├── D10629 Foo S.A.                                     = unchanged; "Foo S.A" of the working copy is the same company, not copied
 └── … 1204 more, unchanged
 ```
 
@@ -120,6 +133,7 @@ Los árboles muestran sólo lo que la solicitud toca; la última línea cuenta l
 | `+` | nuevo: copiado en el objetivo |
 | `~` | reemplazado: la hoja de cálculo con sus nuevas fechas de informe |
 | `≠` | difiere en la copia de trabajo; la versión del objetivo permanece |
+| `=` | la carpeta del objetivo de una empresa cuya nueva carpeta no se copia |
 
 *Status* es `waiting` hasta que se haga la copia, entonces `applied`. Debajo de la parte legible, una sección de datos repite la lista para numb-commit; no editarla. Una copia de la solicitud aplicada se guarda en la carpeta de registro.
 
@@ -143,6 +157,16 @@ Cada línea está marcada `ok`, `check` (mira antes de cometer) o `FAIL`, seguid
 | `OK to commit.` | Cada cheque pasó. |
 | `commit after checking the lines marked check.` | Nada está mal con los archivos, pero algo merece una mirada, por ejemplo una dirección en blanco. |
 | `do not commit.` | Algo cambió o no pertenece; numb-commit se niega a copiar. |
+
+Con `r`, numb-commit corrige estos fallos por sí mismo y vuelve a revisar:
+
+| Fallo | Corrección |
+| --- | --- |
+| un archivo cambiado en la copia de trabajo o en la copia escenificada | comparación y etapa de nuevo |
+| un archivo apareció en el objetivo mientras | lo deja fuera: nunca está sobrescrito |
+| un archivo que debe permanecer detrás se enumera | Déjalo. |
+
+Se detiene, sin copiar, en cualquier otra cosa, por ejemplo una celda de hoja de cálculo fuera de las fechas del informe o una hoja de cálculo de objetivos que alguien más cambió: los que necesitan una persona.
 
 `numb-commit review` ejecuta la revisión sobre la solicitud en la copia de trabajo en cualquier momento, sin copiar, por ejemplo a petición de un colega preparado.
 
@@ -229,13 +253,13 @@ numb-commit review
 : Conecte la unidad de red (abráelo una vez en File Explorer) y escriba el camino de nuevo.
 
 **`… changed after the request was made`**
-: Un archivo fue editado después de que fue escenificado. Corre numb-commit otra vez.
+: Un archivo fue editado después de que fue escenificado. Con `r`, numb-commit lo vuelve a poner por sí mismo; con `m`, ejecute numb-commit de nuevo.
 
 **`… in the real folder changed after the request was made`**
 : Alguien más cambió la hoja de cálculo en la unidad de red. numb-commit no sobrescribe su trabajo. Copia la hoja de cálculo real en la copia de trabajo de nuevo, ejecutar numb-date allí, luego numb-commit.
 
 **`… already exists in the real folder and is never overwritten`**
-: Un colega creó el mismo archivo mientras tanto. Compare los dos a mano.
+: Un colega creó el mismo archivo mientras tanto. Con `r`, numb-commit lo deja fuera; compare los dos a mano.
 
 **`spreadsheet cell … changed; only report dates may change`**
 : La hoja de cálculo de la copia de trabajo fue editada a mano. numb-commit sólo lleva fechas de informe; hacer otros cambios en la hoja de cálculo real.

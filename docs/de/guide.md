@@ -173,7 +173,7 @@ Jedes Mal:
 3. Führen Sie numb-form und numb-date dort wie gewohnt.
 4. Geben Sie `numb-commit` ein und drücken Sie Enter.
 
-numb-commit fragt nach den beiden Ordnern (es sei denn, `commit_from` und `commit_to` sind gesetzt), vergleicht die Kopie mit `F:\14. GWG`, instruiert die Dateien in Downloads zu kopieren und schreibt **`numb-commit-request.txt`** in die Kopie: die Liste dessen, was genau hinzugefügt wird, mit dem Ordnerbaum davor und danach. Keine bestehende Datei wird überschrieben. Es überprüft dann die Liste und endet mit einem Urteil:
+numb-commit fragt nach den beiden Ordnern (es sei denn, `commit_from` und `commit_to` sind gesetzt), vergleicht die Kopie mit `F:\14. GWG`, instruiert die Dateien in Downloads zu kopieren und schreibt **`numb-commit-request.txt`** in die Kopie: die Liste dessen, was genau hinzugefügt wird, mit dem Ordnerbaum davor und danach. Neue Ordner von Unternehmen, die `F:\14. GWG` bereits hat (z. B. als `D10629 Foo S.A.`), werden nicht kopiert und es wird keine vorhandene Datei überschrieben. Beantworten Sie `r`, damit numb-commit die Liste selbst überprüfen und korrigieren kann, oder `m`, um sie sich selbst anzusehen. Die Überprüfung endet mit einem Urteil:
 
 * `Verdict: OK to commit.` Typ `y` zum Kopieren.
 * `Verdict: commit after checking the lines marked check.` Lesen Sie die Zeilen `check` (zum Beispiel ein Formular mit einer leeren Adresse), dann `y` oder Enter.

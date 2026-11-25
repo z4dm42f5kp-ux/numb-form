@@ -43,7 +43,16 @@ numb-form config set commit_to "F:\14. GWG"
 1. Es vergleicht die Arbeitskopie mit dem Ziel, Datei für Datei. Dateien mit der gleichen Größe und Zeit sind die gleichen; für die anderen entscheidet die SHA-256 Prüfsumme.
 2. Es kopiert genau die Dateien, die es in einen **staged copy** in Ihrem Downloads-Ordner (`numb-commit staged copy <date> <time> <id>`) übertragen wird, der wie im Ziel angelegt ist, überprüft jede Prüfsumme und macht sie schreibgeschützt. Nichts berührt das Ziel noch.
 3. Es schreibt **`numb-commit-request.txt`** in die Arbeitskopie und zeigt es an: die Liste der Änderungen und den Ordnerbaum des Ziels davor und danach (siehe DIE ANTRAGDATEI).
-4. Es überprüft die anfrage (siehe review) und weigert sich, fortzufahren, wenn eine Überprüfung fehlschlägt. Schauen Sie sich die inszenierte Kopie und die Anfrage selbst an.
+4. Es fragt, wie zu überprüfen:
+
+   ```
+   Review [m]anually, or let numb-commit [r]eview and correct it until it is right?
+   ```
+
+   `m`: numb-commit führt eigene Prüfungen durch (siehe REVIEW) und weigert sich, weiterzumachen, wenn einer fehlschlägt; Sie sehen sich die inszenierte Kopie und die Anfrage selbst an.
+
+   `r`: numb-commit überprüft die Anfrage, korrigiert, was sie selbst kann, und überprüft erneut, Runde für Runde, bis die Überprüfung vergeht, etwas eine Person braucht oder fünf Runden vergangen sind.
+
 5. Es fragt `Copy this into F:\14. GWG now? [y/N]`. Nur `y` Kopien.
 6. Es kopiert die inszenierten Dateien in das Ziel, überprüft jede Prüfsumme erneut und markiert die Anforderung als angewendet.
 7. Es überprüft das Ziel noch einmal: Jede Datei muss mit ihrer Prüfsumme da sein.
@@ -57,6 +66,7 @@ Was kopiert wird:
 
 Was nie kopiert wird:
 
+* **A neuer Ordner einer Firma, die das Ziel bereits hat.** Im Ziel beginnen Firmenordner oft mit der Kunden-ID, zum Beispiel `D10629 Foo S.A.`. Wenn der Arbeitskopie dieser Ordner fehlt, erstellt numb-form einen neuen `Foo S.A.` mit nur der Risikobewertung. numb-commit kopiert es nicht, wenn das Ziel einen Ordner hat, der mit der Kunden-ID des Unternehmens beginnt (aus der Excel-Liste), oder dessen Name nach einer Kunden-ID der des Unternehmens ist, oder der den Namen des Unternehmens in einer anderen Schreibweise hat (Fall, Akzente, Interpunktion). Wenn ein solcher Ordner mehr als das Formular von numb-form enthält, werden Sie in der Überprüfung aufgefordert, diese Dateien von Hand zu kopieren.
 * **A-Datei, die mit anderen Inhalten im Ziel vorhanden ist**: numb-commit überschreibt niemals eine Datei außer der Tabellenkalkulation. Es listet diese als unterschiedlich auf, so dass Sie sehen, was sich in der Arbeitskopie geändert hat.
 * die Vorlage (`Appendix A - Risk Assesment.docx`), auch wenn sie sich geändert hat;
 * Logs, `manifest.json`, `numb-form-runs` Ordner und die Anforderungsdatei;
@@ -97,12 +107,14 @@ Replaced  3. Übersichten\Kundenliste.xlsx
 
 Left alone
   - Appendix A - Risk Assesment.docx  (not copied: the template)
+  - Foo S.A\Appendix A - Risk Assesment - Foo S.A.docx  (not copied: the real folder already has "D10629 Foo S.A." for Foo S.A. (it starts with the customer id D10629); made by numb-form, unchanged)
 
 Nothing in the real folder is deleted, and no file there is overwritten except the ones under Replaced.
 
 Before: F:\14. GWG
 ├── 3. Übersichten
 │   └── Kundenliste.xlsx
+├── D10629 Foo S.A.
 └── … 1204 more, unchanged
 
 After the commit:
@@ -110,6 +122,7 @@ After the commit:
 │   └── Kundenliste.xlsx                                ~ replaced
 ├── Bar Ltda                                            + new folder
 │   └── Appendix A - Risk Assesment - Bar Ltda.docx     + new, made by numb-form, unchanged
+├── D10629 Foo S.A.                                     = unchanged; "Foo S.A" of the working copy is the same company, not copied
 └── … 1204 more, unchanged
 ```
 
@@ -120,6 +133,7 @@ Die Bäume zeigen nur, was die Anforderung berührt; die letzte Zeile zählt die
 | `+` | neu: kopiert ins Ziel |
 | `~` | ersetzt: die Tabellenkalkulation mit neuen Berichtsdaten |
 | `≠` | unterscheidet sich in der Arbeitskopie; die Version des Ziels bleibt |
+| `=` | der Zielordner eines Unternehmens, dessen neuer Ordner nicht kopiert wird |
 
 *Status* ist `waiting`, bis die Kopie fertig ist, dann `applied`. Unterhalb des lesbaren Teils wiederholt ein Datenabschnitt die Liste für numb-commit; Bearbeiten Sie sie nicht. Eine Kopie der angewendeten Anforderung wird im Protokollordner aufbewahrt.
 
@@ -143,6 +157,16 @@ Jede Zeile ist mit `ok`, `check` (siehe es vor dem Begehen) oder `FAIL`, gefolgt
 | `OK to commit.` | Jeder Scheck bestanden. |
 | `commit after checking the lines marked check.` | Nichts ist falsch mit den Dateien, aber etwas verdient einen Blick, zum Beispiel eine leere Adresse. |
 | `do not commit.` | Etwas hat sich geändert oder gehört nicht dazu; numb-commit weigert sich zu kopieren. |
+
+Mit `r` korrigiert numb-commit diese Fehler von selbst und überprüft erneut:
+
+| Ausfall | Berichtigung |
+| --- | --- |
+| eine Datei, die in der Arbeitskopie oder in der gestaffelten Kopie geändert wurde | Vergleichen und wieder Bühne |
+| Eine Datei erschien in der Zwischenzeit im Ziel | Lassen Sie es aus: Es wird nie überschrieben |
+| Eine Datei, die zurückbleiben muss, ist aufgeführt | Lassen Sie es aus |
+
+Es stoppt, ohne etwas anderes zu kopieren, zum Beispiel eine Tabellenkalkulationszelle außerhalb der Berichtsdaten oder eine Zielkalkulationstabelle, die jemand anderes geändert hat: Diese brauchen eine Person.
 
 `numb-commit review` führt die Überprüfung der Anfrage in der Arbeitskopie jederzeit durch, ohne zu kopieren, beispielsweise auf eine Anfrage, die ein Kollege vorbereitet hat.
 
@@ -229,13 +253,13 @@ numb-commit review
 : Verbinden Sie das Netzwerklaufwerk (öffnen Sie es einmal in File Explorer) und geben Sie den Pfad erneut ein.
 
 **`… changed after the request was made`**
-: Eine Datei wurde bearbeitet, nachdem sie inszeniert wurde. Führen Sie numb-commit erneut aus.
+: Eine Datei wurde bearbeitet, nachdem sie inszeniert wurde. Mit `r` inszeniert numb-commit es wieder von selbst; mit `m` führen Sie numb-commit erneut aus.
 
 **`… in the real folder changed after the request was made`**
 : Jemand anderes hat die Tabellenkalkulation auf dem Netzwerklaufwerk geändert. numb-commit überschreibt ihre Arbeit nicht. Kopieren Sie die reale Tabellenkalkulation erneut in die Arbeitskopie, führen Sie dort numb-date aus, dann numb-commit.
 
 **`… already exists in the real folder and is never overwritten`**
-: Ein Kollege hat unterdessen die gleiche Datei erstellt. Vergleichen Sie die beiden von Hand.
+: Ein Kollege hat unterdessen die gleiche Datei erstellt. Mit `r` lässt numb-commit es aus; vergleichen Sie die beiden von Hand.
 
 **`spreadsheet cell … changed; only report dates may change`**
 : Die Tabelle der Arbeitskopie wurde von Hand bearbeitet. numb-commit trägt nur Berichtsdaten; andere Änderungen in der realen Tabelle vornehmen.
