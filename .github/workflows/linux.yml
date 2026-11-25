@@ -90,8 +90,9 @@ jobs:
     # Guix runs in the Debian 13 image pinned by digest, as the format
     # tests do. Debian ships no guix package any more, so it installs
     # Guix's own binary release, checked against the signing keys of
-    # Guix's maintainers, then pulls the current Guix. The container is
-    # privileged so the build daemon can isolate builds as Guix expects.
+    # Guix's maintainers, then pulls the current Guix. Its build daemon
+    # runs in the container without a chroot; netbase gives it the
+    # /etc/services its downloads look up.
     if: >-
       github.event_name != 'pull_request' ||
       (startsWith(github.event.pull_request.title, 'v') && contains(github.event.pull_request.title, '.0:'))
@@ -99,7 +100,6 @@ jobs:
     timeout-minutes: 180
     container:
       image: debian:13@sha256:4c25275446ca371766b8b093c696782eabce06263fccacb8d5d813b3dc44b308
-      options: --privileged
     permissions:
       contents: read
     env:
@@ -114,7 +114,7 @@ jobs:
         run: |
           apt="apt-get -q -o Acquire::Retries=5 -o Acquire::http::Timeout=30"
           $apt update
-          DEBIAN_FRONTEND=noninteractive $apt install -y --no-install-recommends ca-certificates curl gnupg dirmngr xz-utils
+          DEBIAN_FRONTEND=noninteractive $apt install -y --no-install-recommends ca-certificates curl gnupg dirmngr netbase xz-utils
           t=$(mktemp -d)
           f="guix-binary-$GUIX_VERSION.x86_64-linux.tar.xz"
           curl -fsSL --retry 5 -o "$t/$f" "https://ftp.gnu.org/gnu/guix/$f"
@@ -139,7 +139,7 @@ jobs:
           for i in 1 2 3 4; do
             id "guixbuilder$i" > /dev/null 2>&1 || useradd -g guixbuild -G guixbuild -d /var/empty -s /usr/sbin/nologin -M --system "guixbuilder$i"
           done
-          guix-daemon --build-users-group=guixbuild > /tmp/guix-daemon.log 2>&1 &
+          guix-daemon --build-users-group=guixbuild --disable-chroot > /tmp/guix-daemon.log 2>&1 &
           for _ in $(seq 60); do [ -S /var/guix/daemon-socket/socket ] && break; sleep 1; done
           for k in /var/guix/profiles/per-user/root/current-guix/share/guix/*.pub; do guix archive --authorize < "$k"; done
           rm -rf "$t"
