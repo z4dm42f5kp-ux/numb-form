@@ -4,7 +4,7 @@
 
 ## NAME
 
-**numb-form** — fill risk assessment forms (with **numb-commit** and **numb-date**)
+**numb-form** — fill risk assessment forms (with **numb-commit**, **numb-date** and **numb-typo**)
 
 ## SYNOPSIS
 
@@ -16,7 +16,7 @@ numb-form [-f conf] update [stable | rolling | v1.2.3]
 numb-form rollback
 ```
 
-numb-commit y numb-date tienen sus propias páginas: [numb-commit.md](numb-commit.md), [numb-date.md](numb-date.md).
+numb-commit, numb-date y numb-typo tienen sus propias páginas: [numb-commit.md](numb-commit.md), [numb-date.md](numb-date.md), [numb-typo.md](numb-typo.md).
 
 ## DESCRIPTION
 
@@ -68,6 +68,8 @@ Cuando un valor queda vacío (Enter solo), el campo lee:
 
 **numb-date** llena la columna *Report created* de la hoja de cálculo de los formularios: ver [numb-date.md](numb-date.md).
 
+**numb-typo** corrige las ciudades y los países perdidos o cortados escritos después de los nombres de la empresa en la hoja de cálculo: ver [numb-typo.md](numb-typo.md).
+
 ## COMMANDS
 
 `check-template template [sample]`
@@ -86,7 +88,7 @@ Cuando un valor queda vacío (Enter solo), el campo lee:
 : Switch back to the version that the last `update` replaced. The version rolled back from is kept in its place, so a second `rollback` returns to it. Without a kept version, install a release by number instead: `numb-form update v0.1.1`.
 
 `man` [*topic*] [`en` | `es` | `de`]
-: Mostrar este manual en el terminal, como menos(1): las teclas actúan inmediatamente, sin Enter. Espacio o páginaAbajo: siguiente página; b o PageUp: página anterior; Enter, j o Down: siguiente línea; k o Up: línea anterior; g o Home: start; G o End: end; /text and Enter: search, n y N: siguiente y último partido; h: help; q: quit. En macOS, Linux y los BSD se utiliza el `less` instalado cuando hay uno. Sin un tema se muestra todo el manual, comenzando por el guía. Temas: `guide`, `usage`, `numb-commit`, `numb-date`, `configuration`, `install`, `formats`, `containers`, `security`; `numb-form man topics` los lista. El idioma sigue `LANG`, o se da. `numb-form man -install` hace que `man numb-form` funcione: en Linux, macOS y BSD escribe la página manual a `~/.local/share/man/man1` (refreshed by `numb-form update`); en Windows escribe `man.cmd` junto a `numb-form.exe`, para Command Prompt. Windows PowerShell mantiene `man` por su propia ayuda: allí, escriba `numb-form man`.
+: Mostrar este manual en el terminal, como menos(1): las teclas actúan inmediatamente, sin Enter. Espacio o páginaAbajo: siguiente página; b o PageUp: página anterior; Enter, j o Down: siguiente línea; k o Up: línea anterior; g o Home: start; G o End: end; /text and Enter: search, n y N: siguiente y último partido; h: help; q: quit. En macOS, Linux y los BSD se utiliza el `less` instalado cuando hay uno. Sin un tema se muestra todo el manual, comenzando por el guía. Temas: `guide`, `usage`, `numb-commit`, `numb-date`, `numb-typo`, `configuration`, `install`, `formats`, `containers`, `security`; `numb-form man topics` los lista. El idioma sigue `LANG`, o se da. `numb-form man -install` hace que `man numb-form` funcione: en Linux, macOS y BSD escribe la página manual a `~/.local/share/man/man1` (refreshed by `numb-form update`); en Windows escribe `man.cmd` junto a `numb-form.exe`, para Command Prompt. Windows PowerShell mantiene `man` por su propia ayuda: allí, escriba `numb-form man`.
 
 `update` [`stable` | `rolling` | *v1.2.3*]
 : Sustitúyase el `numb-form` y `numb-commit`: **stable** con la última versión estable, **rolling** con la construcción de rodadura actual de `main` (reconstruido después de cada cambio; `edge` es aceptado como un nombre antiguo), o *v1.2.3*. La versión reemplazada se mantiene junto a los programas como `numb-form.previous` y `numb-commit.previous` para `rollback`. Funciona como lo hacen los comandos de instalación: el archivo y `SHA256SUMS` se descargan sobre HTTPS de GitHub solamente, la suma de comprobación debe coincidir, y el nuevo `numb-form` debe comenzar antes de que nada sea reemplazado. Sin un argumento se utiliza el canal de la construcción de ejecución. Se mantienen los ajustes. Refusado con `-offline`, con `online = no`, y para construcciones de origen. En Windows el viejo programa es renombrado a `numb-form.old.exe` y eliminado al siguiente inicio.
@@ -190,4 +192,4 @@ cd "H:\GWG"; numb-form -f review.conf; if ($?) { numb-commit }
 
 ## SEE ALSO
 
-[numb-commit.md](numb-commit.md), [numb-date.md](numb-date.md), [configuration.md](configuration.md), [formats.md](formats.md), [install.md](install.md), [containers.md](containers.md), [../SECURITY.md](SECURITY.md), [../AGENTS.md](../../AGENTS.md)
+[numb-commit.md](numb-commit.md), [numb-date.md](numb-date.md), [numb-typo.md](numb-typo.md), [configuration.md](configuration.md), [formats.md](formats.md), [install.md](install.md), [containers.md](containers.md), [../SECURITY.md](SECURITY.md), [../AGENTS.md](../../AGENTS.md)

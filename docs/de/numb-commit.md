@@ -144,7 +144,7 @@ Bei der Überprüfung wird geprüft, ob
 * jede zu kopierende Datei hat die Prüfsumme in der Anforderung, in der gestaffelten Kopie und in der Arbeitskopie (seitdem wurde nichts mehr bearbeitet);
 * noch keine davon im Ziel vorhanden ist;
 * Die Tabelle des Ziels enthält immer noch die Prüfsumme in der Anforderung (in der Zwischenzeit hat sie niemand geändert);
-* Die Tabelle erhält nur Berichtsdaten: nur leere oder ziffernfreie Zellen der Spalte * Report created* ändern sich, und jeder neue Wert sieht aus wie `DD-MM-YYYY`;
+* Die Tabelle erhält nur Berichtsdaten: nur leere oder ziffernfreie Zellen der Spaltenänderung *Report created*, und jeder neue Wert sieht aus wie `DD-MM-YYYY`; die einzige andere zulässige Änderung ist die Korrektur einer falsch geschriebenen oder abgeschnittenen Stadt oder eines Landes nach einem Firmennamen (`Foo SAS, Bogta` zu `Foo SAS, Bogotá`), niemals der Name vor dem ersten Komma;
 * jeder neue Ordner gehört zu einem Unternehmen in der Excel-Liste und verfügt über ein Formular zur Risikobewertung, dessen Abschnitt A dieses Unternehmen benennt und keine leere Zeile hat und das Ziel keinen ähnlichen Ordner dafür hat;
 * Nichts, was zurückbleiben muss (Vorlage, Protokolle, Sperrdateien) wird aufgeführt.
 
@@ -261,8 +261,8 @@ numb-commit review
 **`… already exists in the real folder and is never overwritten`**
 : Ein Kollege hat unterdessen die gleiche Datei erstellt. Mit `r` lässt numb-commit es aus; vergleichen Sie die beiden von Hand.
 
-**`spreadsheet cell … changed; only report dates may change`**
-: Die Tabelle der Arbeitskopie wurde von Hand bearbeitet. numb-commit trägt nur Berichtsdaten; andere Änderungen in der realen Tabelle vornehmen.
+**`spreadsheet cell … changed; only report dates and place corrections may change`**
+: Die Tabelle der Arbeitskopie wurde von Hand bearbeitet. numb-commit trägt nur Berichtsdaten von numb-date und Ortskorrekturen von numb-typo; andere Änderungen in der realen Tabellenkalkulation vornehmen.
 
 **`… is not a working folder: it has no template and "Übersicht" folder`**
 : Geben Sie den Ordner, der die Vorlage und den Übersichtsordner enthält, nicht einen Ordner darin.
@@ -272,4 +272,4 @@ numb-commit review
 
 ## SEE ALSO
 
-[numb-form](usage.md), [numb-date](numb-date.md), [configuration.md](configuration.md), [der guide](guide.md)
+[numb-form](usage.md), [numb-date](numb-date.md), [numb-typo](numb-typo.md), [configuration.md](configuration.md), [der guide](guide.md)

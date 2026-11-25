@@ -58,6 +58,7 @@ numb-form verarbeitet Kundendokumente, daher sind die Designregeln streng.
 * **numb-commit** only adds new folders and files, and from a working copy also replaces the overview spreadsheet when numb-date added report dates; it never deletes, never overwrites anything else, and never copies the template, logs, lock files, or a new folder of a company the real folder already has. It first writes the full list of changes (`numb-commit-request.txt`) into the working copy and reviews it: every file's SHA-256, that the real folder did not change in the meantime, and that the spreadsheet only gains report dates. New folders are copied under a temporary name, verified with SHA-256 and renamed; the replaced spreadsheet is kept in the log folder.
 * numb-form und numb-commit öffnen die Tabelle in `3. Übersichten` schreibgeschützt und schreiben sie niemals. Seine SHA-256 Prüfsumme wird vor der Kopie, nach der Kopie und am Ende des Laufs verglichen; eine Differenz stoppt den Lauf.
 * **numb-date** ist das einzige Programm, das die Tabellenkalkulation schreibt, und nur `.xlsx` und `.xlsm`. Es schreibt nur leere oder ziffernfreie Zellen der Spalte *Report created*, nachdem der Benutzer der Liste der Daten zugestimmt hat. Die Zellen werden in das XML des Blattes gespleißt, behalten ihren eigenen Stil bei und erhalten keine neue Formatierung; jeder andere Teil der Arbeitsmappe wird Byte für Byte kopiert, und Zellen mit Formeln werden in Ruhe gelassen. Vor dem Schreiben vergleicht es jede Zelle jedes Blatts der neuen Arbeitsmappe mit dem Original: Alles andere, was sich unterscheidet, stoppt es. SHA-256 schützt jeden Schritt: Die Datei muss immer noch die Prüfsumme haben, die sie beim Lesen hatte, die temporäre Kopie daneben muss mit der neuen Arbeitsmappe übereinstimmen, bevor sie in die Datei umbenannt wird, und die Datei muss danach übereinstimmen. Das Original wird im Protokollordner aufbewahrt, bis der Benutzer das von der Festplatte zurückgelesene Ergebnis akzeptiert; *undo* stellt es wieder her, überprüft mit SHA-256. Es weigert sich zu laufen, während Excel oder LibreOffice die Datei geöffnet hat. Formulare werden nur gelesen.
+* **numb-typo** schreibt auf die gleiche Weise nur in Zellen der Unternehmensnamenspalte: Es korrigiert eine falsch geschriebene oder abgeschnittene Stadt oder ein Land nach einem Komma ("..., Ciudad de Me" zu "..., Ciudad de México") aus einer eingebauten Liste von Orten, niemals den Namen vor dem ersten Komma oder einer Rechtsform, hinterlässt Namen von Unternehmen, die bereits einen Ordner haben, und schreibt nur die Korrekturen, die der Benutzer vornimmt.
 * Dokumente werden nicht re-serialisiert. Das XML wird nur nach Byte-Offsets gescannt und Werte werden in die ursprünglichen Bytes gespleißt; alle anderen Teile des `.docx` werden Byte für Byte kopiert. Nach jedem Ausfüllen wird das Ergebnis erneut analysiert und Absatz für Absatz mit der Vorlage verglichen. Werte werden XML-escaped und von Zeichen entfernt, die in XML nicht erlaubt sind. Vorlagen mit Makros werden abgelehnt.
 * Keine Formatierung wird jemals hinzugefügt. Werte werden dem eigenen Textlauf des Labels oder einer Kopie der vorhandenen Eigenschaften dieses Runs hinzugefügt, wenn dem Label ein Tab folgt.
 * Jedes Dokument wird nach dem Schreiben von der Festplatte zurückgelesen. Eine Person sieht und akzeptiert es, und die Programme weigern sich, ohne ein interaktives Terminal zu laufen.
@@ -79,7 +80,7 @@ Ein Formularlauf macht keine Netzwerkverbindungen. Firmennamen, Adressen und Ver
 
 * Downloads kommt nur von `github.com` und `*.githubusercontent.com` über HTTPS, einschließlich jeder Weiterleitung.
 * Das Archiv muss mit seiner Zeile im `SHA256SUMS` des Releases übereinstimmen; dies ist das gleiche Vertrauen wie die Installationsbefehle (die Sigstore-Signatur und die Build-Herkunft werden nicht vom Programm überprüft; überprüfen Sie sie von Hand, wie in [docs/install.md](install.md) beschrieben, falls erforderlich).
-* Das Archiv (höchstens 64 MB) wird im Speicher gespeichert; nur `numb-form`, `numb-commit` und `numb-date` auf seiner obersten Ebene werden daraus entnommen.
+* Das Archiv (höchstens 64 MB) wird im Speicher gespeichert; nur `numb-form`, `numb-commit`, `numb-date` und `numb-typo` auf seiner obersten Ebene werden daraus entnommen.
 * Das neue `numb-form` muss seine Version starten und melden, bevor etwas ersetzt wird; bei einem Fehler bleiben die installierten Programme so, wie sie waren, und die inszenierten Dateien werden entfernt.
 * Es wird mit `-offline`, mit `online = no` (die ein Administrator in der Systemkonfiguration festlegen kann) und für Builds von der Quelle abgelehnt.
 
@@ -119,7 +120,7 @@ Jede Pull-Anfrage, jeder Push zu `main` oder einem Agentenzweig und ein nächtli
 | Bekannte Sicherheitslücken im Code und in eingebauten Binärdateien für jedes Ziel-Betriebssystem | govulncheck |
 | Security linting, gemeldet zum Code-Scannen | Gosec |
 | Semantische Analyse von Go und der Workflows | CodeQL (`security-extended`, `security-and-quality`) |
-| Fuzzing jedes Template-Füllers und Scanners (docx, odt, rtf), jedes Tabellenkalkulationslesegeräts (xlsx, ods, csv, legacy xls), des Konfigurationsparsers, des numb-commit-Requestreaders und des Namensmatchers | Gehen Sie natives Fuzzing, 2 Minuten pro Ziel bei jedem Pull Request und Push, 10 nächtlich |
+| Fuzzing jedes Template-Füllers und Scanners (docx, odt, rtf), jedes Tabellenkalkulationslesers (xlsx, ods, csv, legacy xls), des Konfigurationsparsers, des numb-commit-Requestreaders, des Namensmatchers und des Ortsmatchers | Gehen Sie natives Fuzzing, 2 Minuten pro Ziel bei jedem Pull Request und Push, 10 nächtlich |
 | Vorlagen und Tabellenkalkulationen, geschrieben von real LibreOffice (odt, fodt, rtf, docx, doc, xls, ods, fods) | Formate Workflow |
 | Workflow-Sicherheit (Injection, Anmeldeinformationen, Berechtigungen, Pins) | Zizmor, pedantisch |
 | Kundendateien oder Anmeldeinformationen aus Versehen | Historienscan |
@@ -134,7 +135,7 @@ Workflows beginnen ohne Berechtigungen und gewähren jedem Job nur das, was er b
 
 ## Container und Kubernetes
 
-Das Bild enthält nur die drei Programme, ein CA-Bundle und die Zeitzonendatenbank und läuft als UID 65532. Die dokumentierten Befehle und Manifeste verwenden ein schreibgeschütztes Root-Dateisystem, lassen alle Funktionen fallen, verbieten die Eskalation von Privilegien, montieren den Arbeitsordner schreibgeschützt für numb-form, montieren kein Dienstkonto-Token und legen eine Frist fest.
+Das Bild enthält nur die vier Programme, ein CA-Bundle und die Zeitzonendatenbank und läuft als UID 65532. Die dokumentierten Befehle und Manifeste verwenden ein schreibgeschütztes Root-Dateisystem, lassen alle Funktionen fallen, verbieten die Eskalation von Privilegien, montieren den Arbeitsordner schreibgeschützt für numb-form, montieren kein Dienstkonto-Token und legen eine Frist fest.
 
 ## Dieses Repository ist öffentlich
 

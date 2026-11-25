@@ -4,7 +4,7 @@
 
 ## NAME
 
-**numb-form** — Formulare zur Risikobewertung ausfüllen (mit **numb-commit** und **numb-date**)
+**numb-form** — Formulare zur Risikobewertung ausfüllen (mit **numb-commit**, **numb-date** und **numb-typo**)
 
 ## SYNOPSIS
 
@@ -16,7 +16,7 @@ numb-form [-f conf] update [stable | rolling | v1.2.3]
 numb-form rollback
 ```
 
-numb-commit und numb-date haben ihre eigenen Seiten: [numb-commit.md](numb-commit.md), [numb-date.md](numb-date.md).
+numb-commit, numb-date und numb-typo haben ihre eigenen Seiten: [numb-commit.md](numb-commit.md), [numb-date.md](numb-date.md), [numb-typo.md](numb-typo.md).
 
 ## DESCRIPTION
 
@@ -68,6 +68,8 @@ Wenn ein Wert leer bleibt (Enter alone), lautet das Feld:
 
 **numb-date** füllt die *Report created* Spalte der Tabelle aus den Formularen: siehe [numb-date.md](numb-date.md).
 
+**numb-typo** korrigiert falsch geschriebene oder abgeschnittene Städte und Länder, die nach den Firmennamen in der Tabelle geschrieben wurden: siehe [numb-typo.md](numb-typo.md).
+
 ## COMMANDS
 
 `check-template template [sample]`
@@ -86,7 +88,7 @@ Wenn ein Wert leer bleibt (Enter alone), lautet das Feld:
 : Wechseln Sie zurück zu der Version, die das letzte `update` ersetzt hat. Die zurückgerollte Version wird an ihrem Platz gehalten, so dass ein zweiter `rollback` zu ihr zurückkehrt. Ohne eine gespeicherte Version installieren Sie stattdessen ein Release nach Nummer: `numb-form update v0.1.1`.
 
 `man` [*topic*] [`en` | `es` | `de`]
-: Zeigen Sie dieses Handbuch im Terminal, wie less(1): Tasten handeln sofort, ohne Enter. Space oder PageDown: next page; b oder PageUp: previous page; Enter, j oder Down: next line; k oder Up: previous line; g oder Home: start; G oder End: end; /text und Enter: search, n und N: next and previous match; h: help; q: quit. Unter macOS, Linux und den BSDs wird das installierte `less` verwendet, wenn es eines gibt. Ohne ein Thema wird das gesamte Handbuch angezeigt, beginnend mit dem Leitfaden. Themen: `guide`, `usage`, `numb-commit`, `numb-date`, `configuration`, `install`, `formats`, `containers`, `security`; `numb-form man topics` listet sie auf. Die Sprache folgt `LANG` oder wird angegeben. `numb-form man -install` lässt `man numb-form` funktionieren: Unter Linux, macOS und den BSDs schreibt es die Handbuchseite zu `~/.local/share/man/man1` (erneuert von `numb-form update`); Unter Windows schreibt es `man.cmd` neben `numb-form.exe` für Command Prompt. Windows PowerShell behält `man` für seine eigene Hilfe: dort, Typ `numb-form man`.
+: Zeigen Sie dieses Handbuch im Terminal, wie less(1): Tasten handeln sofort, ohne Enter. Space oder PageDown: next page; b oder PageUp: previous page; Enter, j oder Down: next line; k oder Up: previous line; g oder Home: start; G oder End: end; /text und Enter: search, n und N: next and previous match; h: help; q: quit. Unter macOS, Linux und den BSDs wird das installierte `less` verwendet, wenn es eines gibt. Ohne ein Thema wird das gesamte Handbuch angezeigt, beginnend mit dem Leitfaden. Themen: `guide`, `usage`, `numb-commit`, `numb-date`, `numb-typo`, `configuration`, `install`, `formats`, `containers`, `security`; `numb-form man topics` listet sie auf. Die Sprache folgt `LANG` oder wird angegeben. `numb-form man -install` lässt `man numb-form` funktionieren: Unter Linux, macOS und den BSDs schreibt es die Handbuchseite zu `~/.local/share/man/man1` (erneuert von `numb-form update`); Unter Windows schreibt es `man.cmd` neben `numb-form.exe` für Command Prompt. Windows PowerShell behält `man` für seine eigene Hilfe: dort, Typ `numb-form man`.
 
 `update` [`stable` | `rolling` | *v1.2.3*]
 : Ersetzen Sie das installierte `numb-form` und `numb-commit`: **stable** durch das neueste stabile Release, **rolling** durch den aktuellen Rolling Build von `main` (nach jeder Änderung neu erstellt; `edge` wird als älterer Name akzeptiert), oder *v1.2.3* mit genau diesem Release. Die ersetzte Version wird neben den Programmen als `numb-form.previous` und `numb-commit.previous` für `rollback` beibehalten. Es funktioniert wie die Installationsbefehle: Das Archiv und `SHA256SUMS` werden nur von GitHub über HTTPS heruntergeladen, die Prüfsumme muss übereinstimmen und das neue `numb-form` muss starten, bevor etwas ersetzt wird. Ohne Argument wird der Kanal des laufenden Builds verwendet. Einstellungen werden beibehalten. Verweigert mit `-offline`, mit `online = no` und für Builds von der Quelle. Unter Windows wird das alte Programm in `numb-form.old.exe` umbenannt und beim nächsten Start entfernt.
@@ -190,4 +192,4 @@ cd "H:\GWG"; numb-form -f review.conf; if ($?) { numb-commit }
 
 ## SEE ALSO
 
-[numb-commit.md](numb-commit.md), [numb-date.md](numb-date.md), [configuration.md](configuration.md), [formats.md](formats.md), [install.md](install.md), [containers.md](containers.md), [../SECURITY.md](SECURITY.md), [../AGENTS.md](../../AGENTS.md)
+[numb-commit.md](numb-commit.md), [numb-date.md](numb-date.md), [numb-typo.md](numb-typo.md), [configuration.md](configuration.md), [formats.md](formats.md), [install.md](install.md), [containers.md](containers.md), [../SECURITY.md](SECURITY.md), [../AGENTS.md](../../AGENTS.md)

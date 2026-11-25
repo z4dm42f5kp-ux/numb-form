@@ -144,7 +144,7 @@ La revisión verifica que:
 * cada archivo a copiar tiene la suma de comprobación en la solicitud, en la copia escalonada y en la copia de trabajo (nada se editó desde entonces);
 * ninguno de ellos existe todavía en el objetivo;
 * la hoja de cálculo del objetivo todavía tiene la suma de comprobación en la solicitud (nadie más lo cambió mientras tanto);
-* la hoja de cálculo sólo gana las fechas del informe: sólo las células vacías o libres de dígitos del cambio de columna *Report created*, y cada nuevo valor parece `DD-MM-YYYY`;
+* la hoja de cálculo sólo gana las fechas del informe: sólo celdas vacías o libres de dígitos del cambio de columna *Report created*, y cada nuevo valor se parece a `DD-MM-YYYY`; el único otro cambio permitido es la corrección de una ciudad o país de exclusión o corte después de un nombre de empresa (`Foo SAS, Bogta` a `Foo SAS, Bogotá`), nunca el nombre antes de la primera coma;
 * cada nueva carpeta pertenece a una empresa en la lista de Excel y tiene un formulario de evaluación de riesgos cuya sección A nombres que empresa y no tiene línea en blanco, y el objetivo no tiene carpeta similar para ella;
 * nada que debe permanecer detrás (templa, registros, archivos de bloqueo) está listado.
 
@@ -261,8 +261,8 @@ numb-commit review
 **`… already exists in the real folder and is never overwritten`**
 : Un colega creó el mismo archivo mientras tanto. Con `r`, numb-commit lo deja fuera; compare los dos a mano.
 
-**`spreadsheet cell … changed; only report dates may change`**
-: La hoja de cálculo de la copia de trabajo fue editada a mano. numb-commit sólo lleva fechas de informe; hacer otros cambios en la hoja de cálculo real.
+**`spreadsheet cell … changed; only report dates and place corrections may change`**
+: La hoja de cálculo de la copia de trabajo fue editada a mano. numb-commit sólo lleva reportajes de correcciones numb-date y colocan de numb-typo; hacer otros cambios en la hoja de cálculo real.
 
 **`… is not a working folder: it has no template and "Übersicht" folder`**
 : Dar la carpeta que contiene la plantilla y la carpeta de visión general, no una carpeta dentro de ella.
@@ -272,4 +272,4 @@ numb-commit review
 
 ## SEE ALSO
 
-[numb-form](usage.md), [numb-date](numb-date.md), [configuration.md](configuration.md), [the guide](guide.md)
+[numb-form](usage.md), [numb-date](numb-date.md), [numb-typo](numb-typo.md), [configuration.md](configuration.md), [the guide](guide.md)

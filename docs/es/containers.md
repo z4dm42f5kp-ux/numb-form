@@ -2,7 +2,7 @@
 
 > Traducción automática (Argos Translate) del [original en inglés](../containers.md). La versión en inglés es la que vale.
 
-La imagen contiene sólo los tres programas estáticos (numb-form, numb-commit y numb-date, cada uno con la base de datos de zona horaria construida en) y un paquete CA. No se utiliza imagen de base. Funciona como un usuario no privilegiado (UID 65532).
+La imagen contiene sólo los cuatro programas estáticos (numb-form, numb-commit, numb-date y numb-typo, cada uno con la base de datos de zona horaria construida en) y un paquete CA. No se utiliza imagen de base. Funciona como un usuario no privilegiado (UID 65532).
 
 Se necesitan dos volúmenes:
 
@@ -101,7 +101,7 @@ Luego, dentro de la carpeta de trabajo (o la carpeta encima de ella):
 doas numb-form-jail numb-form
 ```
 
-Escriba `numb-commit` o `numb-date` en lugar de `numb-form` para ejecutarlos; las opciones siguen el nombre del programa. Los programas se toman desde `~/.local/bin`; para otra carpeta, u otra carpeta Downloads, comience como `doas env NUMBFORM_BIN=folder NUMBFORM_DOWNLOADS=folder numb-form-jail numb-form`.
+Escriba `numb-commit`, `numb-date` o `numb-typo` en lugar de `numb-form` para ejecutarlos; las opciones siguen el nombre del programa. Los programas se toman desde `~/.local/bin`; para otra carpeta, u otra carpeta Downloads, comience como `doas env NUMBFORM_BIN=folder NUMBFORM_DOWNLOADS=folder numb-form-jail numb-form`.
 
 ## OpenBSD y NetBSD
 

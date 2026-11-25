@@ -2,7 +2,7 @@
 
 > Maschinelle Übersetzung (Argos Translate) des [englischen Originals](../containers.md). Maßgeblich ist die englische Fassung.
 
-Das Bild enthält nur die drei statischen Programme (numb-form, numb-commit und numb-date, jeweils mit eingebauter Zeitzonendatenbank) und ein CA-Bundle. Es wird kein Basisbild verwendet. Es läuft als unprivilegierter Benutzer (UID 65532).
+Das Bild enthält nur die vier statischen Programme (numb-form, numb-commit, numb-date und numb-typo, jeweils mit eingebauter Zeitzonendatenbank) und ein CA-Bundle. Es wird kein Basisbild verwendet. Es läuft als unprivilegierter Benutzer (UID 65532).
 
 Es werden zwei Bände benötigt:
 
@@ -101,7 +101,7 @@ Dann im Arbeitsordner (oder dem Ordner darüber):
 doas numb-form-jail numb-form
 ```
 
-Schreiben Sie `numb-commit` oder `numb-date` anstelle von `numb-form`, um diese auszuführen; Optionen folgen dem Programmnamen. Die Programme werden aus `~/.local/bin` entnommen; für einen anderen Ordner oder einen anderen Downloads-Ordner starten Sie ihn als `doas env NUMBFORM_BIN=folder NUMBFORM_DOWNLOADS=folder numb-form-jail numb-form`.
+Schreiben Sie `numb-commit`, `numb-date` oder `numb-typo` anstelle von `numb-form`, um diese auszuführen; Optionen folgen dem Programmnamen. Die Programme werden aus `~/.local/bin` entnommen; für einen anderen Ordner oder einen anderen Downloads-Ordner starten Sie ihn als `doas env NUMBFORM_BIN=folder NUMBFORM_DOWNLOADS=folder numb-form-jail numb-form`.
 
 ## OpenBSD und NetBSD
 
