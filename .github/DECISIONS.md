@@ -345,7 +345,8 @@ and awaits missing runs itself.
 Several action updates arrived as separate pull requests on the same
 lines (three for the parts of codeql-action), and a release stack moved
 `main` past them, so they waited with conflicts and with checks from an
-old `main`. Action updates now come grouped in one pull request, and
-after every merge that passes ci the dependabot refresh workflow merges
+old `main`. Dependabot now opens pull requests only for security
+updates (routine bumps are off, grouped if turned back on), and after
+every merge that passes ci the dependabot refresh workflow merges
 `main` into each open Dependabot pull request and starts its checks; a
 conflicting one is recreated by Dependabot. The owner still merges.

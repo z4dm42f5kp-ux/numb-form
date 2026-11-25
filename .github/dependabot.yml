@@ -1,18 +1,18 @@
-# Keeps the commit-SHA pins of actions and the hash-locked Python tools
-# up to date, checked every day. Every update arrives as a pull request
-# and runs the full security pipeline before it can be merged. Only
-# stable versions are proposed, and only after 14 days (the cooldown);
-# security updates come at once. Go itself and the Go tools pinned in the
-# workflows are checked by .github/workflows/updates.yml.
-# All action updates of a day come as one pull request, so they never
-# conflict with each other; the dependabot refresh workflow brings open
-# ones up to date after every merge.
+# Security updates only: a pull request opens when an action or a Python
+# tool has a published vulnerability, at once. Routine version bumps open
+# none (open-pull-requests-limit: 0), so they never cut across planned
+# release pull requests; raise the limit to get them back. Every update
+# runs the full security pipeline before it can be merged, and the
+# dependabot refresh workflow brings open ones up to date after every
+# merge. Go itself and the Go tools pinned in the workflows are checked
+# by .github/workflows/updates.yml.
 version: 2
 updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: daily
+    open-pull-requests-limit: 0
     cooldown:
       default-days: 14
     groups:
@@ -28,6 +28,7 @@ updates:
     directory: /.github/translate
     schedule:
       interval: daily
+    open-pull-requests-limit: 0
     cooldown:
       default-days: 14
     allow:

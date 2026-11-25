@@ -89,9 +89,9 @@ To stop, delete the two secrets.
 
 ## Daily update checks
 
-* Dependabot checks the actions and the translation tools every day
-  (`.github/dependabot.yml`). All action updates of a day come as one
-  pull request.
+* Dependabot opens pull requests only for security updates of the
+  actions and the translation tools (`.github/dependabot.yml`), so
+  routine version bumps never cut across planned release pull requests.
 * Right after ci passes on `main` for a merge, the **dependabot refresh**
   workflow merges `main` into every open Dependabot pull request that is
   behind and starts its checks again; one that conflicts is recreated
@@ -129,4 +129,4 @@ Everything that runs every day, in UTC:
 | 05:23 | updates | Go tools, Go and the published binaries, test systems, languages |
 | 05:29 | scorecard | OpenSSF Scorecard |
 | 06:37 | install-docs | the install commands against the newest stable release |
-| daily | Dependabot | actions, Argos Translate, security updates of every Python package |
+| daily | Dependabot | security updates of the actions, Argos Translate and every Python package |
