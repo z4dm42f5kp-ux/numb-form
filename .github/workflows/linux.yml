@@ -91,7 +91,7 @@ jobs:
     if: >-
       github.event_name != 'pull_request' ||
       (startsWith(github.event.pull_request.title, 'v') && contains(github.event.pull_request.title, '.0:'))
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # ubuntu-latest (26.04) has no guix package
     timeout-minutes: 180
     permissions:
       contents: read
