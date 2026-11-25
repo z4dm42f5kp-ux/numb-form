@@ -24,7 +24,7 @@ aarch64|arm64) goarch=arm64 ;;
 esac
 cd "$here/.."
 version=$(git describe --tags --always 2>/dev/null || echo dev)
-for c in numb-form numb-commit numb-date; do
+for c in numb-form numb-commit numb-date numb-typo; do
 	CGO_ENABLED=0 GOOS=linux GOARCH=${GOARCH:-$goarch} go build -trimpath -mod=readonly \
 		-tags timetzdata -ldflags "-s -w -X github.com/z4dm42f5kp-ux/numb-form/internal/app.Version=$version" \
 		-o "$ctx/$c" "./cmd/$c"

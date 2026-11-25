@@ -79,9 +79,11 @@ jobs:
             dist/bin/*/numb-form
             dist/bin/*/numb-commit
             dist/bin/*/numb-date
+            dist/bin/*/numb-typo
             dist/bin/*/numb-form.exe
             dist/bin/*/numb-commit.exe
             dist/bin/*/numb-date.exe
+            dist/bin/*/numb-typo.exe
       - name: Update the edge pre-release
         env:
           GH_TOKEN: ${{ github.token }}

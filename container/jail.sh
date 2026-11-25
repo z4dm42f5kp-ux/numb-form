@@ -1,7 +1,7 @@
 #!/bin/sh
-# Run numb-form, numb-commit or numb-date in a throwaway FreeBSD jail:
-# FreeBSD's own containers, part of the base system, for machines where
-# Docker and Podman are not available.
+# Run numb-form, numb-commit, numb-date or numb-typo in a throwaway
+# FreeBSD jail: FreeBSD's own containers, part of the base system, for
+# machines where Docker and Podman are not available.
 #
 # In plain words: the program runs in an empty, read-only mini system
 # that sees only the working folder and the Downloads folder, has no
@@ -9,7 +9,7 @@
 #
 # usage: doas numb-form-jail [program [options]]
 #        (installed from the FreeBSD release archive, docs/containers.md;
-#        or sudo; program is numb-form, numb-commit or numb-date)
+#        or sudo; program is numb-form, numb-commit, numb-date or numb-typo)
 #
 # Run it inside the working folder (or the folder above it), as with
 # numb-form itself. The programs are taken from the folder of the
@@ -22,7 +22,7 @@ set -eu
 prog=${1:-numb-form}
 [ $# -gt 0 ] && shift
 case $prog in
-numb-form | numb-commit | numb-date) ;;
+numb-form | numb-commit | numb-date | numb-typo) ;;
 *) echo "jail.sh: unknown program $prog" >&2; exit 2 ;;
 esac
 user=${DOAS_USER:-${SUDO_USER:-}}
@@ -57,10 +57,10 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-# The jail's files: the three programs, a user entry, the time zone.
+# The jail's files: the programs, a user entry, the time zone.
 tree="$stage/tree"
 mkdir -p "$root" "$tree/etc" "$tree/data" "$tree/downloads" "$tree/dev" "$tree/tmp"
-for p in numb-form numb-commit numb-date; do
+for p in numb-form numb-commit numb-date numb-typo; do
 	[ -x "$bin/$p" ] && install -m 0555 "$bin/$p" "$tree/$p"
 done
 printf '%s:*:%s:%s::0:0:numb-form:/downloads:/nonexistent\n' "$user" "$uid" "$gid" > "$tree/etc/master.passwd"

@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/z4dm42f5kp-ux/numb-form/internal/sheet"
+	"github.com/z4dm42f5kp-ux/numb-form/internal/testfix"
 )
 
 // scanned makes a working copy (scanCopy) and its request.
@@ -160,7 +161,7 @@ func TestReviewSheet(t *testing.T) {
 	}
 	r := tb.Rows[1]
 	check(b, map[string]string{r.DateRef: "16-10-2026"}, "ok", "only gains 1 report date(s)")
-	check(b, map[string]string{r.NameRef: "Renamed GmbH"}, "fail", "only report dates may change")
+	check(b, map[string]string{r.NameRef: "Renamed GmbH"}, "fail", "only report dates and place corrections may change")
 	check(b, map[string]string{r.DateRef: "soon"}, "warn", "not a DD-MM-YYYY date")
 	dated, err := sheet.SetText(b, tb.Part, map[string]string{r.DateRef: "01-01-2026"})
 	if err != nil {
@@ -172,5 +173,36 @@ func TestReviewSheet(t *testing.T) {
 	}
 	if got := (&request{From: cp, Stage: real}).staged("a/b"); got != filepath.Join(real, "a", "b") {
 		t.Errorf("staged: %s", got)
+	}
+}
+
+// Corrections of places after a company name pass the spreadsheet
+// review; any other change to a name fails.
+func TestReviewSheetPlaceFixes(t *testing.T) {
+	dir := t.TempDir()
+	old := testfix.XLSX(t, []string{"D00000", "D00000"}, []string{"Foo SAS, Bogta", "Foo GmbH"})
+	tb, err := sheet.ReadTable(old, "Customer Name", "Customer ID")
+	if err != nil {
+		t.Fatal(err)
+	}
+	oldPath := filepath.Join(dir, "old.xlsx")
+	if err := os.WriteFile(oldPath, old, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	rc := reviewConfig{header: "Customer Name", idHeader: "Customer ID"}
+	for to, fails := range map[string]int{"Foo SAS, Bogotá": 0, "Bar SAS, Bogotá": 1} {
+		nb, err := sheet.SetText(old, tb.Part, map[string]string{tb.Rows[0].NameRef: to})
+		if err != nil {
+			t.Fatal(err)
+		}
+		newPath := filepath.Join(dir, "new.xlsx")
+		if err := os.WriteFile(newPath, nb, 0o600); err != nil {
+			t.Fatal(err)
+		}
+		var v reqReview
+		reviewSheet(&v, oldPath, newPath, rc)
+		if v.count("fail") != fails {
+			t.Errorf("%q: %+v", to, v.findings)
+		}
 	}
 }

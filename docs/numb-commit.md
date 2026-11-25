@@ -216,6 +216,9 @@ The review checks that:
 * the spreadsheet only gains report dates: only empty or digit-free
   cells of the *Report created* column change, and each new value looks
   like `DD-MM-YYYY`;
+  the only other change allowed is the correction of a misspelt or
+  cut-off city or country after a company name (`Foo SAS, Bogta` to
+  `Foo SAS, Bogotá`), never the name before the first comma;
 * each new folder belongs to a company in the Excel list and holds a
   risk assessment form whose section A names that company and has no
   blank line, and the target has no similar folder for it;
@@ -357,9 +360,10 @@ numb-commit review
 : A colleague created the same file meanwhile. With `r`, numb-commit
   leaves it out; compare the two by hand.
 
-**`spreadsheet cell … changed; only report dates may change`**
+**`spreadsheet cell … changed; only report dates and place corrections may change`**
 : The working copy's spreadsheet was edited by hand. numb-commit only
-  carries report dates; make other changes in the real spreadsheet.
+  carries report dates from numb-date and place corrections from
+  numb-typo; make other changes in the real spreadsheet.
 
 **`… is not a working folder: it has no template and "Übersicht" folder`**
 : Give the folder that holds the template and the overview folder, not
@@ -371,5 +375,5 @@ numb-commit review
 
 ## SEE ALSO
 
-[numb-form](usage.md), [numb-date](numb-date.md),
+[numb-form](usage.md), [numb-date](numb-date.md), [numb-typo](numb-typo.md),
 [configuration.md](configuration.md), [the guide](guide.md)

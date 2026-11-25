@@ -18,7 +18,7 @@ It needs no technical knowledge.
 
 * Install: [docs/install.md](docs/install.md)
 * Use: [numb-form](docs/usage.md), [numb-commit](docs/numb-commit.md),
-  [numb-date](docs/numb-date.md)
+  [numb-date](docs/numb-date.md), [numb-typo](docs/numb-typo.md)
 * Configure: [docs/configuration.md](docs/configuration.md)
 * Find the address and representatives with an AI assistant:
   [docs/ai-prompt.md](docs/ai-prompt.md)

@@ -26,6 +26,7 @@ type Table struct {
 type TableRow struct {
 	Row     int
 	Name    string
+	Raw     string // the name cell exactly as stored
 	NameRef string
 	DateRef string
 	Date    string // current text of the date cell, "" when empty
@@ -118,6 +119,15 @@ func openWorkbook(b []byte) (*workbook, error) {
 // header in the same row, and returns every company below it with its
 // customer id from the idHeader column.
 func ReadTable(b []byte, header, idHeader string) (*Table, error) {
+	return readTable(b, header, idHeader, true)
+}
+
+// ReadNames is ReadTable without the report-date column, for numb-typo.
+func ReadNames(b []byte, header, idHeader string) (*Table, error) {
+	return readTable(b, header, idHeader, false)
+}
+
+func readTable(b []byte, header, idHeader string, needDate bool) (*Table, error) {
 	wb, err := openWorkbook(b)
 	if err != nil {
 		return nil, err
@@ -145,7 +155,9 @@ func ReadTable(b []byte, header, idHeader string) (*Table, error) {
 			}
 		}
 		dh, ok := findHeader(hdr, DateHeaders, looseDate)
-		if !ok {
+		if !ok && !needDate {
+			dh = Cell{Col: -1}
+		} else if !ok {
 			for _, c := range hdr {
 				if v := strings.TrimSpace(c.Val); v != "" {
 					found = append(found, fmt.Sprintf("%q", v))
@@ -175,10 +187,16 @@ func ReadTable(b []byte, header, idHeader string) (*Table, error) {
 			if c.Col != nh.Col || c.Row <= nh.Row || strings.TrimSpace(c.Val) == "" {
 				continue
 			}
-			t.Rows = append(t.Rows, TableRow{Row: c.Row, Name: strings.TrimSpace(c.Val), NameRef: c.Ref,
-				DateRef: Ref(dh.Col, c.Row), Date: dates[c.Row], ID: ids[c.Row]})
+			r := TableRow{Row: c.Row, Name: strings.TrimSpace(c.Val), Raw: c.Val, NameRef: c.Ref, Date: dates[c.Row], ID: ids[c.Row]}
+			if dh.Col > 0 {
+				r.DateRef = Ref(dh.Col, c.Row)
+			}
+			t.Rows = append(t.Rows, r)
 		}
 		return t, nil
+	}
+	if !needDate {
+		return nil, errors.New("no sheet has a company-name header (such as \"Customer Name\")")
 	}
 	if len(found) > 0 {
 		return nil, fmt.Errorf("no \"Report created\" column next to the company names; headings found: %s", strings.Join(found, ", "))

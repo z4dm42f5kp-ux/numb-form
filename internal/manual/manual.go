@@ -31,6 +31,7 @@ var Topics = []Topic{
 	{"usage", "docs/usage.md", "Reference manual"},
 	{"numb-commit", "docs/numb-commit.md", "numb-commit: copy the new forms into the real folder"},
 	{"numb-date", "docs/numb-date.md", "numb-date: fill the report dates"},
+	{"numb-typo", "docs/numb-typo.md", "numb-typo: correct misspelt places in company names"},
 	{"configuration", "docs/configuration.md", "Settings (numb-form.conf)"},
 	{"install", "docs/install.md", "Installing and updating"},
 	{"ai-prompt", "docs/ai-prompt.md", "The AI prompt for the address and representatives"},
@@ -40,7 +41,7 @@ var Topics = []Topic{
 	{"changes", "CHANGES.md", "Changes in each release"},
 }
 
-var aliases = map[string]string{"commit": "numb-commit", "date": "numb-date", "config": "configuration", "settings": "configuration", "conf": "configuration", "update": "install", "docker": "containers", "kubernetes": "containers", "podman": "containers", "help": "guide", "start": "guide", "prompt": "ai-prompt", "ai": "ai-prompt"}
+var aliases = map[string]string{"commit": "numb-commit", "date": "numb-date", "typo": "numb-typo", "config": "configuration", "settings": "configuration", "conf": "configuration", "update": "install", "docker": "containers", "kubernetes": "containers", "podman": "containers", "help": "guide", "start": "guide", "prompt": "ai-prompt", "ai": "ai-prompt"}
 
 // Find returns the topic called name.
 func Find(name string) (Topic, bool) {

@@ -2,8 +2,8 @@
 
 ## NAME
 
-**numb-form** — fill risk assessment forms (with **numb-commit** and
-**numb-date**)
+**numb-form** — fill risk assessment forms (with **numb-commit**,
+**numb-date** and **numb-typo**)
 
 ## SYNOPSIS
 
@@ -15,8 +15,9 @@ numb-form [-f conf] update [stable | rolling | v1.2.3]
 numb-form rollback
 ```
 
-numb-commit and numb-date have their own pages:
-[numb-commit.md](numb-commit.md), [numb-date.md](numb-date.md).
+numb-commit, numb-date and numb-typo have their own pages:
+[numb-commit.md](numb-commit.md), [numb-date.md](numb-date.md),
+[numb-typo.md](numb-typo.md).
 
 ## DESCRIPTION
 
@@ -108,6 +109,10 @@ changes: see [numb-commit.md](numb-commit.md).
 **numb-date** fills the *Report created* column of the spreadsheet from
 the forms: see [numb-date.md](numb-date.md).
 
+**numb-typo** corrects misspelt or cut-off cities and countries written
+after the company names in the spreadsheet: see
+[numb-typo.md](numb-typo.md).
+
 ## COMMANDS
 
 `check-template template [sample]`
@@ -142,7 +147,7 @@ the forms: see [numb-date.md](numb-date.md).
   On macOS, Linux and the BSDs the installed `less` is used when there
   is one.
   Without a topic the whole manual is shown, starting with the guide.
-  Topics: `guide`, `usage`, `numb-commit`, `numb-date`, `configuration`,
+  Topics: `guide`, `usage`, `numb-commit`, `numb-date`, `numb-typo`, `configuration`,
   `install`, `formats`, `containers`, `security`; `numb-form man topics`
   lists them.
   The language follows `LANG`, or is given.
@@ -284,6 +289,6 @@ cd "H:\GWG"; numb-form -f review.conf; if ($?) { numb-commit }
 ## SEE ALSO
 
 [numb-commit.md](numb-commit.md), [numb-date.md](numb-date.md),
-[configuration.md](configuration.md), [formats.md](formats.md),
+[numb-typo.md](numb-typo.md), [configuration.md](configuration.md), [formats.md](formats.md),
 [install.md](install.md), [containers.md](containers.md),
 [../SECURITY.md](../SECURITY.md), [../AGENTS.md](../AGENTS.md)

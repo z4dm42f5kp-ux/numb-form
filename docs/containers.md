@@ -1,8 +1,8 @@
 # Running numb-form in containers
 
-The image holds only the three static programs (numb-form, numb-commit
-and numb-date, each with the time zone database built in) and a CA
-bundle.
+The image holds only the four static programs (numb-form, numb-commit,
+numb-date and numb-typo, each with the time zone database built in) and
+a CA bundle.
 No base image is used.
 It runs as an unprivileged user (UID 65532).
 
@@ -140,7 +140,8 @@ Then, inside the working folder (or the folder above it):
 doas numb-form-jail numb-form
 ```
 
-Write `numb-commit` or `numb-date` instead of `numb-form` to run those;
+Write `numb-commit`, `numb-date` or `numb-typo` instead of `numb-form`
+to run those;
 options follow the program name.
 The programs are taken from `~/.local/bin`; for another folder, or
 another Downloads folder, start it as

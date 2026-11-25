@@ -3,7 +3,7 @@
 FROM scratch
 ARG TARGETARCH
 COPY ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY bin/linux_${TARGETARCH}/numb-form bin/linux_${TARGETARCH}/numb-commit bin/linux_${TARGETARCH}/numb-date /
+COPY bin/linux_${TARGETARCH}/numb-form bin/linux_${TARGETARCH}/numb-commit bin/linux_${TARGETARCH}/numb-date bin/linux_${TARGETARCH}/numb-typo /
 ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
     NUMBFORM_DOWNLOADS=/downloads \
     HOME=/downloads
