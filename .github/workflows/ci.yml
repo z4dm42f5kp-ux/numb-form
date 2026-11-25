@@ -26,7 +26,7 @@ jobs:
     # A pull request that changes the programs lists the change in
     # CHANGES.md (.github/DOCUMENTATION.md).
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:
@@ -43,7 +43,7 @@ jobs:
   pgp-sign:
     # The optional PGP signature of releases (scripts/pgp-sign.sh), tried
     # with a throwaway key made for this run.
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:
@@ -73,7 +73,7 @@ jobs:
 
   release-notes:
     # The descriptions on the release pages (scripts/release-notes.sh).
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:
@@ -92,7 +92,7 @@ jobs:
           rm stable.md edge.md
 
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:
@@ -125,11 +125,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-24.04, windows-latest, macos-latest]
         go: [stable]
         include:
           # Oldest supported Go (macOS refuses Go 1.21 binaries, so Linux).
-          - { os: ubuntu-latest, go: "1.21.x" }
+          - { os: ubuntu-24.04, go: "1.21.x" }
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
@@ -167,7 +167,7 @@ jobs:
           - { os: freebsd, version: "15.1" }
           - { os: openbsd, version: "8.0" }
           - { os: netbsd, version: "11.0" }
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:
@@ -236,7 +236,7 @@ jobs:
           if jls | grep numbform; then echo "jail left running" >&2; exit 1; fi
 
   container:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:

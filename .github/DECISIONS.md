@@ -339,3 +339,18 @@ manual is built into the programs. Every pull request, push and night
 now runs everything. A version released as part of a milestone must
 have passed ci and security on its own commit; release approval starts
 and awaits missing runs itself.
+
+## Pinned runners and the image step (after v1.4.1)
+
+`ubuntu-latest` moved to Ubuntu 26.04: it has no guix package, and its
+Docker pushes an image index even for one platform, which
+`docker manifest create` refuses. The release build of v1.4.1 stopped
+after publishing its archives, so v1.4.1 has no container image and
+v1.4.2 to v1.4.5 were not released. Every workflow now runs on
+`ubuntu-24.04`, so a new runner image changes nothing until the
+workflows are moved on purpose, and the release joins the images with
+`docker buildx imagetools create`, which takes images and indexes alike.
+A release is built with the workflow of its own tag, so the versions
+merged with the old image step (v1.4.2 to v1.7.9) cannot be built from
+their own commits. Their code is released as v1.7.9 from `main`, which
+contains all of them; their sections stay in CHANGES.md.

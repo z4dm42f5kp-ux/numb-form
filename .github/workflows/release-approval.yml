@@ -43,7 +43,7 @@ jobs:
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       actions: write # the translate run of the merge; ci and security of the milestone's versions
       contents: read
@@ -225,7 +225,7 @@ jobs:
   release:
     needs: propose
     if: needs.propose.outputs.version != ''
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # The owner approves here (required reviewer of the environment).
     environment: release
     permissions:

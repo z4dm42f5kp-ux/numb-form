@@ -52,7 +52,7 @@ jobs:
           - { distro: opensuse-leap, image: "opensuse/leap:16.0@sha256:40b8e1fc290b203380b9adc7cd147ef2141f5a613c7cf7117f678f626855654e" }
           - { distro: alpine, image: "alpine:latest@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a" }
           - { distro: nixos, image: "nixos/nix:latest@sha256:f159a58f390677f41e8e900a74b6e2f9c7f27b364122ae6acf7a652ce6c551c0" }
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 90
     permissions:
       contents: read
@@ -91,7 +91,7 @@ jobs:
     if: >-
       github.event_name != 'pull_request' ||
       (startsWith(github.event.pull_request.title, 'v') && contains(github.event.pull_request.title, '.0:'))
-    runs-on: ubuntu-24.04 # ubuntu-latest (26.04) has no guix package
+    runs-on: ubuntu-24.04 # ubuntu-24.04 (26.04) has no guix package
     timeout-minutes: 180
     permissions:
       contents: read
