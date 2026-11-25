@@ -78,7 +78,8 @@ numb-form handles customer documents, so the design rules are strict.
 * **numb-commit** only adds new folders and files, and from a working
   copy also replaces the overview spreadsheet when numb-date added report
   dates; it never deletes, never overwrites anything else, and never
-  copies the template, logs or lock files.
+  copies the template, logs, lock files, or a new folder of a company
+  the real folder already has.
   It first writes the full list of changes (`numb-commit-request.txt`)
   into the working copy and reviews it: every file's SHA-256, that the
   real folder did not change in the meantime, and that the spreadsheet

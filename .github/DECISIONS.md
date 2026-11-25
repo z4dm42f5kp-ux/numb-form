@@ -253,6 +253,13 @@ numb-form marks nothing in its documents (nothing outside section A may
 change); numb-commit recognises its forms by filling the template with
 the values a form holds and comparing.
 
+## numb-commit skips known companies and reviews in rounds
+
+A new folder of a company the target already has, typically under its
+customer ID (`D10629 Foo S.A.`), is not copied.
+The person chooses a manual review or an automatic one that corrects
+what it can and reviews again, at most five rounds.
+
 
 
 ## Optional PGP signature, FreeBSD jails, full Unicode (v1.3.7)

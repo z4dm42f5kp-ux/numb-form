@@ -136,6 +136,7 @@ func reviewRequest(q *request, cfg reviewConfig) *reqReview {
 	}
 	if !applied {
 		reviewFolders(v, q, cfg)
+		reviewDups(v, q)
 	}
 	if v.count("fail") == 0 {
 		if applied {
