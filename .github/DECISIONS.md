@@ -350,9 +350,11 @@ v1.4.5 were not released.
 The runners are not pinned to an older Ubuntu: as since v1.2.6 (format
 tests) and v1.7.4 (install commands), what depends on a distribution
 runs in the Debian 13 image pinned by digest, which the daily systems
-check keeps current. The Guix check now runs in Debian 12, pinned the
-same way: Debian 13 has no guix package, Debian 12 is the newest that
-does. The release
+check keeps current. The Guix check runs there too: Debian no longer
+ships a guix package (it left Debian 12 in a point release and is not in
+Debian 13), so the check installs Guix's own binary release, accepted
+only when signed by a Guix maintainer key, and pulls the current Guix
+from it. The release
 joins its images with `docker buildx imagetools create`, which takes
 images and indexes alike on any Docker.
 A release is built with the workflow of its own tag, so the versions
