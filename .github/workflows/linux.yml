@@ -142,6 +142,18 @@ jobs:
           for _ in $(seq 60); do [ -S /var/guix/daemon-socket/socket ] && break; sleep 1; done
           for k in /var/guix/profiles/per-user/root/current-guix/share/guix/*.pub; do guix archive --authorize < "$k"; done
           rm -rf "$t"
+          # Guix moved to Codeberg after 1.4.0; same channel introduction
+          mkdir -p "$HOME/.config/guix"
+          cat > "$HOME/.config/guix/channels.scm" <<'SCM'
+          (list (channel
+                  (name 'guix)
+                  (url "https://codeberg.org/guix/guix.git")
+                  (introduction
+                   (make-channel-introduction
+                    "9edb3f66fd807b096b48283debdcddccfea34bad"
+                    (openpgp-fingerprint
+                     "BBB0 2DDF 2CEA F6A8 0D1D  E643 A2A0 6DF2 A33A 54FA")))))
+          SCM
           guix pull
           echo "$HOME/.config/guix/current/bin" >> "$GITHUB_PATH"
       - name: Tests with Guix's Go
