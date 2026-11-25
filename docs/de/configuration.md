@@ -86,6 +86,9 @@ Die Programme, die einen Schlüssel verwenden, sind in Klammern benannt: **form*
 `fuzzy_threshold = 0.85` [form, Datum]
 : Wie ähnlich ein Ordnername sein muss, muss als Übereinstimmung angeboten werden (0,5-1).
 
+`unicode = basic` | `full` [form, date]
+: Wie Firmen- und Ordnernamen verglichen werden. **basic** (Standard): Fall, Abstand, Interpunktion und die Akzente west- und mitteleuropäischer Sprachen (`é`, `ç`, `ł`, `ü` als `u` oder `ue`) werden ignoriert. **full**: auch die Akzente und Sonderformen jedes anderen Alphabets, zum Beispiel `ș`, `ğ`, `ǎ`, Griechisch `ά`, Ligaturen wie `ﬁ` und Buchstaben voller Breite wie `Ａ`. Die zusätzliche Tabelle wird nur gelesen, wenn **full** gesetzt ist, so dass der Standard keine Arbeit hinzufügt.
+
 `timeout = none` [form, commit, date]
 : Stoppen Sie sicher nach diesem langen, zum Beispiel `30m` oder `2h`; **none** (Standard) bedeutet keine zeitliche Begrenzung.
 
@@ -97,6 +100,12 @@ Die Programme, die einen Schlüssel verwenden, sind in Klammern benannt: **form*
 
 `log_dir =` [form, Datum]
 : Ordner für Protokolle; leer bedeutet den Statusordner pro Benutzer (`%LOCALAPPDATA%\numb-form\runs`, `~/Library/Logs/numb-form` oder `~/.local/state/numb-form/runs`). Review-Modus-Logs bleiben bei der Kopie in Downloads.
+
+`commit_from =` [commit]
+: Die Arbeitskopie, die numb-commit verpflichtet, zum Beispiel `C:\Users\you\Downloads\14. GWG`; siehe [numb-commit.md](numb-commit.md). Leer: numb-commit fragt.
+
+`commit_to =` [commit]
+: Der reale Arbeitsordner, in den numb-commit die Arbeitskopie kopiert, zum Beispiel `F:\14. GWG`. Leer: numb-commit fragt.
 
 `online = yes` | `no` [update]
 : Lassen Sie `numb-form update` GitHub kontaktieren. Nichts anderes geht online.

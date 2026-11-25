@@ -119,6 +119,14 @@ o la firma Sigstore del archivo checksum con cosign:
 cosign verify-blob --bundle SHA256SUMS.sigstore.json --certificate-identity-regexp '^https://github.com/z4dm42f5kp-ux/numb-form/\.github/workflows/release\.yml@refs/tags/v' --certificate-oidc-issuer https://token.actions.githubusercontent.com SHA256SUMS
 ```
 
+Una versión también puede tener `SHA256SUMS.asc`, una firma PGP del archivo de suma de comprobación, para sistemas que tienen GnuPG pero no cosign. Se hace sólo una vez que el propietario ha establecido una llave de liberación; su clave pública es `.github/release-key.asc` en el repositorio. Compruébalo con GnuPG, en la carpeta con las descargas:
+
+```
+curl -fLO https://raw.githubusercontent.com/z4dm42f5kp-ux/numb-form/main/.github/release-key.asc && gpg --import release-key.asc && gpg --verify SHA256SUMS.asc SHA256SUMS
+```
+
+Una buena firma y una suma de verificación coincidente juntos prueban que el archivo es el que el flujo de trabajo de liberación construido.
+
 ## Aprovechamiento de la fuente
 
 El proyecto no tiene módulos de terceros: `go.mod` no tiene líneas `require` y la construcción no descarga nada. Las construcciones a continuación utilizan un temporal Vaya a construir caché que se elimina después, por lo que no se deja caché en el disco.

@@ -104,11 +104,13 @@ it; that is not a bug.
 
 Workflows (.github/workflows):
 
-  ci                 lint, tests (Linux, macOS, Windows); on push and
-                     nightly also BSD virtual machines, containers,
-                     every cross-compile target.
-  security           gosec, govulncheck, zizmor, history scan.
-  formats            pull requests: LibreOffice formats, fuzzing.
+  ci                 lint, tests (Linux, macOS, Windows), BSD virtual
+                     machines, containers, every cross-compile target;
+                     on every pull request, push and night.
+  security           gosec, govulncheck, CodeQL, fuzzing, zizmor,
+                     history scan; on every pull request, push and night.
+  formats            LibreOffice format tests; every pull request, push
+                     and night.
   translate          writes docs/es and docs/de; overlapping runs cancel
                      each other, so re-run one at a time.
   release-approval   after a merge: waits for the owner's approval.
