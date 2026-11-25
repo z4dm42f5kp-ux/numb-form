@@ -156,9 +156,9 @@ Nunca te pide una cita. Las empresas sin una carpeta, un formulario o una fecha 
 
 **Cerrar la lista de Excel primero. ** numb-date se detiene si el archivo está abierto. Sólo las células *Report created* cambian: ninguna otra célula, ningún formato.
 
-## 8. GWG en una unidad de red: trabajar en una copia, luego comprobarlo
+## 8. GWG en una unidad de red: trabajar en una copia, luego comprometer
 
-Cuando GWG vive en una unidad de red, por ejemplo `F:\14. GWG`, puede trabajar en una copia en su computadora. numb-commit entonces muestra exactamente lo que la copia agrega a la carpeta real.
+Cuando GWG vive en una unidad de red, por ejemplo `F:\14. GWG`, trabaja en una copia en su computadora y deja que numb-commit traiga el resultado de vuelta.
 
 Una vez, en PowerShell, dígale a numb-commit dónde está la carpeta real:
 
@@ -173,13 +173,13 @@ Cada vez:
 3. Corre numb-form y numb-date allí como siempre.
 4. Escriba `numb-commit` y pulse Enter.
 
-numb-commit pide las dos carpetas (a menos que se establezcan `commit_from` y `commit_to`), compara la copia con `F:\14. GWG` y escribe **`numb-commit-request.txt`QX** en la copia: la lista de exactamente lo nuevo, con el árbol de carpetas antes y después. Luego revisa la lista y termina con un veredicto:
+numb-commit asks for the two folders (unless `commit_from` and `commit_to` are set), compares the copy with `F:\14. GWG`, stages the files to copy in Downloads and writes **`numb-commit-request.txt`** into the copy: the list of exactly what it will add, with the folder tree before and after. No existing file is overwritten. It then checks the list and ends with a verdict:
 
-* `Verdict: OK to commit.` Todo está en orden.
-* `Verdict: commit after checking the lines marked check.` Lea las líneas marcadas `check`, por ejemplo un formulario con una dirección en blanco.
-* `Verdict: do not commit.` Las líneas marcadas `FAIL` dicen lo que está mal.
+* `Verdict: OK to commit.` Tipo `y` para copiar.
+* `Verdict: commit after checking the lines marked check.` Lea las líneas marcadas `check` (por ejemplo, un formulario con una dirección en blanco), luego `y` o Enter.
+* `Verdict: do not commit.` Nada puede ser copiado; las líneas marcadas `FAIL` dicen por qué.
 
-numb-commit no copia nada todavía. Copie las nuevas carpetas de la compañía enumeradas bajo *Nueva carpeta* en `F:\14. GWG` usted mismo, y la lista de Excel si se enumera bajo *Reemplazado*. Nunca copie la plantilla, registros o archivos de bloqueo de Office. `numb-commit review` repite el cheque en cualquier momento, por ejemplo en una copia preparada por un colega. El manual [numb-commitZ](numb-commit.md) explica cada mensaje.
+Sólo se copian las nuevas carpetas de la compañía y las fechas del informe en la lista de Excel. La plantilla, los registros y los archivos de Office lock permanecen atrás, nada en la unidad de red se elimina, y la vieja lista de Excel se guarda en su carpeta de registro. `numb-commit review` repite el cheque en cualquier momento sin copiar, por ejemplo en una copia preparada por un colega. El manual [numb-commitZ](numb-commit.md) explica cada mensaje.
 
 ## ¿Prefieres revisar todo antes de aterrizar en GWG?
 
