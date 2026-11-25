@@ -139,6 +139,11 @@ jobs:
           for i in 1 2 3 4; do
             id "guixbuilder$i" > /dev/null 2>&1 || useradd -g guixbuild -G guixbuild -d /var/empty -s /usr/sbin/nologin -M --system "guixbuilder$i"
           done
+          # UTF-8 locale from the release, for file names in substitutes
+          GUIX_LOCPATH=$(ls -d /gnu/store/*-glibc-utf8-locales-*/lib/locale | head -n 1)
+          [ -d "$GUIX_LOCPATH" ] || { echo "::error::no UTF-8 locales in the Guix release"; exit 1; }
+          export GUIX_LOCPATH LC_ALL=en_US.utf8
+          printf 'GUIX_LOCPATH=%s\nLC_ALL=en_US.utf8\n' "$GUIX_LOCPATH" >> "$GITHUB_ENV"
           guix-daemon --build-users-group=guixbuild --disable-chroot > /tmp/guix-daemon.log 2>&1 &
           for _ in $(seq 60); do [ -S /var/guix/daemon-socket/socket ] && break; sleep 1; done
           for k in /var/guix/profiles/per-user/root/current-guix/share/guix/*.pub; do guix archive --authorize < "$k"; done
