@@ -101,9 +101,9 @@ When a value is left empty (Enter alone), the field reads:
 | Headquarters / Address | `No address was found online due to little to no information available` |
 | Authorized Representatives | `No representatives were found online, please consult other internal sources for more accurate information` |
 
-**numb-commit** copies the accepted folders of a review run into the
-real working folder, and shows and checks what a working copy would add
-to it: see [numb-commit.md](numb-commit.md).
+**numb-commit** copies the new forms into the real working folder, from
+a working copy or a review run, after showing and checking exactly what
+changes: see [numb-commit.md](numb-commit.md).
 
 **numb-date** fills the *Report created* column of the spreadsheet from
 the forms: see [numb-date.md](numb-date.md).

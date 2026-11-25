@@ -242,6 +242,17 @@ copies nothing, so the comparison can be checked on real folders before
 numb-commit writes to a network drive.
 Review runs (`mode = review`) work as before.
 
+## numb-commit stages and copies after a yes
+
+numb-commit stages exactly the files to copy in Downloads, read-only,
+and touches the target only after the person agrees.
+A new folder is built under a temporary name and renamed when complete;
+no existing file is overwritten, and the replaced spreadsheet is kept in
+the log folder.
+numb-form marks nothing in its documents (nothing outside section A may
+change); numb-commit recognises its forms by filling the template with
+the values a form holds and comparing.
+
 
 
 ## Optional PGP signature, FreeBSD jails, full Unicode (v1.3.7)
