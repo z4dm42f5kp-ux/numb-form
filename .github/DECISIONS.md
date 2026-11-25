@@ -242,6 +242,8 @@ copies nothing, so the comparison can be checked on real folders before
 numb-commit writes to a network drive.
 Review runs (`mode = review`) work as before.
 
+
+
 ## Optional PGP signature, FreeBSD jails, full Unicode (v1.3.7)
 
 The plans for v1.3.7 (#94) asked for PGP signing where SHA-256 does not

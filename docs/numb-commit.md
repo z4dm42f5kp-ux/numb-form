@@ -222,7 +222,9 @@ prepared.
 ## FILES
 
 `<working copy>/numb-commit-request.txt`
-: The request: what would be copied. UTF-8.
+: The request: what would be copied.
+  UTF-8 with a byte order mark, so Notepad and Windows PowerShell 5.1
+  (`Get-Content`) show the tree correctly.
 
 `Downloads/numb-form-runs/<run>/numb-commit.log`
 : Review runs: log of the commit.
@@ -230,7 +232,8 @@ prepared.
 ## EXIT STATUS
 
 0 when the review passes or there is nothing to do; 1 on an error or a
-failed review; 2 on a usage error; 3 when stopped with Ctrl+C.
+failed review; 2 on a usage error; 3 when stopped with Ctrl+C or by
+closing the window.
 
 ## EXAMPLES
 
