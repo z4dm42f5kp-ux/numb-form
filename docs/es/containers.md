@@ -91,9 +91,11 @@ Docker no funciona en los BSD. En FreeBSD, el script `numb-form-jail` ejecuta lo
 
 **Unix-like** (FreeBSD), en Terminal:
 
+<!-- install:freebsd-jail -->
 ```
-cd "$(mktemp -d)" && fetch https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/numb-form_freebsd_amd64.tar.gz && fetch https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/SHA256SUMS && sha256 -c "$(awk '$2=="numb-form_freebsd_amd64.tar.gz"{print $1}' SHA256SUMS)" numb-form_freebsd_amd64.tar.gz && tar -xzf numb-form_freebsd_amd64.tar.gz jail.sh && doas install -o root -g wheel -m 0555 jail.sh /usr/local/sbin/numb-form-jail && cd / && rm -rf "$OLDPWD" && echo OK
+cd "$(mktemp -d)" && fetch https://github.com/z4dm42f5kp-ux/numb-form/releases/download/v1.2.1/numb-form_freebsd_amd64.tar.gz && sha256 -c a535bdcbf5f93320ad0bfae865dd9100dc5f9c95b58591aaa565c5c34458c932 numb-form_freebsd_amd64.tar.gz && tar -xzf numb-form_freebsd_amd64.tar.gz jail.sh && doas install -o root -g wheel -m 0555 jail.sh /usr/local/sbin/numb-form-jail && cd / && rm -rf "$OLDPWD" && echo OK
 ```
+<!-- /install:freebsd-jail -->
 
 Luego, dentro de la carpeta de trabajo (o la carpeta encima de ella):
 

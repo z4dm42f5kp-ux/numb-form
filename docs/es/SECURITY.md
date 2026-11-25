@@ -98,6 +98,7 @@ Una ejecución de formularios no hace conexiones de red. Los nombres de las empr
 | Python tools in CI (zizmor, Argos Translate) | todos los paquetes conectados con SHA-256 (`--require-hashes`), ruedas solamente (`--only-binary :all:`), sin resolución de dependencia en el tiempo de instalación (`--no-deps`) |
 | Modelos Argos Translate | índice leído en un compromiso de pinned; el SHA-256 de cada modelo se fija en `.github/translate/models.sha256`, grabado en el primer uso y aplicado después |
 | Imagen de base de contenedores | ninguna: las imágenes se construyen `FROM scratch` |
+| Sistemas de prueba (imágenes de contenedores de las distribuciones Linux, las máquinas virtuales BSD) | imágenes fijadas por el digestión; un cheque diario propone nuevos digestos (actualizaciones de seguridad de las distribuciones) e informa nuevas versiones (`scripts/check-systems.sh`) |
 
 **Releases.** Los binarios de liberación son construidos por GitHub Actions de una etiqueta, con `-trimpath` y un timetamp fijo, por lo que son reproducibles. Un lanzamiento se publica sólo después de que el propietario lo apruebe en el entorno `release` (ver [.github/RELEASING.md](../../.github/RELEASING.md)). Cada versión tiene:
 
@@ -107,7 +108,7 @@ Una ejecución de formularios no hace conexiones de red. Los nombres de las empr
 * SLSA build provenance attestations for every archive and binary (`gh attestation verify`);
 * a imagen de contenedor en ghcr.io, firmado con cosign y certificado.
 
-[docs/install.md](install.md) muestra cómo verificar cada uno de ellos.
+[docs/install.md](install.md) muestra cómo verificar cada uno de ellos. Su instalación comandos nombre una versión estable y llevar los cheques SHA-256 de la versión, tomados de `SHA256SUMS` después de que su firma Sigstore fue verificada (`.github/workflows/install-docs.yml`), por lo que un archivo reemplazado en el servidor de descarga falla el cheque.
 
 ## Gasoducto de pruebas de seguridad
 
@@ -129,7 +130,7 @@ Cada solicitud de tirada, cada empuje a `main` o una sucursal de agente, y un ho
 | Container image construye y se niega a funcionar sin un terminal | Docker, podman |
 | Nuevas dependencias en las solicitudes de exención | examen de la dependencia |
 
-OpenSSF Scorecard revisa las prácticas del repositorio. Pull requests, including Dependabot's, never need write permissions: results that require them are uploaded only from `main`.
+OpenSSF Scorecard revisa las prácticas del repositorio todos los días. El flujo de trabajo de actualizaciones diarias también comprueba los sistemas de prueba, la ventana de soporte de Go y los paquetes de Python marcados contra la base de datos OSV ([.github/RELEASING.md](../../.github/RELEASING.md) lista cada cheque diario). Pull requests, including Dependabot's, never need write permissions: results that require them are uploaded only from `main`.
 
 Los flujos de trabajo comienzan sin permisos y conceden cada trabajo sólo lo que necesita; los cheques no guardan credenciales.
 

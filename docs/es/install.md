@@ -15,77 +15,123 @@ Cada comando de abajo es una sola línea. Entendido. Se detiene en el primer pas
 
 ## Liberar binarios (sin derechos de administrador)
 
-Archives are named `numb-form_<os>_<arch>`, where *os* is `linux`, `darwin` (macOS), `windows`, `freebsd`, `openbsd` or `netbsd`, and *arch* is `amd64` or `arm64` (Linux and Windows also have `386`; Linux has `armv7`). The commands use `amd64`; replace it to suit the machine. Each command downloads into a temporary folder, verifies the SHA-256 checksum, installs into a folder you own and cleans up.
+Cada comando instala una versión estable, llamada en el comando, y comprueba su suma de comprobación SHA-256 contra el valor escrito en el comando mismo. Una descarga cambiada o dañada se detiene con un error antes de instalar cualquier cosa. La suma de comprobación viene de esta página, no desde el servidor los archivos vienen de, por lo que un archivo reemplazado en el servidor no puede pasar. Los comandos descargan sobre HTTPS solamente, instalan en una carpeta que posee y limpian después de sí mismos.
 
-### Linux (Debian, Ubuntu, Arch, Fedora, Gentoo, Void, Alpine)
+Los comandos de esta página están escritos por un programa de los cheques firmados de la versión (`scripts/install`). Después de cada lanzamiento estable, un flujo de trabajo revisa la firma Sigstore de la versión y propone los nuevos comandos; un cheque diario captura una liberación perdida. `numb-form update` instala nuevas versiones de la misma manera.
 
+Archives are named `numb-form_<os>_<arch>`, where *os* is `linux`, `darwin` (macOS), `windows`, `freebsd`, `openbsd` or `netbsd`, and *arch* is `amd64` or `arm64` (Linux and Windows also have `386`; Linux has `armv7`). For another archive, replace its name in both places of the command and take its checksum from [the table](#checksums).
+
+### Linux
+
+Un comando funciona en cada distribución; necesita `curl`, `tar`, `gzip` y `sha256sum`.
+
+<!-- install:linux -->
 ```
-cd "$(mktemp -d)" && curl -fLO https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/numb-form_linux_amd64.tar.gz && curl -fLO https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/SHA256SUMS && grep ' numb-form_linux_amd64.tar.gz$' SHA256SUMS | sha256sum -c - && tar -xzf numb-form_linux_amd64.tar.gz && mkdir -p "$HOME/.local/bin" && install -m 0755 numb-form numb-commit numb-date numb-typo "$HOME/.local/bin/" && cd / && rm -rf "$OLDPWD" && echo OK
+cd "$(mktemp -d)" && curl --proto '=https' --tlsv1.2 -fsSLO https://github.com/z4dm42f5kp-ux/numb-form/releases/download/v1.2.1/numb-form_linux_amd64.tar.gz && echo 'e336d789a9e758ea1d919f2adc5521d14d159572b644ddc325174d01e0dcc6b8  numb-form_linux_amd64.tar.gz' | sha256sum -c - && tar -xzf numb-form_linux_amd64.tar.gz && mkdir -p "$HOME/.local/bin" && install -m 0755 numb-form numb-commit numb-date "$HOME/.local/bin/" && cd / && rm -rf "$OLDPWD" && "$HOME/.local/bin/numb-form" -version
 ```
+<!-- /install:linux -->
+
+En las computadoras ARM (arm64):
+
+<!-- install:linux-arm64 -->
+```
+cd "$(mktemp -d)" && curl --proto '=https' --tlsv1.2 -fsSLO https://github.com/z4dm42f5kp-ux/numb-form/releases/download/v1.2.1/numb-form_linux_arm64.tar.gz && echo 'c44b5089a40a6883e9a1531f0bcde6e9afaf9698f05e857f11f81475042405b0  numb-form_linux_arm64.tar.gz' | sha256sum -c - && tar -xzf numb-form_linux_arm64.tar.gz && mkdir -p "$HOME/.local/bin" && install -m 0755 numb-form numb-commit numb-date "$HOME/.local/bin/" && cd / && rm -rf "$OLDPWD" && "$HOME/.local/bin/numb-form" -version
+```
+<!-- /install:linux-arm64 -->
+
+Si el comando informa que `curl` u otro programa falta, instálelo primero:
+
+<!-- install:linux-tools -->
+| Distribución | Instalar lo que el comando necesita (una vez) |
+| --- | --- |
+| Debian 13 y sistemas basados en él | `sudo apt-get update && sudo apt-get install -y curl ca-certificates` |
+| Fedora 44 (curl está instalado) | `sudo dnf install -y tar gzip` |
+| Arch Linux | `sudo pacman -S --needed curl tar gzip` |
+| Gentoo | `sudo emerge --ask --noreplace net-misc/curl` |
+| Void Linux | `sudo xbps-install -Sy curl` |
+| openSUSE Tumbleweed and Leap 16 | `sudo zypper install -y curl tar gzip` |
+| Alpine Linux | `doas apk add curl` |
+| NixOS | `nix-shell -p curl` (una concha con rizo; ejecutar el comando dentro de él) |
+| Sistema Guix | `guix shell curl tar gzip coreutils` (una concha con ellos; ejecutar el comando dentro de él) |
+<!-- /install:linux-tools -->
+
+Estas distribuciones se prueban antes de cada lanzamiento menor (vX.Y.0): Debian 13, Fedora 44, Arch Linux, Gentoo, Void Linux, openSUSE Tumbleweed y Leap 16, Alpine Linux, NixOS y Guix.
 
 ### macOS
 
-```
-cd "$(mktemp -d)" && curl -fLO https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/numb-form_darwin_arm64.tar.gz && curl -fLO https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/SHA256SUMS && grep ' numb-form_darwin_arm64.tar.gz$' SHA256SUMS | shasum -a 256 -c - && tar -xzf numb-form_darwin_arm64.tar.gz && { xattr -d com.apple.quarantine numb-form numb-commit numb-date numb-typo 2>/dev/null || true; } && mkdir -p "$HOME/.local/bin" && install -m 0755 numb-form numb-commit numb-date numb-typo "$HOME/.local/bin/" && cd / && rm -rf "$OLDPWD" && echo OK
-```
+Silicio de manzana (M1 y posterior):
 
-Use `darwin_amd64` en Intel Macs. Los binarios no son notarizados por Apple; el paso `xattr` elimina la bandera de cuarentena de descarga después de que se haya verificado la suma de comprobación.
+<!-- install:macos -->
+```
+cd "$(mktemp -d)" && curl --proto '=https' --tlsv1.2 -fsSLO https://github.com/z4dm42f5kp-ux/numb-form/releases/download/v1.2.1/numb-form_darwin_arm64.tar.gz && echo 'bb3284a2412fe68075be90e5f4df81284c536af9b304a10ffd5112cef21cb396  numb-form_darwin_arm64.tar.gz' | shasum -a 256 -c - && tar -xzf numb-form_darwin_arm64.tar.gz && { xattr -d com.apple.quarantine numb-form numb-commit numb-date 2>/dev/null || true; } && mkdir -p "$HOME/.local/bin" && install -m 0755 numb-form numb-commit numb-date "$HOME/.local/bin/" && cd / && rm -rf "$OLDPWD" && "$HOME/.local/bin/numb-form" -version
+```
+<!-- /install:macos -->
+
+Intel Macs:
+
+<!-- install:macos-intel -->
+```
+cd "$(mktemp -d)" && curl --proto '=https' --tlsv1.2 -fsSLO https://github.com/z4dm42f5kp-ux/numb-form/releases/download/v1.2.1/numb-form_darwin_amd64.tar.gz && echo '54ea02b6c4e055aceed0fefce86677afc043a10cd0ee0cae2fe3532ce0260d0b  numb-form_darwin_amd64.tar.gz' | shasum -a 256 -c - && tar -xzf numb-form_darwin_amd64.tar.gz && { xattr -d com.apple.quarantine numb-form numb-commit numb-date 2>/dev/null || true; } && mkdir -p "$HOME/.local/bin" && install -m 0755 numb-form numb-commit numb-date "$HOME/.local/bin/" && cd / && rm -rf "$OLDPWD" && "$HOME/.local/bin/numb-form" -version
+```
+<!-- /install:macos-intel -->
+
+Los binarios no son notarizados por Apple; el paso `xattr` elimina la bandera de cuarentena de descarga después de que se haya verificado la suma de comprobación.
 
 ### Windows 10 y 11
 
-Los comandos de ambos proyectiles siguen. Use el que coincida con la ventana que tiene abierto: Windows PowerShell (azul, rápido `PS C:\>`) o Command Prompt (negro, rápido `C:\>`). Se instalan en `%LOCALAPPDATA%\Programs\numb-form` y se la añaden a su propio `PATH`; no se necesitan derechos de administrador. Utilice `arm64` en lugar de `amd64` en dispositivos ARM.
+Los comandos de ambos proyectiles siguen. Use el que coincida con la ventana que tiene abierto: Windows PowerShell (azul, rápido `PS C:\>`) o Command Prompt (negro, rápido `C:\>`). Se instalan en `%LOCALAPPDATA%\Programs\numb-form` y se la añaden a su propio `PATH`; no se necesitan derechos de administrador.
 
 Windows PowerShell 5.1 no tiene `&&`. Por lo tanto, los comandos PowerShell se detienen en el primer error con `$ErrorActionPreference = 'Stop'`, que tiene el mismo efecto.
 
 Windows PowerShell:
 
+<!-- install:windows -->
 ```
-& { $ErrorActionPreference = 'Stop'; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $u = 'https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download'; $z = 'numb-form_windows_amd64.zip'; $d = Join-Path $env:LOCALAPPDATA 'Programs\numb-form'; New-Item -ItemType Directory -Force $d | Out-Null; Set-Location $d; try { Invoke-WebRequest -UseBasicParsing "$u/$z" -OutFile $z; Invoke-WebRequest -UseBasicParsing "$u/SHA256SUMS" -OutFile SHA256SUMS; $h = (Get-FileHash $z -Algorithm SHA256).Hash.ToLower(); if (-not (Select-String -Path SHA256SUMS -SimpleMatch "$h  $z" -Quiet)) { throw 'CHECKSUM MISMATCH' }; Expand-Archive -Force $z -DestinationPath $d } finally { Remove-Item -ErrorAction SilentlyContinue $z, SHA256SUMS }; $p = [Environment]::GetEnvironmentVariable('Path', 'User'); if (-not $p) { $p = '' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';') + ';' + $d).TrimStart(';'), 'User') }; 'OK, open a new PowerShell window' }
+& { $ErrorActionPreference = 'Stop'; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $z = 'numb-form_windows_amd64.zip'; $d = Join-Path $env:LOCALAPPDATA 'Programs\numb-form'; New-Item -ItemType Directory -Force $d | Out-Null; Set-Location $d; try { Invoke-WebRequest -UseBasicParsing "https://github.com/z4dm42f5kp-ux/numb-form/releases/download/v1.2.1/$z" -OutFile $z; if ((Get-FileHash $z -Algorithm SHA256).Hash.ToLower() -ne '26f893d6306babb42a2b2a801519e9136f1c91850233cf02206706c7701d8a91') { throw 'CHECKSUM MISMATCH' }; Expand-Archive -Force $z -DestinationPath $d } finally { Remove-Item -ErrorAction SilentlyContinue $z }; $p = [Environment]::GetEnvironmentVariable('Path', 'User'); if (-not $p) { $p = '' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';') + ';' + $d).TrimStart(';'), 'User') }; & (Join-Path $d 'numb-form.exe') -version; 'OK, open a new PowerShell window' }
 ```
+<!-- /install:windows -->
 
 Command Prompt:
 
+<!-- install:windows-cmd -->
 ```
-(if not exist "%LOCALAPPDATA%\Programs\numb-form" mkdir "%LOCALAPPDATA%\Programs\numb-form") && cd /d "%LOCALAPPDATA%\Programs\numb-form" && curl.exe -fLO https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/numb-form_windows_amd64.zip && curl.exe -fLO https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/SHA256SUMS && powershell -NoProfile -Command "$h=(Get-FileHash numb-form_windows_amd64.zip -Algorithm SHA256).Hash.ToLower(); if (-not (Select-String -Path SHA256SUMS -SimpleMatch ($h+'  numb-form_windows_amd64.zip') -Quiet)) { Write-Error 'CHECKSUM MISMATCH'; exit 1 }; $d=$env:LOCALAPPDATA+'\Programs\numb-form'; $p=[Environment]::GetEnvironmentVariable('Path','User'); if (-not $p) { $p='' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';')+';'+$d).TrimStart(';'), 'User') }" && tar -xf numb-form_windows_amd64.zip && del numb-form_windows_amd64.zip SHA256SUMS && echo OK, open a new Command Prompt
+(if not exist "%LOCALAPPDATA%\Programs\numb-form" mkdir "%LOCALAPPDATA%\Programs\numb-form") && cd /d "%LOCALAPPDATA%\Programs\numb-form" && curl.exe --proto =https --tlsv1.2 -fsSLO https://github.com/z4dm42f5kp-ux/numb-form/releases/download/v1.2.1/numb-form_windows_amd64.zip && powershell -NoProfile -Command "if ((Get-FileHash numb-form_windows_amd64.zip -Algorithm SHA256).Hash.ToLower() -ne '26f893d6306babb42a2b2a801519e9136f1c91850233cf02206706c7701d8a91') { Write-Error 'CHECKSUM MISMATCH'; exit 1 }; $d=$env:LOCALAPPDATA+'\Programs\numb-form'; $p=[Environment]::GetEnvironmentVariable('Path','User'); if (-not $p) { $p='' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';')+';'+$d).TrimStart(';'), 'User') }" && tar -xf numb-form_windows_amd64.zip && del numb-form_windows_amd64.zip && numb-form.exe -version && echo OK, open a new Command Prompt
 ```
-
-Si una descarga falla con `404`, todavía no se ha publicado ninguna versión; construir de la fuente como se describe a continuación.
+<!-- /install:windows-cmd -->
 
 ### Reinstalación o actualización en Windows
 
-Desde la versión 0.1.2 en, `numb-form update` hace esto por sí mismo (ver [usage](usage.md)); funciona igual en cada sistema. Para versiones anteriores, o si no puede conectarse, cierre cada ventana numb-form, ejecute una de estas en Windows PowerShell. Reemplazan los programas, mantienen su configuración e imprimen la versión instalada.
+`numb-form update` hace esto por sí mismo (ver [usage](usage.md)); funciona igual en cada sistema. Si no puede conectarse, cierre cada ventana numb-form, ejecute esto en Windows PowerShell. Reemplaza los programas, mantiene su configuración e imprime la versión instalada.
 
-Stable release:
-
+<!-- install:windows-reinstall -->
 ```
-& { $ErrorActionPreference = 'Stop'; if (Get-Process numb-form, numb-commit, numb-date, numb-typo -ErrorAction SilentlyContinue) { throw 'Close every numb-form window first, then run this again' }; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $u = 'https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download'; $z = 'numb-form_windows_amd64.zip'; $d = Join-Path $env:LOCALAPPDATA 'Programs\numb-form'; New-Item -ItemType Directory -Force $d | Out-Null; Push-Location $d; try { Invoke-WebRequest -UseBasicParsing "$u/$z" -OutFile $z; Invoke-WebRequest -UseBasicParsing "$u/SHA256SUMS" -OutFile SHA256SUMS; $h = (Get-FileHash $z -Algorithm SHA256).Hash.ToLower(); if (-not (Select-String -Path SHA256SUMS -SimpleMatch "$h  $z" -Quiet)) { throw 'CHECKSUM MISMATCH' }; Remove-Item -Force -ErrorAction SilentlyContinue numb-form.exe, numb-commit.exe, numb-date.exe, numb-typo.exe; Expand-Archive -Force $z -DestinationPath $d } finally { Remove-Item -ErrorAction SilentlyContinue $z, SHA256SUMS; Pop-Location }; $p = [Environment]::GetEnvironmentVariable('Path', 'User'); if (-not $p) { $p = '' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';') + ';' + $d).TrimStart(';'), 'User') }; & (Join-Path $d 'numb-form.exe') -version; 'OK, reinstalled. Your settings are kept. Open a new PowerShell window' }
+& { $ErrorActionPreference = 'Stop'; if (Get-Process numb-form, numb-commit, numb-date, numb-typo -ErrorAction SilentlyContinue) { throw 'Close every numb-form window first, then run this again' }; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $z = 'numb-form_windows_amd64.zip'; $d = Join-Path $env:LOCALAPPDATA 'Programs\numb-form'; New-Item -ItemType Directory -Force $d | Out-Null; Push-Location $d; try { Invoke-WebRequest -UseBasicParsing "https://github.com/z4dm42f5kp-ux/numb-form/releases/download/v1.2.1/$z" -OutFile $z; if ((Get-FileHash $z -Algorithm SHA256).Hash.ToLower() -ne '26f893d6306babb42a2b2a801519e9136f1c91850233cf02206706c7701d8a91') { throw 'CHECKSUM MISMATCH' }; Remove-Item -Force -ErrorAction SilentlyContinue numb-form.exe, numb-commit.exe, numb-date.exe; Expand-Archive -Force $z -DestinationPath $d } finally { Remove-Item -ErrorAction SilentlyContinue $z; Pop-Location }; $p = [Environment]::GetEnvironmentVariable('Path', 'User'); if (-not $p) { $p = '' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';') + ';' + $d).TrimStart(';'), 'User') }; & (Join-Path $d 'numb-form.exe') -version; 'OK, reinstalled. Your settings are kept. Open a new PowerShell window' }
 ```
-
-Construcción de rollos (reconstruido desde `main` después de cada cambio; vea a continuación):
-
-```
-& { $ErrorActionPreference = 'Stop'; if (Get-Process numb-form, numb-commit, numb-date, numb-typo -ErrorAction SilentlyContinue) { throw 'Close every numb-form window first, then run this again' }; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $u = 'https://github.com/z4dm42f5kp-ux/numb-form/releases/download/edge'; $z = 'numb-form_windows_amd64.zip'; $d = Join-Path $env:LOCALAPPDATA 'Programs\numb-form'; New-Item -ItemType Directory -Force $d | Out-Null; Push-Location $d; try { Invoke-WebRequest -UseBasicParsing "$u/$z" -OutFile $z; Invoke-WebRequest -UseBasicParsing "$u/SHA256SUMS" -OutFile SHA256SUMS; $h = (Get-FileHash $z -Algorithm SHA256).Hash.ToLower(); if (-not (Select-String -Path SHA256SUMS -SimpleMatch "$h  $z" -Quiet)) { throw 'CHECKSUM MISMATCH' }; Remove-Item -Force -ErrorAction SilentlyContinue numb-form.exe, numb-commit.exe, numb-date.exe, numb-typo.exe; Expand-Archive -Force $z -DestinationPath $d } finally { Remove-Item -ErrorAction SilentlyContinue $z, SHA256SUMS; Pop-Location }; $p = [Environment]::GetEnvironmentVariable('Path', 'User'); if (-not $p) { $p = '' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';') + ';' + $d).TrimStart(';'), 'User') }; & (Join-Path $d 'numb-form.exe') -version; 'OK, reinstalled. Your settings are kept. Open a new PowerShell window' }
-```
+<!-- /install:windows-reinstall -->
 
 ### FreeBSD
 
+<!-- install:freebsd -->
 ```
-cd "$(mktemp -d)" && fetch https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/numb-form_freebsd_amd64.tar.gz && fetch https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/SHA256SUMS && sha256 -c "$(awk '$2=="numb-form_freebsd_amd64.tar.gz"{print $1}' SHA256SUMS)" numb-form_freebsd_amd64.tar.gz && tar -xzf numb-form_freebsd_amd64.tar.gz && mkdir -p "$HOME/.local/bin" && install -m 0755 numb-form numb-commit numb-date numb-typo "$HOME/.local/bin/" && cd / && rm -rf "$OLDPWD" && echo OK
+cd "$(mktemp -d)" && fetch https://github.com/z4dm42f5kp-ux/numb-form/releases/download/v1.2.1/numb-form_freebsd_amd64.tar.gz && sha256 -c a535bdcbf5f93320ad0bfae865dd9100dc5f9c95b58591aaa565c5c34458c932 numb-form_freebsd_amd64.tar.gz && tar -xzf numb-form_freebsd_amd64.tar.gz && mkdir -p "$HOME/.local/bin" && install -m 0755 numb-form numb-commit numb-date "$HOME/.local/bin/" && cd / && rm -rf "$OLDPWD" && "$HOME/.local/bin/numb-form" -version
 ```
+<!-- /install:freebsd -->
 
 ### OpenBSD
 
-El archivo `SHA256` utiliza el formato BSD que sha256(1) verifica directamente.
-
+<!-- install:openbsd -->
 ```
-cd "$(mktemp -d)" && ftp https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/numb-form_openbsd_amd64.tar.gz && ftp https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/SHA256 && sha256 -C SHA256 numb-form_openbsd_amd64.tar.gz && tar -xzf numb-form_openbsd_amd64.tar.gz && mkdir -p "$HOME/.local/bin" && install -m 0755 numb-form numb-commit numb-date numb-typo "$HOME/.local/bin/" && cd / && rm -rf "$OLDPWD" && echo OK
+cd "$(mktemp -d)" && ftp https://github.com/z4dm42f5kp-ux/numb-form/releases/download/v1.2.1/numb-form_openbsd_amd64.tar.gz && test "$(sha256 -q numb-form_openbsd_amd64.tar.gz)" = dd0c3b9b04c614c0b1a634ee84fded10011b7b4abdef2539cb88237fa1ec42cb && tar -xzf numb-form_openbsd_amd64.tar.gz && mkdir -p "$HOME/.local/bin" && install -m 0755 numb-form numb-commit numb-date "$HOME/.local/bin/" && cd / && rm -rf "$OLDPWD" && "$HOME/.local/bin/numb-form" -version
 ```
+<!-- /install:openbsd -->
 
 ### NetBSD
 
+<!-- install:netbsd -->
 ```
-cd "$(mktemp -d)" && ftp https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/numb-form_netbsd_amd64.tar.gz && ftp https://github.com/z4dm42f5kp-ux/numb-form/releases/latest/download/SHA256 && test "$(cksum -a SHA256 numb-form_netbsd_amd64.tar.gz)" = "$(grep '(numb-form_netbsd_amd64.tar.gz)' SHA256)" && tar -xzf numb-form_netbsd_amd64.tar.gz && mkdir -p "$HOME/.local/bin" && install -m 0755 numb-form numb-commit numb-date numb-typo "$HOME/.local/bin/" && cd / && rm -rf "$OLDPWD" && echo OK
+cd "$(mktemp -d)" && ftp https://github.com/z4dm42f5kp-ux/numb-form/releases/download/v1.2.1/numb-form_netbsd_amd64.tar.gz && test "$(cksum -a SHA256 numb-form_netbsd_amd64.tar.gz)" = 'SHA256 (numb-form_netbsd_amd64.tar.gz) = 949174f1434f2e3e529a4f55f5dcff4aaa314b507a1c7a4bf1ab1887134e1c8b' && tar -xzf numb-form_netbsd_amd64.tar.gz && mkdir -p "$HOME/.local/bin" && install -m 0755 numb-form numb-commit numb-date "$HOME/.local/bin/" && cd / && rm -rf "$OLDPWD" && "$HOME/.local/bin/numb-form" -version
 ```
+<!-- /install:netbsd -->
 
 En Linux, macOS y BSD, asegúrate de que `~/.local/bin` esté en `PATH`:
 
@@ -93,11 +139,33 @@ En Linux, macOS y BSD, asegúrate de que `~/.local/bin` esté en `PATH`:
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.profile" && . "$HOME/.profile"
 ```
 
+### Sumas de comprobación
+
+<!-- install:checksums -->
+| Archivo de v1.2.1 | SHA-256 |
+| --- | --- |
+| `numb-form_darwin_amd64.tar.gz` | `54ea02b6c4e055aceed0fefce86677afc043a10cd0ee0cae2fe3532ce0260d0b` |
+| `numb-form_darwin_arm64.tar.gz` | `bb3284a2412fe68075be90e5f4df81284c536af9b304a10ffd5112cef21cb396` |
+| `numb-form_freebsd_amd64.tar.gz` | `a535bdcbf5f93320ad0bfae865dd9100dc5f9c95b58591aaa565c5c34458c932` |
+| `numb-form_freebsd_arm64.tar.gz` | `3d6f362be408cb282d862f4a442ef6663495fc5fdc15de6cd7ff87a3ba0ebf01` |
+| `numb-form_linux_386.tar.gz` | `c1f4eeb5192169bdbb938abf6a55c4a9584b1ba3b78a4624719fee3874c151a8` |
+| `numb-form_linux_amd64.tar.gz` | `e336d789a9e758ea1d919f2adc5521d14d159572b644ddc325174d01e0dcc6b8` |
+| `numb-form_linux_arm64.tar.gz` | `c44b5089a40a6883e9a1531f0bcde6e9afaf9698f05e857f11f81475042405b0` |
+| `numb-form_linux_armv7.tar.gz` | `633be78a65423d29c5b33c2c909801f080d86c78643d9539b041c0dfe2c32952` |
+| `numb-form_netbsd_amd64.tar.gz` | `949174f1434f2e3e529a4f55f5dcff4aaa314b507a1c7a4bf1ab1887134e1c8b` |
+| `numb-form_netbsd_arm64.tar.gz` | `c17809e0afbff7bafc78d53927d3dbc6a575557c43c0c4687e8aa50dae8f672f` |
+| `numb-form_openbsd_amd64.tar.gz` | `dd0c3b9b04c614c0b1a634ee84fded10011b7b4abdef2539cb88237fa1ec42cb` |
+| `numb-form_openbsd_arm64.tar.gz` | `8aff77e9100dad9708f7b5131162d2828d01ba7eceb78f2c24ab762b2b890e4e` |
+| `numb-form_windows_386.zip` | `3a02f2809d5162e91ecd9ffc3282685e895217cecd97e0b2787a3ffa71bfb003` |
+| `numb-form_windows_amd64.zip` | `26f893d6306babb42a2b2a801519e9136f1c91850233cf02206706c7701d8a91` |
+| `numb-form_windows_arm64.zip` | `d7655c63e379bbd6d1cc1556a8be305cc42464730b5bc4fe0eb9c2fafbe8f40e` |
+<!-- /install:checksums -->
+
 ### Rolling builds
 
 Después de cada cambio a `main`, GitHub Actions ejecuta las pruebas, reconstruye todos los archivos y reemplaza los archivos de la versión preliminar (marca de liberación `edge`). Sus archivos son verificados, firmados y certificados como una versión estable. `releases/latest` siempre significa la nueva versión estable; la construcción rodante nunca se marca más reciente. `numb-form update rolling` cambia a él, `numb-form update stable` de vuelta.
 
-Para instalar o reinstalar la compilación de rodillos en cualquier sistema, ejecute el comando de instalación de ese sistema con `releases/latest/download` reemplazado por `releases/download/edge`. Por ejemplo, en Linux:
+La construcción de rodaje cambia después de cada cambio a `main`, por lo que su suma de comprobación no se puede escribir en esta página. Sus comandos comprueban el archivo descargado contra el propio `SHA256SUMS` de la construcción enrollada, que protege contra las descargas dañadas pero no contra un archivo reemplazado en el servidor. Utilice versiones estables para el trabajo real. En Linux:
 
 ```
 cd "$(mktemp -d)" && curl -fLO https://github.com/z4dm42f5kp-ux/numb-form/releases/download/edge/numb-form_linux_amd64.tar.gz && curl -fLO https://github.com/z4dm42f5kp-ux/numb-form/releases/download/edge/SHA256SUMS && grep ' numb-form_linux_amd64.tar.gz$' SHA256SUMS | sha256sum -c - && tar -xzf numb-form_linux_amd64.tar.gz && mkdir -p "$HOME/.local/bin" && install -m 0755 numb-form numb-commit numb-date numb-typo "$HOME/.local/bin/" && cd / && rm -rf "$OLDPWD" && numb-form -version
@@ -129,7 +197,35 @@ Una buena firma y una suma de verificación coincidente juntos prueban que el ar
 
 ## Aprovechamiento de la fuente
 
-El proyecto no tiene módulos de terceros: `go.mod` no tiene líneas `require` y la construcción no descarga nada. Las construcciones a continuación utilizan un temporal Vaya a construir caché que se elimina después, por lo que no se deja caché en el disco.
+El proyecto no tiene módulos de terceros: `go.mod` no tiene líneas `require` y la construcción no descarga nada más que Go. Los comandos a continuación construyen la misma liberación estable que los binarios arriba, de su etiqueta, con Go 1.21 o posterior. Utilizan un caché de construcción temporal que se elimina después, establece `GOTOOLCHAIN=local` para que Go nunca descargue otra cadena de herramientas, e instale en `~/.local/bin` (Windows: `%LOCALAPPDATA%\Programs\numb-form`). Un programa construido a partir de las impresiones fuente `dev` como su versión, y `numb-form update` no lo reemplaza.
+
+1. Instala Go y git, con o sin derechos de administrador (bajo).
+2. Ejecute el comando de construcción de su sistema.
+3. Compruebe el resultado: `numb-form -version` prints `dev`.
+
+### Ir con derechos de administrador
+
+<!-- install:go-packages -->
+| Sistema | Instalar Go y git |
+| --- | --- |
+| Debian 13 y sistemas basados en él | `sudo apt-get update && sudo apt-get install -y golang-go git ca-certificates` |
+| Fedora 44 | `sudo dnf install -y golang git` |
+| Arch Linux (repositorios oficiales, no AUR) | `sudo pacman -S --needed go git` |
+| Gentoo | `sudo emerge --ask --noreplace dev-lang/go dev-vcs/git` |
+| Void Linux | `sudo xbps-install -Sy go git` |
+| openSUSE Tumbleweed and Leap 16 | `sudo zypper install -y go git` |
+| Alpine Linux | `doas apk add go git` |
+| NixOS | ninguno: el comando NixOS a continuación trae Go y git |
+| Sistema Guix | ninguno: el comando Guix abajo trae Go y git |
+| macOS | `brew install go git` |
+| FreeBSD | `su -m root -c 'pkg install -y go git'` |
+| OpenBSD | `doas pkg_add go git` |
+| NetBSD | `su -m root -c 'pkgin -y install go git' && PATH=$(ls -d /usr/pkg/go1*/bin \| tail -n 1):$PATH && export PATH` |
+| Windows (Command Prompt o PowerShell 7) | `winget install --id GoLang.Go -e && winget install --id Git.Git -e` |
+| Windows PowerShell 5.1 | `winget install --id GoLang.Go -e; if ($?) { winget install --id Git.Git -e }` |
+<!-- /install:go-packages -->
+
+En NetBSD, pkgsrc instala Vaya en una carpeta versionada como `/usr/pkg/go126/bin`; la entrada de la tabla añade la más reciente a `PATH`. Si el Go instalado es mayor de 1.21, la construcción se detiene con un error; instalar un nuevo Go.
 
 ### Ir sin derechos de administrador
 
@@ -155,45 +251,39 @@ Command Prompt:
 
 En los BSD, utilice el binario de liberación cuando no tenga derechos de administrador; Los archivos de Go para ellos necesitan los propios paquetes del sistema de todos modos.
 
-### Ir con derechos de administrador
-
-| Sistema | Instalar Go y git |
-| --- | --- |
-| Alpine Linux | `doas apk add go git` |
-| Arch Linux (repositorios oficiales solamente) | `sudo pacman -S --needed go git` |
-| Debian 13, Ubuntu 24.04 o posterior | `sudo apt-get update && sudo apt-get install -y golang-go git` |
-| Debian 12 | `echo 'deb http://deb.debian.org/debian bookworm-backports main' \| sudo tee /etc/apt/sources.list.d/backports.list && sudo apt-get update && sudo apt-get install -y -t bookworm-backports golang-go && sudo apt-get install -y git` |
-| Fedora, RHEL, Rocky, Alma | `sudo dnf install -y golang git` |
-| FreeBSD | `su -m root -c 'pkg install -y go git'` |
-| Gentoo | `sudo emerge --ask --noreplace dev-lang/go dev-vcs/git` |
-| macOS | `brew install go git` |
-| NetBSD | `su -m root -c 'pkgin -y install go git' && PATH=$(ls -d /usr/pkg/go1*/bin \| tail -n 1):$PATH && export PATH` |
-| OpenBSD | `doas pkg_add go git` |
-| Void Linux | `sudo xbps-install -Sy go git` |
-| Windows (Command Prompt o PowerShell 7) | `winget install --id GoLang.Go -e && winget install --id Git.Git -e` |
-| Windows PowerShell 5.1 | `winget install --id GoLang.Go -e; if ($?) { winget install --id Git.Git -e }` |
-
-En NetBSD, pkgsrc instala Vaya en una carpeta versionada como `/usr/pkg/go126/bin`; la entrada de la tabla añade la más reciente a `PATH`. Si el Go instalado es mayor de 1.21, la construcción se detiene con un error; instalar un nuevo Ir en lugar de dejar que descargar una cadena de herramientas.
-
 ### Construir e instalar
 
-Linux, macOS y BSD (instalaciones en `~/.local/bin`):
+Linux, macOS y BSD:
 
+<!-- install:source-unix -->
 ```
-cd "$(mktemp -d)" && git clone --depth 1 https://github.com/z4dm42f5kp-ux/numb-form.git && cd numb-form && export GOCACHE="$(mktemp -d)" GOFLAGS='-trimpath -mod=readonly' CGO_ENABLED=0 && go build -o numb-form ./cmd/numb-form && go build -o numb-commit ./cmd/numb-commit && go build -o numb-date ./cmd/numb-date && go build -o numb-typo ./cmd/numb-typo && mkdir -p "$HOME/.local/bin" && install -m 0755 numb-form numb-commit numb-date numb-typo "$HOME/.local/bin/" && go clean -cache && rm -rf "$GOCACHE" && cd / && rm -rf "$OLDPWD/.." && echo OK
+t="$(mktemp -d)" && cd "$t" && git clone --depth 1 --branch v1.2.1 https://github.com/z4dm42f5kp-ux/numb-form.git && cd numb-form && export GOCACHE="$t/cache" GOFLAGS="-trimpath -mod=readonly" CGO_ENABLED=0 GOTOOLCHAIN=local && go build -o bin/ ./cmd/... && mkdir -p "$HOME/.local/bin" && install -m 0755 bin/* "$HOME/.local/bin/" && cd / && rm -rf "$t" && "$HOME/.local/bin/numb-form" -version
 ```
+<!-- /install:source-unix -->
 
-Windows (sin git needed; installs into `%LOCALAPPDATA%\Programs\numb-form` y adds it to your `PATH`). Windows PowerShell:
+NixOS (Brings Go and git for this command only):
 
+<!-- install:source-nixos -->
 ```
-& { $ErrorActionPreference = 'Stop'; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $t = Join-Path $env:TEMP ('numb-form-' + [guid]::NewGuid()); $d = Join-Path $env:LOCALAPPDATA 'Programs\numb-form'; New-Item -ItemType Directory -Force $t, $d | Out-Null; try { Set-Location $t; Invoke-WebRequest -UseBasicParsing 'https://github.com/z4dm42f5kp-ux/numb-form/archive/refs/heads/main.zip' -OutFile src.zip; Expand-Archive src.zip -DestinationPath $t; Set-Location (Join-Path $t 'numb-form-main'); $env:GOCACHE = Join-Path $t 'cache'; $env:GOFLAGS = '-trimpath -mod=readonly'; $env:CGO_ENABLED = '0'; foreach ($c in 'numb-form', 'numb-commit', 'numb-date', 'numb-typo') { go build -o (Join-Path $d "$c.exe") "./cmd/$c"; if ($LASTEXITCODE -ne 0) { throw "building $c failed" } } } finally { Set-Location $env:TEMP; Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $t; Remove-Item Env:GOCACHE, Env:GOFLAGS, Env:CGO_ENABLED -ErrorAction SilentlyContinue }; $p = [Environment]::GetEnvironmentVariable('Path', 'User'); if (-not $p) { $p = '' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';') + ';' + $d).TrimStart(';'), 'User') }; 'OK, open a new PowerShell window' }
+nix-shell -p go git cacert --run 't="$(mktemp -d)" && cd "$t" && git clone --depth 1 --branch v1.2.1 https://github.com/z4dm42f5kp-ux/numb-form.git && cd numb-form && export GOCACHE="$t/cache" GOFLAGS="-trimpath -mod=readonly" CGO_ENABLED=0 GOTOOLCHAIN=local && go build -o bin/ ./cmd/... && mkdir -p "$HOME/.local/bin" && install -m 0755 bin/* "$HOME/.local/bin/" && cd / && rm -rf "$t" && "$HOME/.local/bin/numb-form" -version'
 ```
+<!-- /install:source-nixos -->
 
-Command Prompt:
+Sistema Guix (brings Go and git for this command only):
 
+<!-- install:source-guix -->
 ```
-cd /d "%TEMP%" && curl.exe -fL -o numb-form-src.zip https://github.com/z4dm42f5kp-ux/numb-form/archive/refs/heads/main.zip && tar -xf numb-form-src.zip && del numb-form-src.zip && cd numb-form-main && set "GOCACHE=%TEMP%\numb-form-gocache" && set "GOFLAGS=-trimpath -mod=readonly" && set "CGO_ENABLED=0" && (if not exist "%LOCALAPPDATA%\Programs\numb-form" mkdir "%LOCALAPPDATA%\Programs\numb-form") && go build -o "%LOCALAPPDATA%\Programs\numb-form\numb-form.exe" ./cmd/numb-form && go build -o "%LOCALAPPDATA%\Programs\numb-form\numb-commit.exe" ./cmd/numb-commit && go build -o "%LOCALAPPDATA%\Programs\numb-form\numb-date.exe" ./cmd/numb-date && go build -o "%LOCALAPPDATA%\Programs\numb-form\numb-typo.exe" ./cmd/numb-typo && go clean -cache && cd /d "%TEMP%" && rmdir /s /q numb-form-main && powershell -NoProfile -Command "$d=$env:LOCALAPPDATA+'\Programs\numb-form'; $p=[Environment]::GetEnvironmentVariable('Path','User'); if (-not $p) { $p='' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';')+';'+$d).TrimStart(';'), 'User') }" && echo OK, open a new Command Prompt
+guix shell go git nss-certs coreutils -- sh -c 'export SSL_CERT_DIR="$GUIX_ENVIRONMENT/etc/ssl/certs" GIT_SSL_CAINFO="$GUIX_ENVIRONMENT/etc/ssl/certs/ca-certificates.crt" && t="$(mktemp -d)" && cd "$t" && git clone --depth 1 --branch v1.2.1 https://github.com/z4dm42f5kp-ux/numb-form.git && cd numb-form && export GOCACHE="$t/cache" GOFLAGS="-trimpath -mod=readonly" CGO_ENABLED=0 GOTOOLCHAIN=local && go build -o bin/ ./cmd/... && mkdir -p "$HOME/.local/bin" && install -m 0755 bin/* "$HOME/.local/bin/" && cd / && rm -rf "$t" && "$HOME/.local/bin/numb-form" -version'
 ```
+<!-- /install:source-guix -->
+
+Windows PowerShell (sin git needed):
+
+<!-- install:source-windows -->
+```
+& { $ErrorActionPreference = 'Stop'; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $t = Join-Path $env:TEMP ('numb-form-' + [guid]::NewGuid()); $d = Join-Path $env:LOCALAPPDATA 'Programs\numb-form'; New-Item -ItemType Directory -Force $t, $d | Out-Null; try { Set-Location $t; Invoke-WebRequest -UseBasicParsing 'https://github.com/z4dm42f5kp-ux/numb-form/archive/refs/tags/v1.2.1.zip' -OutFile src.zip; Expand-Archive src.zip -DestinationPath $t; Set-Location (Join-Path $t 'numb-form-1.2.1'); $env:GOCACHE = Join-Path $t 'cache'; $env:GOFLAGS = '-trimpath -mod=readonly'; $env:CGO_ENABLED = '0'; $env:GOTOOLCHAIN = 'local'; go build -o $d ./cmd/...; if ($LASTEXITCODE -ne 0) { throw 'the build failed' } } finally { Set-Location $env:TEMP; Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $t; Remove-Item Env:GOCACHE, Env:GOFLAGS, Env:CGO_ENABLED, Env:GOTOOLCHAIN -ErrorAction SilentlyContinue }; $p = [Environment]::GetEnvironmentVariable('Path', 'User'); if (-not $p) { $p = '' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';') + ';' + $d).TrimStart(';'), 'User') }; & (Join-Path $d 'numb-form.exe') -version; 'OK, open a new PowerShell window' }
+```
+<!-- /install:source-windows -->
 
 ## Programas informáticos de oficina
 
