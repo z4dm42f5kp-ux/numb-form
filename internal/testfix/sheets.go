@@ -78,7 +78,7 @@ func CSV(ids, names []string, sep string, cp1252 bool) []byte {
 	var out []byte
 	for _, r := range b.String() {
 		if r < 0x100 {
-			out = append(out, byte(r))
+			out = append(out, byte(r)) // #nosec G115 -- small test values.
 		} else {
 			out = append(out, '?')
 		}
@@ -89,12 +89,12 @@ func CSV(ids, names []string, sep string, cp1252 bool) []byte {
 func rec(typ uint16, data []byte) []byte {
 	b := make([]byte, 4, 4+len(data))
 	binary.LittleEndian.PutUint16(b, typ)
-	binary.LittleEndian.PutUint16(b[2:], uint16(len(data)))
+	binary.LittleEndian.PutUint16(b[2:], uint16(len(data))) // #nosec G115 -- small test values.
 	return append(b, data...)
 }
 
-func le16(v int) []byte { return binary.LittleEndian.AppendUint16(nil, uint16(v)) }
-func le32(v int) []byte { return binary.LittleEndian.AppendUint32(nil, uint32(v)) }
+func le16(v int) []byte { return binary.LittleEndian.AppendUint16(nil, uint16(v)) } // #nosec G115 -- small test values.
+func le32(v int) []byte { return binary.LittleEndian.AppendUint32(nil, uint32(v)) } // #nosec G115 -- small test values.
 
 // XLS builds a minimal BIFF8 workbook in a compound file. The shared
 // string table is split across a CONTINUE record in the middle of a
@@ -123,7 +123,7 @@ func XLS(t testing.TB, ids, names []string) []byte {
 			if high {
 				chars = append(chars, le16(int(c))...)
 			} else {
-				chars = append(chars, byte(c))
+				chars = append(chars, byte(c)) // #nosec G115 -- small test values.
 			}
 		}
 		if i == len(strs)-1 && len(u) >= 4 && cont == nil {
@@ -149,7 +149,7 @@ func XLS(t testing.TB, ids, names []string) []byte {
 		return rec(0x0809, append(append(le16(0x0600), le16(dt)...), make([]byte, 12)...))
 	}
 	name := "Table 1"
-	bs := append(le32(0), 0, 0, byte(len(name)), 0)
+	bs := append(le32(0), 0, 0, byte(len(name)), 0) // #nosec G115 -- small test values.
 	bs = append(bs, []byte(name)...)
 	var glob []byte
 	glob = append(glob, bof(0x0005)...)
@@ -161,7 +161,7 @@ func XLS(t testing.TB, ids, names []string) []byte {
 	}
 	glob = append(glob, rec(0x000A, nil)...)
 	sheetPos := len(glob)
-	binary.LittleEndian.PutUint32(glob[bsOff:], uint32(sheetPos))
+	binary.LittleEndian.PutUint32(glob[bsOff:], uint32(sheetPos)) // #nosec G115 -- small test values.
 	var sh []byte
 	sh = append(sh, bof(0x0010)...)
 	cellSST := func(row, col, k int) {
@@ -193,7 +193,7 @@ func cfbFile(t testing.TB, name string, stream []byte) []byte {
 	}
 	h := make([]byte, ssz)
 	copy(h, []byte{0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1})
-	put16 := func(b []byte, off, v int) { binary.LittleEndian.PutUint16(b[off:], uint16(v)) }
+	put16 := func(b []byte, off, v int) { binary.LittleEndian.PutUint16(b[off:], uint16(v)) } // #nosec G115 -- small test values.
 	put32 := func(b []byte, off int, v uint32) { binary.LittleEndian.PutUint32(b[off:], v) }
 	put16(h, 0x18, 0x3E)
 	put16(h, 0x1A, 3)
@@ -235,7 +235,7 @@ func cfbFile(t testing.TB, name string, stream []byte) []byte {
 		put32(e, 0x48, 0xFFFFFFFF)
 		put32(e, 0x4C, child)
 		put32(e, 0x74, start)
-		put32(e, 0x78, uint32(size))
+		put32(e, 0x78, uint32(size)) // #nosec G115 -- small test values.
 	}
 	entry(0, "Root Entry", 5, 1, 0xFFFFFFFE, 0)
 	entry(1, name, 2, 0xFFFFFFFF, 2, len(stream))

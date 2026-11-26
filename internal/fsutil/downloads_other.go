@@ -30,7 +30,7 @@ func downloadsDir() (string, error) {
 }
 
 func xdgDownload(file, home string) string {
-	f, err := os.Open(file) // #nosec G304 -- fixed per-user config file.
+	f, err := os.Open(file) // #nosec G304 G703 -- fixed per-user config file.
 	if err != nil {
 		return ""
 	}

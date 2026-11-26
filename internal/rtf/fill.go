@@ -31,7 +31,8 @@ func encode(s string) string {
 			b.WriteRune(r)
 		default:
 			for _, u := range utf16.Encode([]rune{r}) {
-				b.WriteString(`\u` + strconv.Itoa(int(int16(u))) + `?`)
+				n := int(int16(u)) // #nosec G115 -- RTF writes \uN as a signed 16-bit number.
+				b.WriteString(`\u` + strconv.Itoa(n) + `?`)
 			}
 		}
 	}

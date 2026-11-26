@@ -243,7 +243,9 @@ func Less(w io.Writer, in io.Reader, text string, rows, cols int) error {
 func utf8Bytes(s string) string {
 	b := make([]byte, 0, len(s))
 	for _, r := range s {
-		b = append(b, byte(r))
+		if r <= 0xff {
+			b = append(b, byte(r)) // #nosec G115 -- checked above.
+		}
 	}
 	return string(b)
 }

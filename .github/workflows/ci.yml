@@ -130,6 +130,8 @@ jobs:
         include:
           # Oldest supported Go (macOS refuses Go 1.21 binaries, so Linux).
           - { os: ubuntu-latest, go: "1.21.x" }
+          # A 32-bit program, as released for 386 and armv7.
+          - { os: ubuntu-latest, go: stable, goarch: "386" }
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
@@ -146,10 +148,11 @@ jobs:
         shell: bash
         env:
           GO_VERSION: ${{ matrix.go }}
+          GOARCH: ${{ matrix.goarch }}
         run: |
-          # The race detector runs where it is cheap: Linux, newest Go.
+          # The race detector runs where it is cheap: Linux, newest Go, 64 bits.
           race=
-          [ "$RUNNER_OS" = Linux ] && [ "$GO_VERSION" = stable ] && race=-race
+          [ "$RUNNER_OS" = Linux ] && [ "$GO_VERSION" = stable ] && [ -z "$GOARCH" ] && race=-race
           set +e
           go test -count=1 $race ./... > test.log 2>&1
           status=$?

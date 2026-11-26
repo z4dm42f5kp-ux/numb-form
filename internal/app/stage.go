@@ -102,7 +102,7 @@ func removeStage(dir string) error {
 	// Read-only files cannot be deleted on Windows.
 	_ = filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
 		if err == nil && d.Type().IsRegular() {
-			_ = os.Chmod(p, 0o600)
+			_ = os.Chmod(p, 0o600) // #nosec G122 -- a staged copy this run made; only regular files, never links.
 		}
 		return nil
 	})
