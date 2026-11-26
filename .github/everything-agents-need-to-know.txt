@@ -33,7 +33,9 @@ what a person sees. Go standard library only; no third-party modules.
 2. RULES THAT ARE NEVER BROKEN
 ------------------------------
 
-* Never merge into main. The owner merges every pull request.
+* Never merge into main. The owner merges every pull request, except
+  Dependabot's, which the dependabot workflow merges once every check
+  has passed.
 * Never change a pull request's release tag (the "vX.Y.Z:" at the start
   of its title). The text after it may change.
 * Never force-push, rebase or amend a pushed branch. Use merge commits.
@@ -117,6 +119,11 @@ Workflows (.github/workflows):
   release            on a tag: archives, checksums, signatures, image.
   edge               the rolling build (release tag "edge").
   updates            daily checks for newer tools and Go.
+  dependabot         merges a Dependabot pull request once every check
+                     has passed, starts main's checks, and merges the
+                     update into every open pull request; after ci on
+                     main, brings open Dependabot pull requests up to
+                     date (or asks Dependabot to recreate them).
   scorecard          OpenSSF scorecard.
 
 Runners are limited. Let CI run on one pull request at a time: cancel
