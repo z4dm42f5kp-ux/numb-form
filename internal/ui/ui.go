@@ -14,6 +14,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/z4dm42f5kp-ux/numb-form/internal/i18n"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/textutil"
 )
 
@@ -30,7 +31,17 @@ type UI struct {
 	ctx   context.Context
 	out   io.Writer
 	lines chan line
+	lang  string // language of the messages; "" and "en" mean English
 }
+
+// SetLanguage makes the UI print its messages in lang (i18n.Languages).
+func (u *UI) SetLanguage(lang string) { u.lang = lang }
+
+// T returns the message s in the UI's language.
+func (u *UI) T(s string) string { return i18n.T(u.lang, s) }
+
+// Sprintf formats a message in the UI's language.
+func (u *UI) Sprintf(format string, a ...any) string { return fmt.Sprintf(u.T(format), a...) }
 
 // New starts reading lines from in.
 func New(ctx context.Context, in io.Reader, out io.Writer) *UI {
@@ -55,18 +66,25 @@ func IsTerminal(f *os.File) bool {
 	return err == nil && st.Mode()&os.ModeCharDevice != 0
 }
 
-// Printf writes to the terminal.
-func (u *UI) Printf(format string, a ...any) { fmt.Fprintf(u.out, format, a...) }
+// Printf writes a message to the terminal, in the UI's language.
+func (u *UI) Printf(format string, a ...any) { fmt.Fprintf(u.out, u.T(format), a...) }
 
-// Println writes a line to the terminal.
-func (u *UI) Println(a ...any) { fmt.Fprintln(u.out, a...) }
+// Println writes a line to the terminal. A single text is translated.
+func (u *UI) Println(a ...any) {
+	if len(a) == 1 {
+		if s, ok := a[0].(string); ok {
+			a[0] = u.T(s)
+		}
+	}
+	fmt.Fprintln(u.out, a...)
+}
 
 // Safe prints remote text with control characters removed.
 func Safe(s string) string { return textutil.SafeTerminal(s) }
 
 // Ask prints prompt and returns the trimmed answer.
 func (u *UI) Ask(prompt string) (string, error) {
-	fmt.Fprint(u.out, prompt)
+	fmt.Fprint(u.out, u.T(prompt))
 	select {
 	case <-u.ctx.Done():
 		fmt.Fprintln(u.out)
@@ -81,9 +99,9 @@ func (u *UI) Ask(prompt string) (string, error) {
 
 // AskDefault is Ask with a default used for an empty answer.
 func (u *UI) AskDefault(prompt, def string) (string, error) {
-	p := prompt
+	p := u.T(prompt)
 	if def != "" {
-		p = fmt.Sprintf("%s [%s]", prompt, Safe(def))
+		p = fmt.Sprintf("%s [%s]", p, Safe(def))
 	}
 	a, err := u.Ask(p + ": ")
 	if err != nil {
@@ -122,6 +140,6 @@ func (u *UI) YesNo(prompt string, def bool) (bool, error) {
 	if def {
 		d, hint = 'y', "[Y/n]"
 	}
-	c, err := u.Choose(prompt+" "+hint+" ", "yn", d)
+	c, err := u.Choose(u.T(prompt)+" "+hint+" ", "yn", d)
 	return c == 'y', err
 }

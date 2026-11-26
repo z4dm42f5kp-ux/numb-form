@@ -30,7 +30,7 @@ func run(args []string) error {
 		}
 		return err
 	case len(args) >= 4 && args[0] == "pin":
-		sums, err := os.ReadFile(args[2])
+		sums, err := os.ReadFile(args[2]) // #nosec G304 G703 -- a maintainer tool; the path is its argument.
 		if err != nil {
 			return err
 		}
@@ -38,7 +38,7 @@ func run(args []string) error {
 		if err != nil {
 			return err
 		}
-		return os.WriteFile(filepath.Join(installdoc.Dir, "pins.txt"), p.Format(), 0o644) // #nosec G306 -- documentation.
+		return os.WriteFile(filepath.Join(installdoc.Dir, "pins.txt"), p.Format(), 0o644) // #nosec G306 G703 -- documentation, at a fixed path.
 	}
 	return fmt.Errorf("usage: install render, or install pin vX.Y.Z SHA256SUMS program [program]")
 }

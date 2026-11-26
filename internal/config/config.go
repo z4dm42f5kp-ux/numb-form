@@ -29,6 +29,7 @@ type Config struct {
 	IDHeader     string        // spreadsheet column with customer ids
 	TemplateName string        // template file name without extension
 	Person       string        // person processing the form; empty = ask
+	Language     string        // en | es | de: language of the messages; empty = ask
 	DateFormat   string        // DD, MM, YYYY, YY tokens
 	Timeout      time.Duration // 0: no time limit
 	MaxWriteMB   int

@@ -77,6 +77,7 @@ func dateOf(name string) func([]byte, *sheet.Table) map[string]string {
 func runCommit(t *testing.T, cp, real, answers string, review bool) (int, string) {
 	t.Helper()
 	cfg := config.Defaults()
+	cfg.Language = "en"
 	cfg.LogDir = filepath.Join(t.TempDir(), "logs")
 	var out bytes.Buffer
 	code := Commit(CommitOptions{From: cp, To: real, Downloads: filepath.Dir(cp), Review: review, Config: &cfg, In: strings.NewReader(answers), Out: &out})
@@ -195,6 +196,7 @@ func TestFolderCommitSkipsKnownCompany(t *testing.T) {
 func TestFolderCommitAsksForFolders(t *testing.T) {
 	real, cp := workingCopy(t, dateOf("Foo Ltd"))
 	cfg := config.Defaults()
+	cfg.Language = "en"
 	cfg.LogDir = filepath.Join(t.TempDir(), "logs")
 	opt := CommitOptions{Downloads: filepath.Dir(cp), Config: &cfg}
 	if !folderMode(opt) {

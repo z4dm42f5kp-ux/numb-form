@@ -2,7 +2,6 @@ package app
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -96,7 +95,7 @@ func (r *run) existing(row sheet.Row, c *runlog.Company) (bool, error) {
 		return true, nil
 	}
 	for _, cand := range fuzzy {
-		ok, err := r.ui.YesNo(fmt.Sprintf("  Is the existing folder %q this company's folder? (%s)", ui.Safe(cand.Folder.Rel), cand.Reason), false)
+		ok, err := r.ui.YesNo(r.ui.Sprintf("  Is the existing folder %q this company's folder? (%s)", ui.Safe(cand.Folder.Rel), cand.Reason), false)
 		if err != nil {
 			return true, err
 		}

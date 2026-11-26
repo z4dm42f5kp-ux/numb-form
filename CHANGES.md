@@ -8,6 +8,45 @@ the version it will be released as
 Releases up to v1.2.1 are described on the
 [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases).
 
+## v1.8.0
+
+* numb-form asks first for the language of its questions and messages:
+  English, Spanish or German.
+  `numb-form config set language en|es|de` saves the choice, like the
+  name of the person.
+  The forms are written in English in every language, and the answer
+  letters stay the same.
+* The legacy `.xls` reader no longer crashes on a hostile file in the
+  32-bit programs (386, armv7): sector numbers near 2^31 overflowed.
+  The tests and the fuzzing now also run as 32-bit programs, and four
+  more readers are fuzzed: the numb-date table reader and cell writer,
+  the report date reader, the update archive, and `.docx` templates.
+* `numb-form config set` writes through a new temporary file with a
+  random name.
+* The guide follows the chapter layout of the FreeBSD Handbook: a
+  synopsis, numbered procedures that say what you see when a step
+  worked, a check after each procedure, and notes and warnings.
+  Diagrams show the whole procedure, the questions for one company, and
+  how to paste.
+* New manual page *Terminals and shells* (`numb-form man shells`):
+  which window is which, pasting with a right-click and the other keys,
+  knowing that a command finished, joining and quoting commands.
+* `docs/install.md` explains installing and updating behind a company
+  proxy, with inspected connections, and from a shared folder without
+  access to GitHub.
+* `numb-form man` shows the description of a diagram in its place.
+* Dependabot updates every action, and Argos Translate, as soon as a
+  version is 14 days old, and security updates at once.
+  Each update is merged into `main` without approval once every check
+  has passed.
+* CI fails when a Go, shell or Python file has more than 300 lines or a
+  Go function more than 100, and when a pull request changes the
+  programs without changing their manual page.
+
+**Action needed:** none.
+To be asked no language question, run
+`numb-form config set language en` (or `es`, `de`) once.
+
 ## v1.7.9
 
 * OpenSSF Scorecard runs every day instead of every week.

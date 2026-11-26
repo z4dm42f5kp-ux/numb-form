@@ -46,11 +46,14 @@ func (c *cfb) sector(id uint32) ([]byte, error) {
 	if id > cfbMaxRegSect {
 		return nil, fmt.Errorf("cfb: bad sector id %#x", id)
 	}
-	off := (int(id) + 1) * c.ssz
-	if off < 0 || off+c.ssz > len(c.data) {
+	// uint64: on 32-bit systems an int overflows for ids near 2^31.
+	ssz := uint64(c.ssz)     // #nosec G115 -- 512 or 4096.
+	n := uint64(len(c.data)) // #nosec G115 -- a length is never negative.
+	off := (uint64(id) + 1) * ssz
+	if off+ssz > n {
 		return nil, fmt.Errorf("cfb: sector %d outside the file", id)
 	}
-	return c.data[off : off+c.ssz], nil
+	return c.data[off : off+ssz], nil
 }
 
 // chain follows a FAT (or mini FAT) chain and concatenates the sectors.
@@ -63,11 +66,13 @@ func (c *cfb) chain(start uint32, table []uint32, mini bool, limit uint64) ([]by
 		}
 		seen[id] = true
 		if mini {
-			off := int(id) * c.mssz
-			if int(id) < 0 || off+c.mssz > len(c.ministrm) {
+			mssz := uint64(c.mssz)       // #nosec G115 -- 64.
+			n := uint64(len(c.ministrm)) // #nosec G115 -- a length is never negative.
+			off := uint64(id) * mssz
+			if off+mssz > n {
 				return nil, errors.New("cfb: mini sector outside the mini stream")
 			}
-			out.Write(c.ministrm[off : off+c.mssz])
+			out.Write(c.ministrm[off : off+mssz])
 		} else {
 			s, err := c.sector(id)
 			if err != nil {
@@ -75,10 +80,10 @@ func (c *cfb) chain(start uint32, table []uint32, mini bool, limit uint64) ([]by
 			}
 			out.Write(s)
 		}
-		if uint64(out.Len()) >= limit {
+		if uint64(out.Len()) >= limit { // #nosec G115 -- a length is never negative.
 			break
 		}
-		if int(id) >= len(table) {
+		if uint64(id) >= uint64(len(table)) {
 			return nil, errors.New("cfb: chain leaves the allocation table")
 		}
 		id = table[id]
@@ -144,7 +149,7 @@ func openCFB(data []byte) (*cfb, error) {
 		return nil, errors.New("cfb: first directory entry is not the root")
 	}
 	if nmf := u32(data, 0x40); nmf > 0 {
-		mf, err := c.chain(u32(data, 0x3C), c.fat, false, uint64(nmf)*uint64(c.ssz))
+		mf, err := c.chain(u32(data, 0x3C), c.fat, false, uint64(nmf)*uint64(c.ssz)) // #nosec G115 -- ssz is 512 or 4096.
 		if err != nil {
 			return nil, err
 		}
@@ -178,7 +183,7 @@ func (c *cfb) readDirs(start uint32) error {
 			return err
 		}
 		raw.Write(s)
-		if int(id) >= len(c.fat) {
+		if uint64(id) >= uint64(len(c.fat)) {
 			return errors.New("cfb: directory chain leaves the FAT")
 		}
 		id = c.fat[id]

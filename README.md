@@ -16,7 +16,9 @@ Deutsch: [docs/de/README.md](docs/de/README.md)
 **New here? Read the [step-by-step guide](docs/guide.md).**
 It needs no technical knowledge.
 
-* Install: [docs/install.md](docs/install.md)
+* Install: [docs/install.md](docs/install.md), also behind a company
+  proxy or from a shared folder
+* Terminals, pasting and quoting: [docs/shells.md](docs/shells.md)
 * Use: [numb-form](docs/usage.md), [numb-commit](docs/numb-commit.md),
   [numb-date](docs/numb-date.md), [numb-typo](docs/numb-typo.md)
 * Configure: [docs/configuration.md](docs/configuration.md)

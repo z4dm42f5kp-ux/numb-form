@@ -80,7 +80,7 @@ func readXLS(b []byte, opt Options) ([]Row, []string, error) {
 	var names []string
 	var cells [][]Cell
 	for _, sh := range sheets {
-		if sh.pos < 0 || sh.pos+4 > len(wb) {
+		if sh.pos < 0 || sh.pos > len(wb)-4 { // no overflow on 32-bit systems
 			continue
 		}
 		names = append(names, sh.name)
@@ -234,6 +234,9 @@ func (r *sstReader) str() (string, error) {
 			return "", err
 		}
 		ext = int(u32(b, 0))
+		if ext < 0 { // a uint32 above 2^31 on 32-bit systems
+			return "", errors.New("sst: bad extension size")
+		}
 	}
 	high := flags&1 != 0
 	var sb strings.Builder

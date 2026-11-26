@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="1020" viewBox="0 0 840 1020" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="15">
+<title>One company, step by step</title>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#343a40"/></marker></defs>
+<rect width="840" height="1020" fill="#ffffff"/>
+<text x="20" y="34" font-size="22" font-weight="bold" fill="#212529">One company, step by step</text>
+<line x1="380" y1="92.0" x2="440" y2="102.0" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<text x="384" y="84.0" font-size="13" font-weight="bold" fill="#343a40">exists</text>
+<line x1="200.0" y1="124" x2="200.0" y2="180" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<line x1="380" y1="212.0" x2="440" y2="212.0" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<text x="384" y="204.0" font-size="13" font-weight="bold" fill="#343a40">y</text>
+<line x1="200.0" y1="244" x2="200.0" y2="310" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<text x="208.0" y="282.0" font-size="13" font-weight="bold" fill="#343a40">Enter</text>
+<line x1="200.0" y1="394" x2="200.0" y2="430" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<line x1="200.0" y1="514" x2="200.0" y2="550" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<line x1="200.0" y1="634" x2="200.0" y2="680" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<line x1="200.0" y1="744" x2="200.0" y2="790" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<line x1="380" y1="832.0" x2="440" y2="832.0" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<rect x="20" y="60" width="360" height="64" rx="10" fill="#e9ecef" stroke="#495057" stroke-width="2"/>
+<text x="32" y="87" font-weight="bold" fill="#212529" xml:space="preserve">numb-form shows</text>
+<text x="32" y="107" font-family="Consolas, Menlo, monospace" font-size="14" fill="#212529" xml:space="preserve">  [3/11] Foo GmbH  (Customer ID ...)</text>
+<rect x="440" y="60" width="360" height="84" rx="10" fill="#e9ecef" stroke="#495057" stroke-width="2"/>
+<text x="452" y="87" font-weight="bold" fill="#212529" xml:space="preserve">A folder with this name exists:</text>
+<text x="452" y="107" font-family="Consolas, Menlo, monospace" font-size="14" fill="#212529" xml:space="preserve">  already has a folder ...</text>
+<text x="452" y="127" fill="#212529" xml:space="preserve">Nothing to do. Next company.</text>
+<rect x="20" y="180" width="360" height="64" rx="10" fill="#ffec99" stroke="#f08c00" stroke-width="2"/>
+<text x="32" y="207" font-weight="bold" fill="#212529" xml:space="preserve">A folder with a very similar name:</text>
+<text x="32" y="227" font-family="Consolas, Menlo, monospace" font-size="14" fill="#212529" xml:space="preserve">  Is the existing folder ... [y/N]</text>
+<rect x="440" y="180" width="360" height="64" rx="10" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+<text x="452" y="207" font-weight="bold" fill="#212529" xml:space="preserve">Same company: type y.</text>
+<text x="452" y="227" fill="#212529" xml:space="preserve">Nothing is created. Next company.</text>
+<rect x="20" y="310" width="360" height="84" rx="10" fill="#ffec99" stroke="#f08c00" stroke-width="2"/>
+<text x="32" y="337" font-weight="bold" fill="#212529" xml:space="preserve">No legal form in the name:</text>
+<text x="32" y="357" font-family="Consolas, Menlo, monospace" font-size="14" fill="#212529" xml:space="preserve">  Legal form (...):</text>
+<text x="32" y="377" fill="#212529" xml:space="preserve">Type it, or Enter, or -</text>
+<rect x="20" y="430" width="360" height="84" rx="10" fill="#ffec99" stroke="#f08c00" stroke-width="2"/>
+<text x="32" y="457" font-weight="bold" fill="#212529" xml:space="preserve">Asked for the address:</text>
+<text x="32" y="477" font-family="Consolas, Menlo, monospace" font-size="14" fill="#212529" xml:space="preserve">  Headquarters / Address (...):</text>
+<text x="32" y="497" fill="#212529" xml:space="preserve">Paste it on one line.</text>
+<rect x="20" y="550" width="360" height="84" rx="10" fill="#ffec99" stroke="#f08c00" stroke-width="2"/>
+<text x="32" y="577" font-weight="bold" fill="#212529" xml:space="preserve">Asked for the representatives:</text>
+<text x="32" y="597" font-family="Consolas, Menlo, monospace" font-size="14" fill="#212529" xml:space="preserve">  Representatives (...):</text>
+<text x="32" y="617" fill="#212529" xml:space="preserve">Full Name (Role), Full Name (Role)</text>
+<rect x="20" y="680" width="360" height="64" rx="10" fill="#e9ecef" stroke="#495057" stroke-width="2"/>
+<text x="32" y="707" font-weight="bold" fill="#212529" xml:space="preserve">numb-form writes the form and shows</text>
+<text x="32" y="727" fill="#212529" xml:space="preserve">section A as it now reads.</text>
+<rect x="20" y="790" width="360" height="84" rx="10" fill="#ffec99" stroke="#f08c00" stroke-width="2"/>
+<text x="32" y="817" font-weight="bold" fill="#212529" xml:space="preserve">Asked to check the form:</text>
+<text x="32" y="837" font-family="Consolas, Menlo, monospace" font-size="14" fill="#212529" xml:space="preserve">  Is this correct? [a]ccept,</text>
+<text x="32" y="857" font-family="Consolas, Menlo, monospace" font-size="14" fill="#212529" xml:space="preserve">  [e]dit a field, [r]eject:</text>
+<rect x="440" y="790" width="360" height="84" rx="10" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+<text x="452" y="817" font-weight="bold" fill="#212529" xml:space="preserve">a: the form stays. Next company.</text>
+<text x="452" y="837" fill="#212529" xml:space="preserve">e: change one line, then asked again.</text>
+<text x="452" y="857" fill="#212529" xml:space="preserve">r: the form is removed.</text>
+<rect x="20" y="898" width="14" height="14" fill="#a5d8ff" stroke="#1971c2"/>
+<text x="42" y="910" font-size="13" fill="#212529">You do this</text>
+<rect x="20" y="918" width="14" height="14" fill="#e9ecef" stroke="#495057"/>
+<text x="42" y="930" font-size="13" fill="#212529">numb-form does this</text>
+<rect x="20" y="938" width="14" height="14" fill="#ffec99" stroke="#f08c00"/>
+<text x="42" y="950" font-size="13" fill="#212529">numb-form asks, you answer</text>
+<rect x="20" y="958" width="14" height="14" fill="#b2f2bb" stroke="#2f9e44"/>
+<text x="42" y="970" font-size="13" fill="#212529">Check that you see this</text>
+<rect x="20" y="978" width="14" height="14" fill="#ffc9c9" stroke="#e03131"/>
+<text x="42" y="990" font-size="13" fill="#212529">Stop and get help</text>
+</svg>

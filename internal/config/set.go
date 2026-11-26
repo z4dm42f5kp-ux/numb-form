@@ -62,11 +62,21 @@ func SetUserValue(key, value string) (string, error) {
 	if err := os.MkdirAll(filepath.Dir(p), 0o700); err != nil {
 		return "", err
 	}
-	tmp := p + ".tmp"
-	if err := os.WriteFile(tmp, []byte(data), 0o600); err != nil {
+	// A new file with a random name: a planted file or link named like
+	// the temporary file cannot redirect the write.
+	f, err := os.CreateTemp(filepath.Dir(p), ".numb-form.conf.*.tmp")
+	if err != nil {
 		return "", err
 	}
-	if err := os.Rename(tmp, p); err != nil {
+	tmp := f.Name()
+	_, err = f.WriteString(data)
+	if cerr := f.Close(); err == nil {
+		err = cerr
+	}
+	if err == nil {
+		err = os.Rename(tmp, p)
+	}
+	if err != nil {
 		_ = os.Remove(tmp)
 		return "", err
 	}

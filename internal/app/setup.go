@@ -3,11 +3,14 @@ package app
 import (
 	"fmt"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/z4dm42f5kp-ux/numb-form/internal/config"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/formats"
 	"github.com/z4dm42f5kp-ux/numb-form/internal/fsutil"
+	"github.com/z4dm42f5kp-ux/numb-form/internal/i18n"
+	"github.com/z4dm42f5kp-ux/numb-form/internal/manual"
 )
 
 // inputs are the files a run works from.
@@ -124,7 +127,7 @@ func (r *run) askPerson() (string, error) {
 		if a == "" {
 			continue
 		}
-		ok, err := r.ui.YesNo(fmt.Sprintf("Use %q for every form in this run?", a), true)
+		ok, err := r.ui.YesNo(r.ui.Sprintf("Use %q for every form in this run?", a), true)
 		if err != nil {
 			return "", err
 		}
@@ -142,4 +145,35 @@ func isWorkingFolder(dir string, cfg config.Config) bool {
 	}
 	_, err := findOverview(dir, cfg.OverviewDir)
 	return err == nil
+}
+
+// askLanguage sets the language of the questions and messages: the one
+// in the configuration, or the one the person picks. The forms stay in
+// English.
+func (r *run) askLanguage() error {
+	if l := r.cfg.Language; l != "" {
+		r.ui.SetLanguage(l)
+		r.ui.Printf("\nLanguage (from the configuration): %s\n", i18n.Names[l])
+		return nil
+	}
+	def := "1"
+	for i, l := range i18n.Languages {
+		if l == manual.Lang() {
+			def = strconv.Itoa(i + 1)
+		}
+	}
+	r.ui.Println("Language / Idioma / Sprache:")
+	for i, l := range i18n.Languages {
+		r.ui.Printf("  %d) %s\n", i+1, i18n.Names[l])
+	}
+	for {
+		a, err := r.ui.AskDefault("1, 2, 3", def)
+		if err != nil {
+			return err
+		}
+		if l, ok := i18n.Parse(a); ok {
+			r.ui.SetLanguage(l)
+			return nil
+		}
+	}
 }

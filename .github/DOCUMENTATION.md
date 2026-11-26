@@ -33,6 +33,11 @@ and the
    never edited by hand.
 5. **No real customer data.**
    Examples use made-up names: `Foo GmbH`, `Bar S.A.`, `D10629 Foo S.A.`.
+6. **No code change without its manual change** (OpenBSD).
+   A pull request that changes the programs changes an English manual
+   page too.
+   Only a change that no person can notice (a refactoring, a test) is
+   exempt, and its `CHANGES.md` lines then start with `Internal:`.
 
 CI enforces what a program can check:
 
@@ -42,6 +47,8 @@ CI enforces what a program can check:
 | every configuration key has an entry `` `key = ...` `` in `docs/configuration.md` | `TestKeysDocumented` |
 | every relative link in the English documentation resolves | `TestLinksResolve` |
 | a pull request that changes the programs changes `CHANGES.md` | `scripts/check-changes.sh`, ci job *changes listed* |
+| a pull request that changes the programs changes an English manual page, unless all its `CHANGES.md` lines start with `Internal:` | `scripts/check-changes.sh` |
+| every Go, shell and Python file has at most 300 lines, every Go function at most 100 | `scripts/check-loc.sh` |
 | the install commands match `scripts/install` (templates and the pinned release) | `TestInstallCommandsPinned` |
 | the documented Linux commands work on every listed distribution (minor releases) | `.github/workflows/linux.yml` |
 
@@ -79,6 +86,46 @@ apply:
 | CAVEATS | surprising behaviour that is not a bug |
 | BUGS | known bugs |
 | SECURITY CONSIDERATIONS | what the program protects and what it trusts |
+
+## Chapters for people who are not technical
+
+The guide and [Terminals and shells](../docs/shells.md) follow the
+chapter layout of the
+[FreeBSD Handbook](https://docs.freebsd.org/en/books/handbook/):
+
+1. The title, then two or three sentences on what the chapter is for.
+2. **Synopsis**: "After reading this chapter, you will know:" and a
+   list, then "Before reading this chapter, you should know:" when the
+   chapter needs earlier knowledge.
+3. The words the chapter uses, explained.
+4. Procedures: numbered steps, one action per step, each ending with
+   what the person sees when it worked.
+5. A way to check the result after every procedure that changes
+   something.
+6. Admonitions as their own paragraphs, in the Handbook's words:
+   **Note:** (useful to know), **Tip:** (a shortcut), **Important:**
+   (easy to miss), **Warning:** (data or work can be lost).
+
+## Diagrams
+
+A procedure with more than three steps, or with a decision, gets a
+diagram in `docs/diagrams/`.
+Each diagram has two files with the same name:
+
+* `NAME.excalidraw`, the source.
+  Open it at [excalidraw.com](https://excalidraw.com) (**Open**), edit
+  it, and save it back.
+* `NAME.svg`, what GitHub shows.
+  Export it from Excalidraw with **Export image**, **SVG**, background
+  on.
+
+Colors mean the same in every diagram: blue is what the person does,
+grey is what the program does, yellow is a question, green is what the
+person must see before going on, red means stop.
+A diagram never replaces the text.
+Its alternative text says what it shows, and the steps after it say
+the same in words, because `numb-form man` shows the alternative text
+and screen readers read it.
 
 ## Two kinds of reader
 

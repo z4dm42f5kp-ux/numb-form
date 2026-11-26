@@ -64,7 +64,7 @@ what a person sees. Go standard library only; no third-party modules.
   a comment. Python tools are pinned with hashes.
 * Before pushing, run the compile checks:
 
-    sh scripts/check-deps.sh && test -z "$(gofmt -l .)" && for os in linux windows darwin freebsd openbsd netbsd; do GOOS=$os go vet ./... || exit 1; done
+    sh scripts/check-deps.sh && sh scripts/check-loc.sh && test -z "$(gofmt -l .)" && for os in linux windows darwin freebsd openbsd netbsd; do GOOS=$os go vet ./... || exit 1; done
 
 * Branch names: claude/<topic>, for releases claude/vX.Y.Z-<topic>.
 

@@ -41,13 +41,20 @@ func keyTable(c *Config) map[string]setter {
 		return func(_ *Config, v string) error { b, err := yesNo(v); *p = b; return err }
 	}
 	return map[string]setter{
-		"mode":              oneOf(&c.Mode, "direct", "review"),
-		"online":            boolean(&c.Online),
-		"overview_dir":      str(&c.OverviewDir),
-		"header":            str(&c.Header),
-		"id_header":         str(&c.IDHeader),
-		"template_name":     str(&c.TemplateName),
-		"person":            str(&c.Person),
+		"mode":          oneOf(&c.Mode, "direct", "review"),
+		"online":        boolean(&c.Online),
+		"overview_dir":  str(&c.OverviewDir),
+		"header":        str(&c.Header),
+		"id_header":     str(&c.IDHeader),
+		"template_name": str(&c.TemplateName),
+		"person":        str(&c.Person),
+		"language": func(_ *Config, v string) error {
+			if v != "" && v != "en" && v != "es" && v != "de" {
+				return fmt.Errorf("must be en, es or de, or empty to ask")
+			}
+			c.Language = v
+			return nil
+		},
 		"date_format":       str(&c.DateFormat),
 		"downloads":         str(&c.Downloads),
 		"log_dir":           str(&c.LogDir),

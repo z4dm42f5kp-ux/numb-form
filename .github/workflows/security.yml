@@ -111,13 +111,15 @@ jobs:
   fuzz:
     # Every parser of untrusted input, including the legacy .xls reader,
     # is fuzzed on every pull request and push (2 minutes each) and
-    # nightly (10 minutes each).
+    # nightly (10 minutes each), as a 64-bit and as a 32-bit program:
+    # the release builds for 386 and armv7, where an int has 32 bits.
     runs-on: ubuntu-latest
     permissions:
       contents: read
     strategy:
       fail-fast: false
       matrix:
+        goarch: [amd64, "386"]
         target:
           - { pkg: ./internal/docx, name: FuzzFill }
           - { pkg: ./internal/form, name: FuzzAllFormats }
@@ -129,6 +131,10 @@ jobs:
           - { pkg: ./internal/textutil, name: FuzzMatchKeys }
           - { pkg: ./internal/app, name: FuzzReadRequest }
           - { pkg: ./internal/match, name: FuzzFixPlaces }
+          - { pkg: ./internal/sheet, name: FuzzTable }
+          - { pkg: ./internal/reportdate, name: FuzzFromForm }
+          - { pkg: ./internal/update, name: FuzzExtract }
+          - { pkg: ./internal/docx, name: FuzzTemplate }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -143,6 +149,7 @@ jobs:
           PKG: ${{ matrix.target.pkg }}
           NAME: ${{ matrix.target.name }}
           EVENT: ${{ github.event_name }}
+          GOARCH: ${{ matrix.goarch }}
         run: |
           t=2m
           [ "$EVENT" = schedule ] && t=10m

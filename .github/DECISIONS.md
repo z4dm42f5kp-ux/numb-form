@@ -348,6 +348,8 @@ A release stack moved `main` past them, so they waited with conflicts
 and with checks from an old `main`.
 Dependabot now opens pull requests only for security updates.
 Routine bumps are off, and grouped if turned back on.
+Since v1.8.0 they are on again: all actions in one grouped pull request,
+each version 14 days old, merged by the workflow like security updates.
 After every merge that passes ci, the dependabot workflow merges `main`
 into each open Dependabot pull request and starts its checks.
 Dependabot recreates a conflicting one.

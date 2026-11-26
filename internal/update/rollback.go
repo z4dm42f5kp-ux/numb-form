@@ -30,11 +30,11 @@ func Rollback(ctx context.Context, o Options) (string, error) {
 	check := prev
 	if ext != "" {
 		check = filepath.Join(o.Dir, Programs[0]+".check"+ext)
-		b, err := os.ReadFile(prev) // #nosec G304 -- our own kept program.
+		b, err := os.ReadFile(prev) // #nosec G304 G703 -- our own kept program.
 		if err != nil {
 			return "", err
 		}
-		if err := os.WriteFile(check, b, 0o755); err != nil { // #nosec G306 -- programs must be executable.
+		if err := os.WriteFile(check, b, 0o755); err != nil { // #nosec G306 G703 -- programs must be executable; a fixed name in the install folder.
 			return "", err
 		}
 		defer os.Remove(check)

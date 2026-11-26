@@ -49,6 +49,7 @@ func TestApplyAdds(t *testing.T) {
 	}
 	defer func() { _ = removeStage(dir) }()
 	cfg := config.Defaults()
+	cfg.Language = "en"
 	cfg.LogDir = t.TempDir()
 	logDir, lg, err := commitLog(cfg, CommitOptions{Now: time.Now})
 	if err != nil {
