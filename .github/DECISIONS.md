@@ -358,6 +358,11 @@ from it. The release
 joins its images with `docker buildx imagetools create`, which takes
 images and indexes alike on any Docker.
 A release is built with the workflow of its own tag, so the versions
-merged with the old image step (v1.4.2 to v1.7.9) cannot be built from
-their own commits. Their code is released as v1.7.9 from `main`, which
-contains all of them; their sections stay in CHANGES.md.
+merged with the old image step (v1.4.2 to v1.7.9) could not be built
+from their own commits. They are still released in order, each from its
+own planned code: every version got one commit that adds only the
+repaired image step, merged with the version before it, and its
+milestone-part pull request points at that commit (#114 to #117 for the
+versions that were milestones). The pull request "v1.7.9: release v1.4.2
+to v1.7.9 in order" joins that chain into main, and one approval
+releases them oldest first.
