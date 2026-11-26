@@ -343,41 +343,44 @@ and awaits missing runs itself.
 ## Dependabot pull requests after merges
 
 Several action updates arrived as separate pull requests on the same
-lines (three for the parts of codeql-action), and a release stack moved
-`main` past them, so they waited with conflicts and with checks from an
-old `main`. Dependabot now opens pull requests only for security
-updates (routine bumps are off, grouped if turned back on), and after
-every merge that passes ci the dependabot workflow merges
-`main` into each open Dependabot pull request and starts its checks; a
-conflicting one is recreated by Dependabot. The owner merges every
-pull request except Dependabot's: those are merged by the workflow once
-every check on their newest commit has passed, and the update is merged
-into every open pull request, so planned releases carry it before they
-are merged.
+lines (three for the parts of codeql-action).
+A release stack moved `main` past them, so they waited with conflicts
+and with checks from an old `main`.
+Dependabot now opens pull requests only for security updates.
+Routine bumps are off, and grouped if turned back on.
+After every merge that passes ci, the dependabot workflow merges `main`
+into each open Dependabot pull request and starts its checks.
+Dependabot recreates a conflicting one.
+The owner merges every pull request except Dependabot's.
+The workflow merges those once every check on their newest commit has
+passed, and merges the update into every open pull request, so planned
+releases carry it before they are merged.
 
 ## The release image step and Guix after Ubuntu 26.04 (after v1.4.1)
 
-`ubuntu-latest` moved to Ubuntu 26.04. Its Docker pushes an image index
-even for one platform, which `docker manifest create` refuses, and it
-has no guix package. The release build of v1.4.1 stopped after
-publishing its archives, so v1.4.1 has no container image and v1.4.2 to
-v1.4.5 were not released.
-The runners are not pinned to an older Ubuntu: as since v1.2.6 (format
-tests) and v1.7.4 (install commands), what depends on a distribution
-runs in the Debian 13 image pinned by digest, which the daily systems
-check keeps current. The Guix check runs there too: Debian no longer
-ships a guix package (it left Debian 12 in a point release and is not in
-Debian 13), so the check installs Guix's own binary release, accepted
-only when signed by a Guix maintainer key, and pulls the current Guix
-from it. The release
-joins its images with `docker buildx imagetools create`, which takes
-images and indexes alike on any Docker.
+`ubuntu-latest` moved to Ubuntu 26.04.
+Its Docker pushes an image index even for one platform, which
+`docker manifest create` refuses, and it has no guix package.
+The release build of v1.4.1 stopped after publishing its archives, so
+v1.4.1 has no container image and v1.4.2 to v1.4.5 were not released.
+The runners are not pinned to an older Ubuntu.
+As since v1.2.6 (format tests) and v1.7.4 (install commands), what
+depends on a distribution runs in the Debian 13 image pinned by digest,
+which the daily systems check keeps current.
+The Guix check runs there too.
+Debian no longer ships a guix package: it left Debian 12 in a point
+release and is not in Debian 13.
+The check installs Guix's own binary release, accepts it only when a
+Guix maintainer key signed it, and pulls the current Guix from it.
+The release joins its images with `docker buildx imagetools create`,
+which takes images and indexes alike on any Docker.
 A release is built with the workflow of its own tag, so the versions
 merged with the old image step (v1.4.2 to v1.7.9) could not be built
-from their own commits. They are still released in order, each from its
-own planned code: every version got one commit that adds only the
-repaired image step, merged with the version before it, and its
-milestone-part pull request points at that commit (#114 to #117 for the
-versions that were milestones). The pull request "v1.7.9: release v1.4.2
-to v1.7.9 in order" joins that chain into main, and one approval
-releases them oldest first.
+from their own commits.
+They are still released in order, each from its own planned code.
+Every version got one commit that adds only the repaired image step,
+merged with the version before it, and its milestone-part pull request
+points at that commit (#114 to #117 for the versions that were
+milestones).
+The pull request "v1.7.9: release v1.4.2 to v1.7.9 in order" joins that
+chain into `main`, and one approval releases them oldest first.
