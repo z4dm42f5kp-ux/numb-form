@@ -15,8 +15,14 @@ updates:
     open-pull-requests-limit: 0
     cooldown:
       default-days: 14
+    # One pull request for all actions, so parts of one action (such as
+    # codeql-action init and analyze) always move together.
     groups:
       actions:
+        applies-to: version-updates
+        patterns: ["*"]
+      actions-security:
+        applies-to: security-updates
         patterns: ["*"]
   # Only Argos Translate itself: its dependencies must fit together, so
   # the lock is regenerated as a whole with the uv command at the top of
