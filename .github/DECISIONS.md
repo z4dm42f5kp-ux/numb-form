@@ -340,6 +340,21 @@ now runs everything. A version released as part of a milestone must
 have passed ci and security on its own commit; release approval starts
 and awaits missing runs itself.
 
+## Dependabot pull requests after merges
+
+Several action updates arrived as separate pull requests on the same
+lines (three for the parts of codeql-action), and a release stack moved
+`main` past them, so they waited with conflicts and with checks from an
+old `main`. Dependabot now opens pull requests only for security
+updates (routine bumps are off, grouped if turned back on), and after
+every merge that passes ci the dependabot workflow merges
+`main` into each open Dependabot pull request and starts its checks; a
+conflicting one is recreated by Dependabot. The owner merges every
+pull request except Dependabot's: those are merged by the workflow once
+every check on their newest commit has passed, and the update is merged
+into every open pull request, so planned releases carry it before they
+are merged.
+
 ## The release image step and Guix after Ubuntu 26.04 (after v1.4.1)
 
 `ubuntu-latest` moved to Ubuntu 26.04. Its Docker pushes an image index
