@@ -17,3 +17,11 @@ func TestCommentsHidden(t *testing.T) {
 		}
 	}
 }
+
+// A diagram is replaced by its description in the terminal.
+func TestDiagramInTerminal(t *testing.T) {
+	got := Text("![The whole procedure](diagrams/pipeline.svg)\n", 80)
+	if !strings.Contains(got, "[Diagram: The whole procedure.]") || strings.Contains(got, "svg") {
+		t.Fatalf("got %q", got)
+	}
+}

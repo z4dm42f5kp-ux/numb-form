@@ -258,6 +258,97 @@ curl -fLO https://raw.githubusercontent.com/z4dm42f5kp-ux/numb-form/main/.github
 A good signature and a matching checksum together prove the archive
 is the one the release workflow built.
 
+## In a company network
+
+Company networks often send every connection through a proxy, inspect
+encrypted connections, or allow only listed hosts.
+numb-form needs only these hosts, over HTTPS (port 443), and only to
+install or update:
+
+| Host | Used for |
+| --- | --- |
+| `github.com` | the release pages and downloads |
+| `objects.githubusercontent.com`, `release-assets.githubusercontent.com` | the files GitHub sends a download on to |
+
+Filling forms, numb-commit, numb-date and numb-typo never use the
+network.
+`numb-form update` refuses every other host.
+
+### A proxy
+
+**Windows** (10, 11): the install lines use `Invoke-WebRequest`, which
+uses the proxy set in Windows.
+If the proxy asks for your Windows sign-in, the download stops with
+`(407) Proxy Authentication Required`.
+Then paste this line first, in the same window, and the install line
+after it:
+
+```
+[Net.WebRequest]::DefaultWebProxy.Credentials = [Net.CredentialCache]::DefaultNetworkCredentials; if ($?) { 'OK, the proxy gets your Windows sign-in in this window' }
+```
+
+`numb-form update` reads the proxy from the environment variable
+`HTTPS_PROXY` only, not from the Windows settings.
+Ask the IT department for the proxy address, then, for example:
+
+```
+$env:HTTPS_PROXY = 'http://proxy.example.com:8080'; if ($?) { numb-form update stable }
+```
+
+The variable holds for that window only.
+`numb-form update` cannot answer a proxy that asks for the Windows
+sign-in (NTLM or Kerberos).
+Use the install line with the line above, or a shared folder (below).
+
+**Unix-like** (macOS, Linux, BSD): `curl` and `numb-form update` both
+read `HTTPS_PROXY`:
+
+```
+export HTTPS_PROXY=http://proxy.example.com:8080 && numb-form update stable
+```
+
+### Inspected connections
+
+Some proxies decrypt and re-encrypt HTTPS with a certificate of the
+company.
+numb-form trusts it when the company has installed it on the computer:
+on Windows and macOS numb-form uses the certificates of the system, and
+on Linux and BSD the system's certificate file (`SSL_CERT_FILE` names
+another one).
+The checksums still protect the download: a file changed on its way
+does not match and is not installed.
+
+### Installing from a shared folder
+
+Where the computers cannot reach GitHub at all, an administrator
+downloads a release once and puts it in a shared folder:
+
+1. Download `numb-form_windows_amd64.zip` and `SHA256SUMS` of the
+   release from the
+   [releases page](https://github.com/z4dm42f5kp-ux/numb-form/releases)
+   on a computer that can reach GitHub.
+2. Compare the checksum of the archive with the table under
+   [Checksums](#checksums), or verify it as in
+   [Verifying who built a release](#verifying-who-built-a-release).
+3. Copy both files into a folder that users can read and only
+   administrators can change, for example
+   `\\server\software\numb-form`.
+
+Every user then installs from that folder, without network access to
+GitHub.
+Replace `\\server\software\numb-form` with the real folder:
+
+```
+& { $ErrorActionPreference = 'Stop'; $s = '\\server\software\numb-form'; $z = 'numb-form_windows_amd64.zip'; $d = Join-Path $env:LOCALAPPDATA 'Programs\numb-form'; New-Item -ItemType Directory -Force $d | Out-Null; Push-Location $d; try { Copy-Item (Join-Path $s $z) $z; $h = (Get-FileHash $z -Algorithm SHA256).Hash.ToLower(); if (-not (Select-String -Path (Join-Path $s 'SHA256SUMS') -SimpleMatch "$h  $z" -Quiet)) { throw 'CHECKSUM MISMATCH' }; Expand-Archive -Force $z -DestinationPath $d } finally { Remove-Item -ErrorAction SilentlyContinue $z; Pop-Location }; $p = [Environment]::GetEnvironmentVariable('Path', 'User'); if (-not $p) { $p = '' }; if (($p -split ';') -notcontains $d) { [Environment]::SetEnvironmentVariable('Path', ($p.TrimEnd(';') + ';' + $d).TrimStart(';'), 'User') }; & (Join-Path $d 'numb-form.exe') -version; 'OK, open a new PowerShell window' }
+```
+
+It prints the version and `OK, open a new PowerShell window`.
+`CHECKSUM MISMATCH` means the archive in the shared folder is damaged
+or does not belong to its `SHA256SUMS`: tell the administrator.
+To update, the administrator replaces both files and every user runs
+the line again.
+Settings are kept.
+
 ## Building from source
 
 The project has no third-party modules: `go.mod` has no `require` lines

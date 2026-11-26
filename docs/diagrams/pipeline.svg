@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1140" height="1030" viewBox="0 0 1140 1030" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="15">
+<title>numb-form from start to finish</title>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#343a40"/></marker></defs>
+<rect width="1140" height="1030" fill="#ffffff"/>
+<text x="20" y="34" font-size="22" font-weight="bold" fill="#212529">numb-form from start to finish</text>
+<line x1="380" y1="102.0" x2="440" y2="92.0" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<line x1="800" y1="92.0" x2="820" y2="102.0" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<text x="804" y="84.0" font-size="13" font-weight="bold" fill="#343a40">or</text>
+<line x1="200.0" y1="144" x2="200.0" y2="170" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<line x1="380" y1="212.0" x2="440" y2="212.0" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<line x1="200.0" y1="254" x2="200.0" y2="300" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<line x1="380" y1="352.0" x2="440" y2="332.0" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<line x1="200.0" y1="404" x2="200.0" y2="450" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<line x1="380" y1="472.0" x2="440" y2="472.0" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<line x1="200.0" y1="494" x2="200.0" y2="560" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<line x1="200.0" y1="644" x2="200.0" y2="690" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<line x1="380" y1="732.0" x2="440" y2="732.0" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<line x1="200.0" y1="774" x2="200.0" y2="820" stroke="#343a40" stroke-width="2" marker-end="url(#a)"/>
+<rect x="20" y="60" width="360" height="84" rx="10" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+<text x="32" y="87" font-weight="bold" fill="#212529" xml:space="preserve">1. Install (once)</text>
+<text x="32" y="107" fill="#212529" xml:space="preserve">PowerShell: paste the install line,</text>
+<text x="32" y="127" fill="#212529" xml:space="preserve">press Enter.</text>
+<rect x="440" y="60" width="360" height="64" rx="10" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+<text x="452" y="87" font-weight="bold" fill="#212529" xml:space="preserve">You see:</text>
+<text x="452" y="107" font-family="Consolas, Menlo, monospace" font-size="14" fill="#212529" xml:space="preserve">  OK, open a new PowerShell window</text>
+<rect x="820" y="60" width="300" height="84" rx="10" fill="#ffc9c9" stroke="#e03131" stroke-width="2"/>
+<text x="832" y="87" font-weight="bold" fill="#212529" xml:space="preserve">You see CHECKSUM MISMATCH:</text>
+<text x="832" y="107" fill="#212529" xml:space="preserve">stop. Do not run numb-form.</text>
+<text x="832" y="127" fill="#212529" xml:space="preserve">Tell whoever looks after it.</text>
+<rect x="20" y="170" width="360" height="84" rx="10" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+<text x="32" y="197" font-weight="bold" fill="#212529" xml:space="preserve">2. Save your name and language (once)</text>
+<text x="32" y="217" font-family="Consolas, Menlo, monospace" font-size="14" fill="#212529" xml:space="preserve">  numb-form config set person &quot;...&quot;</text>
+<text x="32" y="237" font-family="Consolas, Menlo, monospace" font-size="14" fill="#212529" xml:space="preserve">  numb-form config set language de</text>
+<rect x="440" y="170" width="360" height="84" rx="10" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+<text x="452" y="197" font-weight="bold" fill="#212529" xml:space="preserve">You see:</text>
+<text x="452" y="217" font-family="Consolas, Menlo, monospace" font-size="14" fill="#212529" xml:space="preserve">  Saved person = ...</text>
+<text x="452" y="237" font-family="Consolas, Menlo, monospace" font-size="14" fill="#212529" xml:space="preserve">  Saved language = de</text>
+<rect x="20" y="300" width="360" height="104" rx="10" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+<text x="32" y="327" font-weight="bold" fill="#212529" xml:space="preserve">3. Open the GWG folder in File Explorer.</text>
+<text x="32" y="347" fill="#212529" xml:space="preserve">Click the address bar, type</text>
+<text x="32" y="367" font-family="Consolas, Menlo, monospace" font-size="14" fill="#212529" xml:space="preserve">  powershell</text>
+<text x="32" y="387" fill="#212529" xml:space="preserve">and press Enter.</text>
+<rect x="440" y="300" width="360" height="64" rx="10" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+<text x="452" y="327" font-weight="bold" fill="#212529" xml:space="preserve">The prompt ends with the folder:</text>
+<text x="452" y="347" font-family="Consolas, Menlo, monospace" font-size="14" fill="#212529" xml:space="preserve">  PS H:\GWG&gt;</text>
+<rect x="20" y="450" width="360" height="44" rx="10" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+<text x="32" y="477" font-weight="bold" fill="#212529" xml:space="preserve">4. Type numb-form, press Enter.</text>
+<rect x="440" y="430" width="360" height="84" rx="10" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+<text x="452" y="457" font-weight="bold" fill="#212529" xml:space="preserve">Working folder, Spreadsheet and</text>
+<text x="452" y="477" fill="#212529" xml:space="preserve">Template are the right ones.</text>
+<text x="452" y="497" fill="#212529" xml:space="preserve">Wrong ones: Ctrl+C, go back to 3.</text>
+<rect x="20" y="560" width="360" height="84" rx="10" fill="#ffec99" stroke="#f08c00" stroke-width="2"/>
+<text x="32" y="587" font-weight="bold" fill="#212529" xml:space="preserve">5. For each new company: address,</text>
+<text x="32" y="607" fill="#212529" xml:space="preserve">representatives, then a / e / r.</text>
+<text x="32" y="627" fill="#212529" xml:space="preserve">See the next diagram.</text>
+<rect x="20" y="690" width="360" height="84" rx="10" fill="#e9ecef" stroke="#495057" stroke-width="2"/>
+<text x="32" y="717" font-weight="bold" fill="#212529" xml:space="preserve">6. numb-form shows the summary:</text>
+<text x="32" y="737" font-family="Consolas, Menlo, monospace" font-size="14" fill="#212529" xml:space="preserve">  Done: 3 accepted, 8 already had ...</text>
+<text x="32" y="757" fill="#212529" xml:space="preserve">and where the log is.</text>
+<rect x="440" y="690" width="360" height="84" rx="10" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2"/>
+<text x="452" y="717" font-weight="bold" fill="#212529" xml:space="preserve">Open one new form in Word.</text>
+<text x="452" y="737" fill="#212529" xml:space="preserve">Section A is filled, section B is</text>
+<text x="452" y="757" fill="#212529" xml:space="preserve">unchanged, the date is today.</text>
+<rect x="20" y="820" width="360" height="64" rx="10" fill="#a5d8ff" stroke="#1971c2" stroke-width="2"/>
+<text x="32" y="847" font-weight="bold" fill="#212529" xml:space="preserve">7. Later: numb-date fills the</text>
+<text x="32" y="867" fill="#212529" xml:space="preserve">Report created column of the list.</text>
+<rect x="20" y="908" width="14" height="14" fill="#a5d8ff" stroke="#1971c2"/>
+<text x="42" y="920" font-size="13" fill="#212529">You do this</text>
+<rect x="20" y="928" width="14" height="14" fill="#e9ecef" stroke="#495057"/>
+<text x="42" y="940" font-size="13" fill="#212529">numb-form does this</text>
+<rect x="20" y="948" width="14" height="14" fill="#ffec99" stroke="#f08c00"/>
+<text x="42" y="960" font-size="13" fill="#212529">numb-form asks, you answer</text>
+<rect x="20" y="968" width="14" height="14" fill="#b2f2bb" stroke="#2f9e44"/>
+<text x="42" y="980" font-size="13" fill="#212529">Check that you see this</text>
+<rect x="20" y="988" width="14" height="14" fill="#ffc9c9" stroke="#e03131"/>
+<text x="42" y="1000" font-size="13" fill="#212529">Stop and get help</text>
+</svg>

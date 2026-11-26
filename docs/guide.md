@@ -8,6 +8,34 @@ On **macOS, Linux or BSD**, install with [install.md](install.md); the
 questions and answers are the same, and commands joined with `;` here
 are joined with `&&` there.
 
+## Synopsis
+
+After reading this guide, you will know:
+
+* How to install numb-form and check that the installation worked.
+* How to save your name and the language of the questions.
+* How to start numb-form in the right folder, and how to tell that it
+  is the right folder.
+* What every question means and what to answer.
+* How to check a finished form.
+* What to do when a message appears that you do not expect.
+
+Before reading this guide, you should know:
+
+* Where your team's working folder (GWG) is.
+* How to open a folder in File Explorer.
+
+If you have never pasted a command into a window, read
+[Terminals and shells](shells.md) first.
+
+The whole procedure, from installing to checking a form:
+
+![The whole procedure: install, save your name and language, open the GWG folder, start numb-form, answer the questions, check the summary and one form, and later fill the report dates](diagrams/pipeline.svg)
+
+Blue boxes are what you do, green boxes are what you must see before
+you go on, and the red box means stop.
+The numbered sections below say the same in words.
+
 ## Words used in this guide
 
 **working folder**
@@ -86,8 +114,18 @@ Part B of the form is never touched.
 
 3. Wait until it says `OK, open a new PowerShell window`.
    Close the window.
+4. Check the installation.
+   Open a new Windows PowerShell window, type `numb-form -version` and
+   press **Enter**.
+   It answers with the version, for example `numb-form v1.8.0`.
 
 You do not need administrator rights.
+
+**Note:** In a company network the download can be blocked by a proxy
+or a firewall.
+If the line ends with a red message such as `Unable to connect to the
+remote server` or `(407) Proxy Authentication Required`, see
+[In a company network](install.md#in-a-company-network).
 If it says `CHECKSUM MISMATCH`, the download was damaged or changed:
 do not continue, and tell whoever looks after the tool.
 
@@ -131,9 +169,14 @@ If you skip this, numb-form asks for the language first, every time.
 2. Click once into the **address bar** at the top of the window (where
    the folder's path is shown), type `powershell` and press **Enter**.
    A blue window opens that is already "in" the GWG folder.
-3. Type `numb-form` and press **Enter**.
+3. Check that the window is in the right folder.
+   The line where you type ends with the path of GWG and `>`, for
+   example `PS H:\GWG>`.
+   If it shows another folder, close the window and repeat step 2.
+4. Type `numb-form` and press **Enter**.
 
-numb-form first shows what it found:
+numb-form first asks for the language, unless you saved one in step 2.
+Then it shows what it found:
 
 ```
 Working folder: H:\GWG
@@ -141,7 +184,13 @@ Spreadsheet:    3. Übersichten\Kundenliste.xlsx (read only)
 Template:       Appendix A - Risk Assesment.docx
 ```
 
-If that is right, it goes through the companies one by one.
+Check all three lines.
+If one of them is wrong, press **Ctrl+C** to stop: nothing has been
+written yet.
+If they are right, it goes through the companies one by one.
+
+**Tip:** `numb-form` can also be started from any folder with
+`numb-form -root "H:\GWG"`.
 
 ## 4. The questions, and what to answer
 
@@ -154,6 +203,8 @@ To give a different answer, type it and press Enter.
 Each company starts with a line like
 `[3/11] Foo GmbH  (Customer ID D1001, row 5)`: the third of eleven
 companies, its customer number and its row in the Excel list.
+
+![The questions for one company: a folder that exists is skipped, a similar folder is asked about, then the legal form if the name has none, the address, the representatives, and the check of the written form](diagrams/company.svg)
 
 The legal form is taken from the company name without asking.
 numb-form then asks you for the address and the representatives; it
@@ -178,6 +229,21 @@ at the end.
 At the end numb-form shows a summary, for example
 `Done: 3 accepted, 8 already had a folder, 0 rejected, 0 skipped, 0 errors.`
 and where the log is.
+
+To check the result:
+
+1. Count the new folders in GWG.
+   There is one for every accepted company.
+2. Open one new form in Word.
+   Section A has the name, legal form, registry sentence, address,
+   representatives, the date of today and your name.
+   Section B is exactly as in the empty form.
+3. If anything is wrong, the log (the path after `Log:`) says what
+   numb-form did for each company.
+
+**Warning:** Do not edit the Excel list while numb-form runs.
+numb-form checks that the list is unchanged at the end and reports it
+if it changed.
 
 You can stop at any time with **Ctrl+C**.
 Forms you already accepted stay; the one you were working on is removed.

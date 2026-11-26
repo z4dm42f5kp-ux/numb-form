@@ -31,6 +31,7 @@ var Topics = []Topic{
 	{"numb-typo", "docs/numb-typo.md", "numb-typo: correct misspelt places in company names"},
 	{"configuration", "docs/configuration.md", "Settings (numb-form.conf)"},
 	{"install", "docs/install.md", "Installing and updating"},
+	{"shells", "docs/shells.md", "Terminals and shells: pasting, quoting, joining commands"},
 	{"ai-prompt", "docs/ai-prompt.md", "The AI prompt for the address and representatives"},
 	{"formats", "docs/formats.md", "File formats"},
 	{"containers", "docs/containers.md", "Docker, Podman and Kubernetes"},
@@ -38,7 +39,7 @@ var Topics = []Topic{
 	{"changes", "CHANGES.md", "Changes in each release"},
 }
 
-var aliases = map[string]string{"commit": "numb-commit", "date": "numb-date", "typo": "numb-typo", "config": "configuration", "settings": "configuration", "conf": "configuration", "update": "install", "docker": "containers", "kubernetes": "containers", "podman": "containers", "help": "guide", "start": "guide", "prompt": "ai-prompt", "ai": "ai-prompt"}
+var aliases = map[string]string{"commit": "numb-commit", "date": "numb-date", "typo": "numb-typo", "config": "configuration", "settings": "configuration", "conf": "configuration", "update": "install", "docker": "containers", "kubernetes": "containers", "podman": "containers", "help": "guide", "start": "guide", "prompt": "ai-prompt", "ai": "ai-prompt", "shell": "shells", "terminal": "shells", "powershell": "shells", "paste": "shells"}
 
 // Find returns the topic called name.
 func Find(name string) (Topic, bool) {
@@ -85,6 +86,7 @@ func Source(docs fs.FS, t Topic, lang string) (string, error) {
 
 var (
 	reLink   = regexp.MustCompile(`\[([^\]]+)\]\(([^)\s]+)\)`)
+	reImage  = regexp.MustCompile(`!\[([^\]]*)\]\([^)\s]+\)`)
 	reCode   = regexp.MustCompile("`([^`]*)`")
 	reStrong = regexp.MustCompile(`\*\*([^*]+)\*\*|__([^_]+)__`)
 	reEm     = regexp.MustCompile(`(^|[\s(])\*([^*\s][^*]*)\*`)
@@ -95,6 +97,8 @@ var (
 // inline removes Markdown inline markup. Links to other documents name
 // the topic to open; web links keep their address.
 func inline(s string) string {
+	// A diagram cannot be shown in a terminal; its description can.
+	s = reImage.ReplaceAllString(s, "[Diagram: $1.]")
 	s = reLink.ReplaceAllStringFunc(s, func(m string) string {
 		sm := reLink.FindStringSubmatch(m)
 		text, target := sm[1], sm[2]

@@ -29,6 +29,8 @@ Your job is to operate the terminal, not to make their decisions.
    Send back exactly what they answer.
 3. Never answer `a` (accept), `y` (commit) or a fuzzy folder match on the
    person's behalf, even if the values look right.
+   Relay the language question too, and never pick the language for
+   the person.
 4. Never type representatives, addresses or legal forms yourself; relay
    exactly what the person gives you.
 5. In review mode, run numb-commit only after the person says the
@@ -149,6 +151,7 @@ cd "/path/to/working-folder" && numb-form
 | `internal/fsutil` | Downloads folder, tree copy, safe names |
 | `internal/runlog` | log and manifest |
 | `internal/ui` | terminal prompts with the run deadline |
+| `internal/i18n` | Spanish and German messages of the terminal dialogue, keyed by the English text |
 | `internal/update` | `numb-form update`: checksummed self-update from GitHub releases |
 | `container/`, `k8s/` | image and Kubernetes manifests |
 | `.github/workflows` | CI, security, release, edge (rolling build), translation, scorecard, install-docs (pins), linux (distributions, minor releases) |
