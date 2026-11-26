@@ -121,9 +121,9 @@ Workflows (.github/workflows):
   updates            daily checks for newer tools and Go.
   dependabot         merges a Dependabot pull request once every check
                      has passed, starts main's checks, and merges the
-                     update into every open pull request; after ci on
-                     main, brings open Dependabot pull requests up to
-                     date (or asks Dependabot to recreate them).
+                     update into every open pull request. After ci on
+                     main, it brings open Dependabot pull requests up to
+                     date, or asks Dependabot to recreate them.
   scorecard          OpenSSF scorecard.
 
 Runners are limited. Let CI run on one pull request at a time: cancel
