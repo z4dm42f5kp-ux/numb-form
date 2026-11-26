@@ -58,28 +58,35 @@ func paras(ps []*para) []form.Para {
 	return out
 }
 
+// scanner holds the state of scan: the paragraphs found, the open
+// paragraphs (text boxes nest them) and the open elements.
+type scanner struct {
+	data   []byte
+	paras  []*para
+	pstack []*para
+	names  []xml.Name
+}
+
+func (sc *scanner) top() *para {
+	if len(sc.pstack) == 0 {
+		return nil
+	}
+	return sc.pstack[len(sc.pstack)-1]
+}
+
+func (sc *scanner) parent() xml.Name {
+	if len(sc.names) < 2 {
+		return xml.Name{}
+	}
+	return sc.names[len(sc.names)-2]
+}
+
 // scan walks document XML and returns its paragraphs in document order.
 // Runs and text elements are tracked per paragraph, so paragraphs nested
 // in text boxes do not disturb the enclosing paragraph.
 func scan(data []byte) ([]*para, error) {
 	dec := xml.NewDecoder(bytes.NewReader(data))
-	var (
-		paras  []*para
-		pstack []*para
-		names  []xml.Name
-	)
-	top := func() *para {
-		if len(pstack) == 0 {
-			return nil
-		}
-		return pstack[len(pstack)-1]
-	}
-	parent := func() xml.Name {
-		if len(names) < 2 {
-			return xml.Name{}
-		}
-		return names[len(names)-2]
-	}
+	sc := &scanner{data: data}
 	for {
 		off0 := int(dec.InputOffset()) // #nosec G115 -- bounded by len(data).
 		tok, err := dec.Token()
@@ -92,107 +99,119 @@ func scan(data []byte) ([]*para, error) {
 		off1 := int(dec.InputOffset()) // #nosec G115 -- bounded by len(data).
 		switch t := tok.(type) {
 		case xml.StartElement:
-			names = append(names, t.Name)
-			if t.Name.Space != nsW {
-				continue
-			}
-			p := top()
-			if t.Name.Local == "p" {
-				np := &para{start: off0, rPrFrom: -1}
-				raw := data[off0:off1]
-				if i := bytes.IndexByte(raw, ':'); i > 1 && i < bytes.IndexAny(raw, " />") {
-					np.prefix = string(raw[1:i])
-				}
-				pstack = append(pstack, np)
-				continue
-			}
-			if p == nil {
-				continue
-			}
-			switch t.Name.Local {
-			case "r":
-				if p.cur == nil {
-					p.cur = &run{start: off0}
-				}
-			case "rPr":
-				if p.cur != nil && parent().Local == "r" {
-					p.rPrFrom = off0
-				}
-			case "t":
-				if p.cur != nil && parent().Local == "r" {
-					p.curSeg = &seg{tagStart: off0, cStart: off1, selfClose: bytes.HasSuffix(data[off0:off1], []byte("/>"))}
-					for _, a := range t.Attr {
-						if a.Name.Space == nsXML && a.Name.Local == "space" && a.Value == "preserve" {
-							p.curSeg.preserve = true
-						}
-					}
-				}
-			case "tab", "br", "cr":
-				if p.cur != nil && parent().Local == "r" {
-					p.raw.WriteString(" ")
-					if t.Name.Local == "tab" {
-						p.cur.hasTab = true
-						if p.cur.hasText {
-							p.cur.tabAfterText = true
-						}
-					}
-				}
-			}
+			sc.start(t, off0, off1)
 		case xml.EndElement:
-			if len(names) > 0 {
-				names = names[:len(names)-1]
-			}
-			if t.Name.Space != nsW {
-				continue
-			}
-			p := top()
-			if p == nil {
-				continue
-			}
-			switch t.Name.Local {
-			case "p":
-				p.end = off1
-				p.cur, p.curSeg = nil, nil
-				paras = append(paras, p)
-				pstack = pstack[:len(pstack)-1]
-			case "r":
-				if p.cur != nil {
-					p.cur.end = off1
-					p.runs = append(p.runs, *p.cur)
-				}
-				p.cur = nil
-			case "rPr":
-				if p.cur != nil && p.rPrFrom >= 0 {
-					p.cur.rPr = append([]byte(nil), data[p.rPrFrom:off1]...)
-					p.rPrFrom = -1
-				}
-			case "t":
-				if s := p.curSeg; s != nil && p.cur != nil {
-					if s.selfClose {
-						s.cEnd = s.cStart
-					} else {
-						s.cEnd = off0
-					}
-					s.tagEnd = off1
-					p.segs = append(p.segs, *s)
-					if s.text != "" {
-						p.cur.hasText = true
-						p.cur.tabAfterText = false
-					}
-					p.cur.segs = append(p.cur.segs, len(p.segs)-1)
-					p.curSeg = nil
-				}
-			}
+			sc.end(t, off0, off1)
 		case xml.CharData:
-			if p := top(); p != nil && p.curSeg != nil {
+			if p := sc.top(); p != nil && p.curSeg != nil {
 				p.curSeg.text += string(t)
 				p.raw.Write(t)
 			}
 		}
 	}
-	if len(pstack) != 0 {
+	if len(sc.pstack) != 0 {
 		return nil, errors.New("document xml: unterminated paragraph")
 	}
+	paras := sc.paras
 	sort.SliceStable(paras, func(i, j int) bool { return paras[i].start < paras[j].start })
 	return paras, nil
+}
+
+// start handles an opening tag at data[off0:off1].
+func (sc *scanner) start(t xml.StartElement, off0, off1 int) {
+	sc.names = append(sc.names, t.Name)
+	if t.Name.Space != nsW {
+		return
+	}
+	p := sc.top()
+	if t.Name.Local == "p" {
+		np := &para{start: off0, rPrFrom: -1}
+		raw := sc.data[off0:off1]
+		if i := bytes.IndexByte(raw, ':'); i > 1 && i < bytes.IndexAny(raw, " />") {
+			np.prefix = string(raw[1:i])
+		}
+		sc.pstack = append(sc.pstack, np)
+		return
+	}
+	if p == nil {
+		return
+	}
+	inRun := p.cur != nil && sc.parent().Local == "r"
+	switch t.Name.Local {
+	case "r":
+		if p.cur == nil {
+			p.cur = &run{start: off0}
+		}
+	case "rPr":
+		if inRun {
+			p.rPrFrom = off0
+		}
+	case "t":
+		if inRun {
+			p.curSeg = &seg{tagStart: off0, cStart: off1, selfClose: bytes.HasSuffix(sc.data[off0:off1], []byte("/>"))}
+			for _, a := range t.Attr {
+				if a.Name.Space == nsXML && a.Name.Local == "space" && a.Value == "preserve" {
+					p.curSeg.preserve = true
+				}
+			}
+		}
+	case "tab", "br", "cr":
+		if inRun {
+			p.raw.WriteString(" ")
+			if t.Name.Local == "tab" {
+				p.cur.hasTab = true
+				if p.cur.hasText {
+					p.cur.tabAfterText = true
+				}
+			}
+		}
+	}
+}
+
+// end handles a closing tag at data[off0:off1].
+func (sc *scanner) end(t xml.EndElement, off0, off1 int) {
+	if len(sc.names) > 0 {
+		sc.names = sc.names[:len(sc.names)-1]
+	}
+	if t.Name.Space != nsW {
+		return
+	}
+	p := sc.top()
+	if p == nil {
+		return
+	}
+	switch t.Name.Local {
+	case "p":
+		p.end = off1
+		p.cur, p.curSeg = nil, nil
+		sc.paras = append(sc.paras, p)
+		sc.pstack = sc.pstack[:len(sc.pstack)-1]
+	case "r":
+		if p.cur != nil {
+			p.cur.end = off1
+			p.runs = append(p.runs, *p.cur)
+		}
+		p.cur = nil
+	case "rPr":
+		if p.cur != nil && p.rPrFrom >= 0 {
+			p.cur.rPr = append([]byte(nil), sc.data[p.rPrFrom:off1]...)
+			p.rPrFrom = -1
+		}
+	case "t":
+		if s := p.curSeg; s != nil && p.cur != nil {
+			if s.selfClose {
+				s.cEnd = s.cStart
+			} else {
+				s.cEnd = off0
+			}
+			s.tagEnd = off1
+			p.segs = append(p.segs, *s)
+			if s.text != "" {
+				p.cur.hasText = true
+				p.cur.tabAfterText = false
+			}
+			p.cur.segs = append(p.cur.segs, len(p.segs)-1)
+			p.curSeg = nil
+		}
+	}
 }

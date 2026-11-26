@@ -99,7 +99,7 @@ cd "/path/to/working-folder" && numb-form
   Compile checks before pushing are fine and fast:
 
   ```
-  sh scripts/check-deps.sh && test -z "$(gofmt -l .)" && for os in linux windows darwin freebsd openbsd netbsd; do GOOS=$os go vet ./... || exit 1; done
+  sh scripts/check-deps.sh && sh scripts/check-loc.sh && test -z "$(gofmt -l .)" && for os in linux windows darwin freebsd openbsd netbsd; do GOOS=$os go vet ./... || exit 1; done
   ```
 
 * Every operating system is equal: paths with umlauts, trailing dots on
@@ -107,7 +107,10 @@ cd "/path/to/working-folder" && numb-form
 * Every template format implements `form.Filler`, splices bytes instead
   of re-serialising, and passes `form.Verify`; add it to
   `internal/form/formats_test.go` and to the fuzz targets.
-* Keep files short (about 300 lines at most).
+* Keep files short: at most 300 lines for every Go, shell and Python
+  file, and at most 100 lines for every Go function, tests included
+  (`scripts/check-loc.sh`, ci).
+  Split by meaning, not at an arbitrary line.
 * Pin new GitHub Actions to a full commit SHA that you looked up, with
   the version as a comment.
 * Pin new Python tools with `uv pip compile --generate-hashes

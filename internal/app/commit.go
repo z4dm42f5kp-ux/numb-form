@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/fs"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -80,41 +79,9 @@ func Commit(opt CommitOptions) int {
 
 func commit(ctx context.Context, u *ui.UI, opt CommitOptions) error {
 	u.Printf("numb-commit %s — copy reviewed forms back into the real folder\n\n", Version)
-	runDir := opt.RunDir
-	if runDir == "" {
-		dl := opt.Downloads
-		var err error
-		if dl == "" {
-			if dl, err = fsutil.DownloadsDir(); err != nil {
-				return err
-			}
-		}
-		runs, err := pendingRuns(runlog.RunsDir(dl))
-		if err != nil {
-			return fmt.Errorf("no runs found in %s: %w", runlog.RunsDir(dl), err)
-		}
-		switch len(runs) {
-		case 0:
-			u.Println("There is nothing to commit.")
-			return nil
-		case 1:
-			runDir = runs[0]
-		default:
-			u.Println("Runs waiting to be committed (newest first):")
-			for i, r := range runs {
-				u.Printf("  %d) %s\n", i+1, filepath.Base(r))
-			}
-			for runDir == "" {
-				a, err := u.AskDefault("Choose a run", "1")
-				if err != nil {
-					return err
-				}
-				var n int
-				if _, err := fmt.Sscanf(a, "%d", &n); err == nil && n >= 1 && n <= len(runs) {
-					runDir = runs[n-1]
-				}
-			}
-		}
+	runDir, err := chooseRun(u, opt)
+	if err != nil || runDir == "" {
+		return err
 	}
 	m, err := runlog.Load(runDir)
 	if err != nil {
@@ -147,82 +114,59 @@ func commit(ctx context.Context, u *ui.UI, opt CommitOptions) error {
 			return errAbort
 		}
 	}
-	existing, err := indexFolders(m.SourceRoot, filepath.Join(m.SourceRoot, filepath.Dir(m.Spreadsheet)))
-	if err != nil {
+	plans, err := planCommits(u, m, lg)
+	if err != nil || len(plans) == 0 {
 		return err
 	}
+	if err := confirmPlans(u, m, plans, lg); err != nil {
+		return err
+	}
+	return applyPlans(ctx, u, opt, runDir, m, plans, lg)
+}
 
-	var plans []plan
-	for i, c := range m.Companies {
-		if c.Status != "accepted" || c.Committed {
-			continue
+// chooseRun returns the run folder to commit: the one given, the only
+// pending one, or the one the person picks. "" means nothing to commit.
+func chooseRun(u *ui.UI, opt CommitOptions) (string, error) {
+	if opt.RunDir != "" {
+		return opt.RunDir, nil
+	}
+	dl := opt.Downloads
+	var err error
+	if dl == "" {
+		if dl, err = fsutil.DownloadsDir(); err != nil {
+			return "", err
 		}
-		p := plan{idx: i, src: filepath.Join(m.CopyRoot, c.Folder), dst: filepath.Join(m.SourceRoot, c.Folder), files: map[string]string{}}
-		if strings.Contains(c.Folder, "..") || filepath.IsAbs(c.Folder) {
-			return fmt.Errorf("manifest entry %q has an unsafe folder name", c.Folder)
-		}
-		if _, err := os.Lstat(p.dst); err == nil {
-			u.Printf("  skip %s: it already exists in the real folder\n", ui.Safe(c.Folder))
-			lg.Printf("skip %s: exists", c.Folder)
-			continue
-		}
-		if ex, _ := existing.Find(c.Name); len(ex) > 0 {
-			u.Printf("  skip %s: the real folder now has %s\n", ui.Safe(c.Folder), ui.Safe(ex[0].Rel))
-			lg.Printf("skip %s: matching folder %s appeared", c.Folder, ex[0].Rel)
-			continue
-		}
-		if st, err := os.Stat(p.src); err != nil || !st.IsDir() {
-			u.Printf("  skip %s: missing from the review copy\n", ui.Safe(c.Folder))
-			lg.Printf("skip %s: missing in copy", c.Folder)
-			continue
-		}
-		recorded := map[string]string{}
-		for _, f := range c.Files {
-			recorded[filepath.FromSlash(f.Rel)] = f.SHA256
-		}
-		err := filepath.WalkDir(p.src, func(path string, d fs.DirEntry, err error) error {
-			if err != nil || !d.Type().IsRegular() {
-				return err
-			}
-			h, _, err := fsutil.SHA256File(path)
-			if err != nil {
-				return err
-			}
-			r, _ := filepath.Rel(m.CopyRoot, path)
-			p.files[r] = h
-			if want, ok := recorded[r]; ok && want != h {
-				p.changed = append(p.changed, r)
-			} else if !ok {
-				p.changed = append(p.changed, r+" (added during review)")
-			}
-			return nil
-		})
+	}
+	runs, err := pendingRuns(runlog.RunsDir(dl))
+	if err != nil {
+		return "", fmt.Errorf("no runs found in %s: %w", runlog.RunsDir(dl), err)
+	}
+	switch len(runs) {
+	case 0:
+		u.Println("There is nothing to commit.")
+		return "", nil
+	case 1:
+		return runs[0], nil
+	}
+	u.Println("Runs waiting to be committed (newest first):")
+	for i, r := range runs {
+		u.Printf("  %d) %s\n", i+1, filepath.Base(r))
+	}
+	for {
+		a, err := u.AskDefault("Choose a run", "1")
 		if err != nil {
-			return err
+			return "", err
 		}
-		plans = append(plans, p)
-	}
-	if len(plans) == 0 {
-		u.Println("Nothing left to commit in this run.")
-		return nil
-	}
-	u.Printf("\nThese new folders will be added to %s:\n", m.SourceRoot)
-	for _, p := range plans {
-		u.Printf("  + %s (%d file(s))\n", ui.Safe(m.Companies[p.idx].Folder), len(p.files))
-		for _, c := range p.changed {
-			u.Printf("      changed since the run: %s\n", ui.Safe(c))
+		var n int
+		if _, err := fmt.Sscanf(a, "%d", &n); err == nil && n >= 1 && n <= len(runs) {
+			return runs[n-1], nil
 		}
 	}
-	u.Println("Existing files and folders are never overwritten or deleted.")
-	ok, err := u.YesNo("Commit now?", false)
-	if err != nil {
-		return err
-	}
-	if !ok {
-		lg.Printf("user declined")
-		return errAbort
-	}
+}
 
+// applyPlans copies the planned folders, records each one in the
+// manifest, and offers to delete the review copy when all are in.
+func applyPlans(ctx context.Context, u *ui.UI, opt CommitOptions, runDir string, m *runlog.Manifest, plans []plan, lg *runlog.Logger) error {
 	done := 0
 	for _, p := range plans {
 		if err := ctx.Err(); err != nil {
@@ -255,21 +199,23 @@ func commit(ctx context.Context, u *ui.UI, opt CommitOptions) error {
 	if !all {
 		return errors.New("some folders were not committed; see the log")
 	}
+	return offerDeleteCopy(u, runDir, m, lg)
+}
+
+func offerDeleteCopy(u *ui.UI, runDir string, m *runlog.Manifest, lg *runlog.Logger) error {
 	del, err := u.YesNo("Delete the review copy in Downloads now? (logs and manifest are kept)", true)
-	if err != nil {
+	if err != nil || !del {
 		return err
 	}
-	if del {
-		if r, err := filepath.Rel(runDir, m.CopyRoot); err != nil || strings.HasPrefix(r, "..") || r == "." {
-			return errors.New("refusing to delete: copy is not inside the run folder")
-		}
-		if err := os.RemoveAll(m.CopyRoot); err != nil {
-			return err
-		}
-		m.CopyDeleted = true
-		_ = m.Save(runDir)
-		lg.Printf("deleted review copy %s", m.CopyRoot)
-		u.Println("Review copy deleted.")
+	if r, err := filepath.Rel(runDir, m.CopyRoot); err != nil || strings.HasPrefix(r, "..") || r == "." {
+		return errors.New("refusing to delete: copy is not inside the run folder")
 	}
+	if err := os.RemoveAll(m.CopyRoot); err != nil {
+		return err
+	}
+	m.CopyDeleted = true
+	_ = m.Save(runDir)
+	lg.Printf("deleted review copy %s", m.CopyRoot)
+	u.Println("Review copy deleted.")
 	return nil
 }

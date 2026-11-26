@@ -120,6 +120,35 @@ func TestRunAndCommit(t *testing.T) {
 		}
 	}
 
+	runDir, m := checkReviewRun(t, dl, &out)
+
+	checkFilled(t, m)
+
+	// Commit: confirm, then delete the review copy.
+	out.Reset()
+	code = Commit(CommitOptions{Downloads: dl, In: strings.NewReader("y\ny\n"), Out: &out, Now: now})
+	if code != ExitOK {
+		t.Fatalf("commit exit %d\n%s", code, out.String())
+	}
+	checkCommitted(t, root, before, m, runDir)
+	// A second commit has nothing to do; a second run finds every folder.
+	out.Reset()
+	if code := Commit(CommitOptions{Downloads: dl, Config: review(), In: strings.NewReader(""), Out: &out, Now: now}); code != ExitOK || !strings.Contains(out.String(), "There is nothing to commit.") {
+		t.Fatalf("second commit exit %d\n%s", code, out.String())
+	}
+	out.Reset()
+	in2 := "Max Muster\n\n" + newCompanyLine("Caracas 4") // only the rejected Foo C.A. is new again
+	code = Run(Options{Parent: parent, Downloads: dl, AllowNonTTY: true, Config: review(), In: strings.NewReader(in2), Out: &out, Now: now})
+	if code != ExitOK {
+		t.Fatalf("second run exit %d\n%s", code, out.String())
+	}
+	if !strings.Contains(out.String(), "1 accepted, 10 already had a folder") {
+		t.Fatalf("unexpected second run summary:\n%s", out.String())
+	}
+}
+
+func checkReviewRun(t *testing.T, dl string, out *bytes.Buffer) (string, *runlog.Manifest) {
+	t.Helper()
 	runs, _ := os.ReadDir(runlog.RunsDir(dl))
 	if len(runs) != 1 {
 		t.Fatalf("want one run, got %d", len(runs))
@@ -149,8 +178,12 @@ func TestRunAndCommit(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(m.CopyRoot, "Foo C.A")); !os.IsNotExist(err) {
 		t.Fatal("rejected folder was not removed")
 	}
+	return runDir, m
+}
 
-	// Inspect one filled document in the copy.
+// checkFilled inspects filled documents in the review copy.
+func checkFilled(t *testing.T, m *runlog.Manifest) {
+	t.Helper()
 	doc := filepath.Join(m.CopyRoot, "Foo S.A", "Appendix A - Risk Assesment - Foo S.A..docx")
 	b, err := os.ReadFile(doc)
 	if err != nil {
@@ -172,13 +205,11 @@ func TestRunAndCommit(t *testing.T) {
 	if lf, _ := (docx.Format{}).ReadBack(mustRead(t, filepath.Join(m.CopyRoot, "Foo C.A. de C.V", "Appendix A - Risk Assesment - Foo C.A. de C.V..docx"))); lf[form.FieldLegalForm] != "C.A. de C.V." {
 		t.Errorf("legal form = %q", lf[form.FieldLegalForm])
 	}
+}
 
-	// Commit: confirm, then delete the review copy.
-	out.Reset()
-	code = Commit(CommitOptions{Downloads: dl, In: strings.NewReader("y\ny\n"), Out: &out, Now: now})
-	if code != ExitOK {
-		t.Fatalf("commit exit %d\n%s", code, out.String())
-	}
+// checkCommitted checks the real folder and the manifest after a commit.
+func checkCommitted(t *testing.T, root string, before map[string]string, m *runlog.Manifest, runDir string) {
+	t.Helper()
 	for _, f := range []string{"Foo C.A. de C.V", "Foo Co., Ltda", "Foo S.A.E", "Foo S.A", "Foo Inc", "Foo Ltd"} {
 		if _, err := os.Stat(filepath.Join(root, f)); err != nil {
 			t.Errorf("not committed: %s", f)
@@ -200,20 +231,6 @@ func TestRunAndCommit(t *testing.T) {
 	m2, _ := runlog.Load(runDir)
 	if !m2.Committed {
 		t.Error("manifest not marked committed")
-	}
-	// A second commit has nothing to do; a second run finds every folder.
-	out.Reset()
-	if code := Commit(CommitOptions{Downloads: dl, Config: review(), In: strings.NewReader(""), Out: &out, Now: now}); code != ExitOK || !strings.Contains(out.String(), "There is nothing to commit.") {
-		t.Fatalf("second commit exit %d\n%s", code, out.String())
-	}
-	out.Reset()
-	in2 := "Max Muster\n\n" + newCompanyLine("Caracas 4") // only the rejected Foo C.A. is new again
-	code = Run(Options{Parent: parent, Downloads: dl, AllowNonTTY: true, Config: review(), In: strings.NewReader(in2), Out: &out, Now: now})
-	if code != ExitOK {
-		t.Fatalf("second run exit %d\n%s", code, out.String())
-	}
-	if !strings.Contains(out.String(), "1 accepted, 10 already had a folder") {
-		t.Fatalf("unexpected second run summary:\n%s", out.String())
 	}
 }
 

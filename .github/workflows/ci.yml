@@ -106,6 +106,8 @@ jobs:
           cache: false
       - name: Zero third-party dependencies
         run: sh scripts/check-deps.sh
+      - name: File and function sizes
+        run: sh scripts/check-loc.sh
       - name: gofmt
         run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
       - name: go vet (all platforms)

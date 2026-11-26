@@ -61,6 +61,7 @@ A rule without an automatic check is checked in review.
 | What | Tool |
 | --- | --- |
 | dependencies, formatting, vet on six systems | `scripts/check-deps.sh`, `gofmt`, `go vet` |
+| file and function sizes | `scripts/check-loc.sh` |
 | static analysis | staticcheck |
 | security lint | gosec |
 | known vulnerabilities | govulncheck |
