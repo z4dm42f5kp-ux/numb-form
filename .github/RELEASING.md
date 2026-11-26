@@ -28,6 +28,10 @@ Each release is one pull request titled `vX.Y.Z: what it changes`.
    opens a pull request *docs: install commands for vX.Y.Z*. Merge it so
    the documented install commands install the new release; merging it
    releases nothing.
+   When workflows may not open pull requests (Settings > Actions >
+   General), it opens an issue with that title instead, once per release.
+   Open the pull request from its branch `updates/install-vX.Y.Z`.
+   The proposals for older releases are closed and their branches deleted.
 
 A minor release (`vX.Y.0:`) also runs the **linux** workflow on its pull
 request: the tests and the documented commands on every listed Linux
