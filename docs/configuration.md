@@ -94,6 +94,13 @@ that set it.
 `person =` [form]
 : Name of the person processing the form; empty means ask once per run.
 
+`language =`
+: Language of the questions and messages of numb-form: `en` (English),
+  `es` (Spanish) or `de` (German).
+  Empty means ask at the start of every run, with the language of the
+  system (`LC_ALL`, `LC_MESSAGES`, `LANG`, `LANGUAGE`) as the default.
+  The text written into the forms is English in every language.
+
 `date_format = DD/MM/YYYY` [form]
 : Evaluation date; tokens `DD`, `MM`, `YYYY`, `YY`.
   numb-date always writes `DD-MM-YYYY`.

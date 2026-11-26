@@ -63,7 +63,7 @@ func (r *run) editField(vals form.Values) error {
 			continue
 		}
 		f := form.AllFields[n-1]
-		v, err := r.ui.Ask(fmt.Sprintf("  New value for %s (empty = blank): ", f.Title()))
+		v, err := r.ui.Ask(r.ui.Sprintf("  New value for %s (empty = blank): ", f.Title()))
 		if err != nil {
 			return err
 		}

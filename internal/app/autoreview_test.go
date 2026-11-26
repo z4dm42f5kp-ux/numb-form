@@ -20,6 +20,7 @@ func TestAutoReviewCorrects(t *testing.T) {
 	ctx := context.Background()
 	real, cp := workingCopy(t, dateOf("Foo Ltd"))
 	cfg := config.Defaults()
+	cfg.Language = "en"
 	rc, err := reviewSetup(ctx, cp, real, cfg)
 	if err != nil {
 		t.Fatal(err)

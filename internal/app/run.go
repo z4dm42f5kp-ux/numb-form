@@ -162,6 +162,9 @@ func (r *run) main() error {
 	for _, n := range r.opt.Notes {
 		r.ui.Printf("note: %s\n", n)
 	}
+	if err := r.askLanguage(); err != nil {
+		return err
+	}
 	in, err := r.inputs()
 	if err != nil {
 		return err

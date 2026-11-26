@@ -38,6 +38,7 @@ func TestPickFolders(t *testing.T) {
 		t.Fatal(err)
 	}
 	cfg := config.Defaults()
+	cfg.Language = "en"
 	answers := strings.Join([]string{
 		"relative/folder",
 		`"` + filepath.Join(dl, "missing") + `"`,

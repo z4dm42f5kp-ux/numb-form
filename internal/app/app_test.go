@@ -72,6 +72,7 @@ func setup(t *testing.T) (parent, root, dl string) {
 
 func review() *config.Config {
 	c := config.Defaults()
+	c.Language = "en"
 	c.Mode = "review"
 	return &c
 }

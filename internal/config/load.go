@@ -147,7 +147,7 @@ func (c Config) Values() [][2]string {
 	}
 	return [][2]string{
 		{"mode", c.Mode}, {"online", yn(c.Online)}, {"overview_dir", c.OverviewDir}, {"header", c.Header},
-		{"id_header", c.IDHeader}, {"template_name", c.TemplateName}, {"person", c.Person}, {"date_format", c.DateFormat},
+		{"id_header", c.IDHeader}, {"template_name", c.TemplateName}, {"person", c.Person}, {"language", c.Language}, {"date_format", c.DateFormat},
 		{"timeout", timeout}, {"max_write_mb", strconv.Itoa(c.MaxWriteMB)}, {"fuzzy_threshold", strconv.FormatFloat(c.Fuzzy, 'g', -1, 64)},
 		{"unicode", c.Unicode},
 		{"downloads", c.Downloads}, {"log_dir", c.LogDir}, {"commit_from", c.CommitFrom}, {"commit_to", c.CommitTo}, {"soffice", c.Soffice}, {"pages_converter", c.PagesConverter},
@@ -170,6 +170,7 @@ func Template() string {
 	line("spreadsheet column with the customer ids", "id_header", d.IDHeader)
 	line("template file name without extension", "template_name", d.TemplateName)
 	line("person processing the form; empty means ask once per run", "person", "")
+	line("language of the questions and messages: en, es or de; empty means ask once per run", "language", "")
 	line("evaluation date format (DD, MM, YYYY, YY)", "date_format", d.DateFormat)
 	line("stop safely after this long, such as 30m; none means no time limit", "timeout", "none")
 	line("most megabytes of documents one run may write (at most 100)", "max_write_mb", "100")

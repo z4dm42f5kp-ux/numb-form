@@ -18,6 +18,7 @@ var fixedNow = func() time.Time { return time.Date(2026, 10, 16, 9, 30, 0, 0, ti
 
 func direct(t *testing.T) *config.Config {
 	c := config.Defaults()
+	c.Language = "en"
 	c.LogDir = filepath.Join(t.TempDir(), "logs")
 	return &c
 }

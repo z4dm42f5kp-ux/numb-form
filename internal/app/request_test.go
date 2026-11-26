@@ -83,6 +83,7 @@ func scanCopy(t *testing.T) (real, cp string) {
 // dl and an empty log folder, never from the computer's own.
 func testConfig(t *testing.T, dl string) config.Config {
 	cfg := config.Defaults()
+	cfg.Language = "en"
 	cfg.Downloads, cfg.LogDir = dl, t.TempDir()
 	return cfg
 }

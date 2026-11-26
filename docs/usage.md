@@ -46,7 +46,22 @@ A run proceeds as follows:
 1. The template is checked with a trial fill of every field.
    The run stops if section A, or any label other than *Commercial
    Registry Number*, cannot be found or is not empty.
-2. The name of the person processing the form is taken from the
+2. The language of the questions and messages is taken from the
+   `language` setting, or chosen first:
+
+   ```
+   Language / Idioma / Sprache:
+     1) English
+     2) Español
+     3) Deutsch
+   1, 2, 3 [1]:
+   ```
+
+   Enter takes the language of the system.
+   The answer may also be `en`, `es`, `de` or the name of the language.
+   The forms are written in English in every language, and the answer
+   letters stay the same (`a`, `e`, `r`, `y`, `n`).
+   Then the name of the person processing the form is taken from the
    configuration, or typed once.
 3. With `mode = review`, the whole working folder is copied to
    `Downloads/numb-form-runs/<date>_<time>_<id>/` and everything after

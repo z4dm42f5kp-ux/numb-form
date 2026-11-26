@@ -93,7 +93,7 @@ do not continue, and tell whoever looks after the tool.
 
 To update numb-form later, see [Reinstall or update](#reinstall-or-update).
 
-## 2. Save your name (once)
+## 2. Save your name and your language (once)
 
 Your name goes into the field *Person Processing the Form*.
 Open Windows PowerShell again and type, with your own name:
@@ -104,6 +104,25 @@ numb-form config set person "Erika Mustermann"
 
 It answers `Saved person = Erika Mustermann`.
 If you skip this step, numb-form asks for your name every time.
+
+numb-form can ask its questions in English, Spanish or German.
+The forms are always written in English.
+To save your language, type one of these lines and press **Enter**:
+
+```
+numb-form config set language en
+```
+
+```
+numb-form config set language es
+```
+
+```
+numb-form config set language de
+```
+
+It answers, for example, `Saved language = de`.
+If you skip this, numb-form asks for the language first, every time.
 
 ## 3. Fill in the forms (every time)
 
@@ -148,6 +167,7 @@ at the end.
 
 | numb-form asks | What it means | What you usually do |
 | --- | --- | --- |
+| `Language / Idioma / Sprache:` and `1, 2, 3 [1]:` | Only asked if you did not save a language in step 2 | Type `1` (English), `2` (Español) or `3` (Deutsch); Enter takes the language shown in the brackets. The next questions appear in that language; the answer letters stay `a`, `e`, `r`, `y` and `n` |
 | `Full name of the person processing the form:` | Only asked if you skipped step 2 | Type your name; Enter at the next question uses it for every form in this run |
 | `Is the existing folder "Foo Gmbh" this company's folder? (...) [y/N]` | A folder with a very similar name already exists | `y` if it is the same company (nothing is created), otherwise Enter. Start with `numb-form -y` to answer `y` to all of these: each one is shown as `already has a folder: … (similar name, -y)` |
 | `Legal form (the name has none; Enter = "No legal form was found…", '-' = blank):` | Asked only when the company name has no legal form such as `GmbH` or `S.A.` | Type it; Enter alone writes "No legal form was found online ..."; `-` leaves it blank |
