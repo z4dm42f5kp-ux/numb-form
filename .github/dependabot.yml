@@ -1,18 +1,17 @@
-# Security updates only: a pull request opens when an action or a Python
-# tool has a published vulnerability, at once. Routine version bumps open
-# none (open-pull-requests-limit: 0), so they never cut across planned
-# release pull requests; raise the limit to get them back. Every update
-# runs the full security pipeline; the dependabot workflow merges it once
-# every check has passed and passes the update on to every open pull
-# request. Go itself and the Go tools pinned in the workflows are checked
-# by .github/workflows/updates.yml.
+# Every update, without approval: a security update opens at once, a
+# routine version update once the version is 14 days old. All actions
+# move in one grouped pull request. Every update runs the full security
+# pipeline; the dependabot workflow merges it into main once every check
+# has passed and passes the update on to every open pull request, so it
+# never cuts across a planned release. Go itself and the Go tools pinned
+# in the workflows are checked by .github/workflows/updates.yml.
 version: 2
 updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: daily
-    open-pull-requests-limit: 0
+    open-pull-requests-limit: 5
     cooldown:
       default-days: 14
     # One pull request for all actions, so parts of one action (such as
@@ -34,7 +33,7 @@ updates:
     directory: /.github/translate
     schedule:
       interval: daily
-    open-pull-requests-limit: 0
+    open-pull-requests-limit: 5
     cooldown:
       default-days: 14
     allow:
