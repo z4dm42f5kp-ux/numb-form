@@ -132,7 +132,7 @@ script once, owned by root (on arm64, write `arm64` for `amd64`).
 
 <!-- install:freebsd-jail -->
 ```
-cd "$(mktemp -d)" && fetch https://github.com/z4dm42f5kp-ux/numb-form/releases/download/v1.2.1/numb-form_freebsd_amd64.tar.gz && sha256 -c a535bdcbf5f93320ad0bfae865dd9100dc5f9c95b58591aaa565c5c34458c932 numb-form_freebsd_amd64.tar.gz && tar -xzf numb-form_freebsd_amd64.tar.gz jail.sh && doas install -o root -g wheel -m 0555 jail.sh /usr/local/sbin/numb-form-jail && cd / && rm -rf "$OLDPWD" && echo OK
+cd "$(mktemp -d)" && fetch https://github.com/z4dm42f5kp-ux/numb-form/releases/download/v1.7.9/numb-form_freebsd_amd64.tar.gz && sha256 -c 8408a29fe7cd18471fe4d9d073542ea66b84c68b06f495cf8006f1b00b55af7d numb-form_freebsd_amd64.tar.gz && tar -xzf numb-form_freebsd_amd64.tar.gz jail.sh && doas install -o root -g wheel -m 0555 jail.sh /usr/local/sbin/numb-form-jail && cd / && rm -rf "$OLDPWD" && echo OK
 ```
 <!-- /install:freebsd-jail -->
 
